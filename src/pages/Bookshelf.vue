@@ -33,12 +33,44 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BookCard from '@/components/BookCard.vue'
 import { sutras } from '@/data/sutras'
+import { createDynamicSutra } from '@/utils/sutra-loader'
 
 const router = useRouter()
+const loading = ref(false)
+
+// 混合静态和动态经文
+const allSutras = ref([...sutras])
+
+// 示例：动态加载心经（如果已配置）
+const loadDynamicSutra = async (sutraConfig) => {
+  try {
+    loading.value = true
+    const sutra = await createDynamicSutra(sutraConfig)
+    allSutras.value.push(sutra)
+  } catch (error) {
+    console.error('Failed to load sutra:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
 const handleSutraClick = (sutra) => {
   router.push(`/reader/${sutra.id}`)
 }
+
+onMounted(() => {
+  // 可选：在页面加载时动态加载经文
+  // loadDynamicSutra({
+  //   id: 'xin-jing-dynamic',
+  //   title: '心经 (动态)',
+  //   fullName: '《般若波罗蜜多心经》',
+  //   translator: '唐三藏法师玄奘译',
+  //   cover: '📖',
+  //   description: '般若经类中最短的一部，共260字，是大乘佛教的核心经典之一',
+  //   wordCount: 260,
+  //   chapters: [{ title: '全文', url: '/sutras/xin-jing.txt' }]
+  // })
+})
 </script>
 
 <style scoped lang="scss">
