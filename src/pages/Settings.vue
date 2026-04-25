@@ -19,7 +19,13 @@
 
         <div class="setting-item">
           <label class="setting-label">显示拼音</label>
-          <van-switch v-model="showPinyin" size="20px" />
+          <button
+            class="toggle-btn"
+            :class="{ active: showPinyin }"
+            @click="showPinyin = !showPinyin"
+          >
+            <span class="toggle-slider"></span>
+          </button>
         </div>
       </section>
 
@@ -29,12 +35,13 @@
         <div class="setting-item">
           <label class="setting-label">朗读速度</label>
           <div class="speed-control">
-            <van-slider
-              v-model="ttsSpeed"
-              :min="0.5"
-              :max="2.0"
-              :step="0.1"
-              active-color="#FF6B35"
+            <input
+              type="range"
+              v-model.number="ttsSpeed"
+              min="0.5"
+              max="2.0"
+              step="0.1"
+              class="speed-slider"
             />
             <span class="speed-display">{{ ttsSpeed }}x</span>
           </div>
@@ -46,7 +53,13 @@
 
         <div class="setting-item">
           <label class="setting-label">深色模式</label>
-          <van-switch v-model="isDarkMode" size="20px" />
+          <button
+            class="toggle-btn"
+            :class="{ active: isDarkMode }"
+            @click="isDarkMode = !isDarkMode"
+          >
+            <span class="toggle-slider"></span>
+          </button>
         </div>
       </section>
 
@@ -74,7 +87,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Switch as VanSwitch, Slider as VanSlider, showToast } from 'vant'
+import { showToast } from 'vant'
 import { useSettingsStore } from '@/stores/settings'
 import { useThemeStore } from '@/stores/theme'
 import { clearStorage } from '@/utils/storage'
@@ -191,6 +204,7 @@ const handleClearCache = () => {
     color: var(--text-primary);
     font-size: var(--font-size-xl);
     transition: all var(--transition-fast);
+    cursor: pointer;
 
     &:hover {
       background-color: var(--highlight-bg);
@@ -206,8 +220,68 @@ const handleClearCache = () => {
     color: var(--text-secondary);
   }
 
-  .van-slider {
+  .speed-slider {
     width: 150px;
+    height: 4px;
+    appearance: none;
+    background: var(--divider-color);
+    border-radius: 2px;
+    outline: none;
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform var(--transition-fast);
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+
+    &::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+  }
+}
+
+.toggle-btn {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: var(--divider-color);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  border: none;
+  padding: 0;
+
+  &.active {
+    background-color: var(--primary-color);
+  }
+
+  .toggle-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform var(--transition-fast);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  &.active .toggle-slider {
+    transform: translateX(20px);
   }
 }
 
@@ -220,6 +294,8 @@ const handleClearCache = () => {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   transition: background-color var(--transition-fast);
+  border: none;
+  cursor: pointer;
 
   &:hover {
     background-color: #ffcdd2;

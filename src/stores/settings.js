@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 export const useSettingsStore = defineStore('settings', () => {
   // State
   const fontSize = ref(18)
-  const showPinyin = ref(true)
+  const showPinyin = ref(false)
   const ttsSpeed = ref(1.0)
 
   // Load from localStorage on initialization
@@ -14,7 +14,7 @@ export const useSettingsStore = defineStore('settings', () => {
       if (saved) {
         const parsed = JSON.parse(saved)
         fontSize.value = parsed.fontSize || 18
-        showPinyin.value = parsed.showPinyin !== undefined ? parsed.showPinyin : true
+        showPinyin.value = parsed.showPinyin !== undefined ? parsed.showPinyin : false
         ttsSpeed.value = parsed.ttsSpeed || 1.0
       }
     } catch (error) {
