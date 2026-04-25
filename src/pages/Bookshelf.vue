@@ -70,15 +70,15 @@ const handleSutraClick = (sutra) => {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--space-4);
 
-  @include mobile {
+  @media (max-width: 767px) {
     grid-template-columns: 1fr;
   }
 
-  @include tablet {
+  @media (min-width: 768px) and (max-width: 1023px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @include desktop {
+  @media (min-width: 1024px) {
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -94,7 +94,7 @@ const handleSutraClick = (sutra) => {
   left: 0;
   right: 0;
 
-  @include tablet {
+  @media (min-width: 768px) and (max-width: 1023px) {
     position: static;
   }
 

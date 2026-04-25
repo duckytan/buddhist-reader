@@ -50,7 +50,7 @@ const readingProgress = computed(() => {
     transform: translateY(-2px);
   }
 
-  @include mobile {
+  @media (max-width: 767px) {
     &:active {
       transform: scale(0.98);
     }
