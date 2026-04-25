@@ -52,7 +52,7 @@ const props = defineProps({
   }
 })
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
 
 const { width } = useWindowSize()
 
@@ -92,8 +92,6 @@ const popupStyle = computed(() => {
   // Mobile: bottom drawer, no specific positioning
   return {}
 })
-
-const emit = defineEmits(['close'])
 
 onMounted(() => {
   document.addEventListener('keydown', handleEscape)
