@@ -1,0 +1,428 @@
+---
+alwaysApply: false
+description: Core algorithms implementation guide (Trie tree, TTS, pronunciation)
+description: Implementation guide for core algorithms: Trie tree, TTS engine, and pronunciation annotation
+---
+
+# Core Algorithms Guide
+
+## Trie Tree Dictionary Matching
+
+### File Location
+[src/utils/trie.js](mdc:src/utils/trie.js)
+
+### Purpose
+Efficiently match Buddhist terms from dictionary while reading scripture. Uses longest-match strategy to prioritize longer terms (e.g., "般若波罗蜜多" before "般若").
+
+### Key Functions
+
+#### `buildTrie(dictionary)`
+Build a trie tree from dictionary array.
+```javascript
+/**
+ * Build a trie tree from dictionary data
+ * @param {Array} dictionary - Array of {term, ...} objects
+ * @returns {Object} Trie tree root node
+ */
+export function buildTrie(dictionary) {
+  const root = {}
+  for (const entry of dictionary) {
+    let node = root
+    for (const char of entry.term) {
+      if (!node[char]) {
+        node[char] = {}
+      }
+      node = node[char]
+    }
+    node.isEnd = true
+    node.data = entry
+  }
+  return root
+}
+```
+
+#### `findMatches(trie, text)`
+Find all matching terms in text.
+```javascript
+/**
+ * Find all dictionary matches in text
+ * @param {Object} trie - Trie tree root
+ * @param {String} text - Text to search
+ * @returns {Array} Array of {start, end, data} matches
+ */
+export function findMatches(trie, text) {
+  const matches = []
+  for (let i = 0; i < text.length; i++) {
+    let node = trie
+    let j = i
+    while (j < text.length && node[text[j]]) {
+      node = node[text[j]]
+      if (node.isEnd) {
+        matches.push({
+          start: i,
+          end: j + 1,
+          data: node.data
+        })
+      }
+      j++
+    }
+  }
+  return matches
+}
+```
+
+#### `removeOverlaps(matches)`
+Remove overlapping matches, keep longest.
+```javascript
+/**
+ * Remove overlapping matches, prioritize longest
+ * @param {Array} matches - Array of match objects
+ * @returns {Array} Non-overlapping matches
+ */
+export function removeOverlaps(matches) {
+  if (matches.length === 0) return []
+  
+  // Sort by start position, then by length (longest first)
+  matches.sort((a, b) => {
+    if (a.start !== b.start) return a.start - b.start
+    return (b.end - b.start) - (a.end - a.start)
+  })
+  
+  const result = []
+  let current = matches[0]
+  
+  for (let i = 1; i < matches.length; i++) {
+    const next = matches[i]
+    if (next.start >= current.end) {
+      result.push(current)
+      current = next
+    }
+    // Overlapping: skip (current is longer)
+  }
+  result.push(current)
+  
+  return result
+}
+```
+
+### Performance Optimization
+- Build trie in Web Worker to avoid blocking main thread
+- Cache built trie in IndexedDB for faster startup
+- Time complexity: O(n) where n = text length
+
+### Usage Example
+```javascript
+import { buildTrie, findMatches, removeOverlaps } from '@/utils/trie.js'
+
+// Build trie on app initialization
+const dictionary = await import('@/data/dictionary.js')
+const trie = buildTrie(dictionary.default)
+
+// Find matches in scripture text
+const text = "观自在菩萨，行深般若波罗蜜多时"
+const rawMatches = findMatches(trie, text)
+const matches = removeOverlaps(rawMatches)
+
+// Render highlights
+matches.forEach(match => {
+  const term = text.substring(match.start, match.end)
+  console.log(`Found: ${term}`, match.data)
+})
+```
+
+---
+
+## TTS Engine (Text-to-Speech)
+
+### File Location
+[src/utils/tts.js](mdc:src/utils/tts.js)
+
+### Purpose
+Wrapper around Web Speech API for Buddhist scripture reading with sentence-by-sentence highlighting.
+
+### TTSEngine Class
+
+```javascript
+/**
+ * TTS Engine using Web Speech API
+ */
+class TTSEngine {
+  constructor() {
+    this.synth = window.speechSynthesis
+    this.utterance = null
+    this.isPlaying = false
+    this.isPaused = false
+    this.currentSentenceIndex = 0
+    this.sentences = []
+    this.onSentenceChange = null
+    this.onEnd = null
+  }
+
+  /**
+   * Speak text with sentence-by-sentence highlighting
+   * @param {String} text - Text to speak
+   * @param {Object} options - { rate, pitch, voice }
+   */
+  speak(text, options = {}) {
+    // Stop any current speech
+    this.stop()
+    
+    // Split text into sentences
+    this.sentences = this._splitSentences(text)
+    this.currentSentenceIndex = 0
+    
+    // Create utterance
+    this.utterance = new SpeechSynthesisUtterance(text)
+    this.utterance.rate = options.rate || 1.0
+    this.utterance.pitch = options.pitch || 1.0
+    this.utterance.lang = 'zh-CN'
+    
+    // Event handlers
+    this.utterance.onstart = () => {
+      this.isPlaying = true
+      this.isPaused = false
+    }
+    
+    this.utterance.onend = () => {
+      this.isPlaying = false
+      if (this.onEnd) this.onEnd()
+    }
+    
+    this.utterance.onboundary = (event) => {
+      if (event.name === 'sentence') {
+        this.currentSentenceIndex++
+        if (this.onSentenceChange) {
+          this.onSentenceChange(this.currentSentenceIndex)
+        }
+      }
+    }
+    
+    // Speak
+    this.synth.speak(this.utterance)
+  }
+
+  pause() {
+    if (this.isPlaying && !this.isPaused) {
+      this.synth.pause()
+      this.isPaused = true
+    }
+  }
+
+  resume() {
+    if (this.isPlaying && this.isPaused) {
+      this.synth.resume()
+      this.isPaused = false
+    }
+  }
+
+  stop() {
+    this.synth.cancel()
+    this.isPlaying = false
+    this.isPaused = false
+    this.currentSentenceIndex = 0
+  }
+
+  getStatus() {
+    return {
+      isPlaying: this.isPlaying,
+      isPaused: this.isPaused,
+      currentSentence: this.currentSentenceIndex
+    }
+  }
+
+  _splitSentences(text) {
+    // Split by punctuation marks
+    return text.split(/([。？！；\n])/).filter(s => s.trim())
+  }
+}
+
+// Singleton instance
+export const ttsEngine = new TTSEngine()
+```
+
+### Browser Compatibility
+- Chrome/Edge: Full support
+- Firefox: Full support
+- Safari: Requires user interaction to initialize
+- Mobile: Check `window.speechSynthesis` availability
+
+### Usage Example
+```javascript
+import { ttsEngine } from '@/utils/tts.js'
+
+// Speak scripture
+ttsEngine.speak("观自在菩萨，行深般若波罗蜜多时", {
+  rate: 0.8,  // Slower for scripture
+  pitch: 1.0
+})
+
+// Listen to sentence changes
+ttsEngine.onSentenceChange = (index) => {
+  console.log('Current sentence:', index)
+  // Highlight current sentence in UI
+}
+
+// Controls
+ttsEngine.pause()
+ttsEngine.resume()
+ttsEngine.stop()
+```
+
+---
+
+## Pronunciation Annotation
+
+### File Location
+[src/utils/pronunciation.js](mdc:src/utils/pronunciation.js)
+
+### Purpose
+Add Buddhist-specific pinyin annotations to scripture text using semantic HTML `<ruby>` tags.
+
+### pronunciationMap
+```javascript
+export const pronunciationMap = {
+  // Common Buddhist terms
+  '般若': 'bō rě',
+  '菩萨': 'pú sà',
+  '菩提': 'pú tí',
+  '涅槃': 'niè pán',
+  '南无': 'nā mó',
+  '阿弥陀佛': 'ē mí tuó fó',
+  '舍利弗': 'shè lì fú',
+  '须菩提': 'xū pú tí',
+  '曼殊室利': 'màn shū shì lì',
+  
+  // Context-specific pronunciations
+  '佛': {
+    '佛陀': 'fó',
+    default: 'fó'
+  },
+  // ... more mappings
+}
+```
+
+### addPinyinAnnotation Function
+
+```javascript
+/**
+ * Add pinyin annotation to text using Ruby tags
+ * @param {String} text - Scripture text
+ * @param {Boolean} showPinyin - Whether to show pinyin
+ * @returns {String} HTML with ruby annotations
+ */
+export function addPinyinAnnotation(text, showPinyin = true) {
+  if (!showPinyin) return text
+  
+  // Sort terms by length (longest first)
+  const terms = Object.keys(pronunciationMap)
+    .sort((a, b) => b.length - a.length)
+  
+  let result = text
+  let offset = 0
+  
+  for (const term of terms) {
+    let index = result.indexOf(term, offset)
+    while (index !== -1) {
+      const pinyin = typeof pronunciationMap[term] === 'string' 
+        ? pronunciationMap[term]
+        : pronunciationMap[term].default
+      
+      const annotated = `<ruby>${term}<rt>${pinyin}</rt></ruby>`
+      result = result.substring(0, index) + annotated + result.substring(index + term.length)
+      
+      offset = index + annotated.length
+      index = result.indexOf(term, offset)
+    }
+  }
+  
+  return result
+}
+```
+
+### CSS for Ruby Tags
+```scss
+ruby {
+  rt {
+    font-size: 0.6em;
+    color: var(--text-secondary);
+    font-weight: normal;
+  }
+  
+  // Hide pinyin via CSS if needed
+  &.hide-pinyin rt {
+    display: none;
+  }
+}
+```
+
+### Usage Example
+```javascript
+import { addPinyinAnnotation } from '@/utils/pronunciation.js'
+
+const text = "观自在菩萨，行深般若波罗蜜多时"
+const annotated = addPinyinAnnotation(text)
+console.log(annotated)
+// Output: <ruby>观<rt>guān</rt></ruby>...
+```
+
+---
+
+## Integration Example
+
+### Reader Component
+```vue
+<script setup>
+import { ref, onMounted } from 'vue'
+import { buildTrie, findMatches, removeOverlaps } from '@/utils/trie.js'
+import { ttsEngine } from '@/utils/tts.js'
+import { addPinyinAnnotation } from '@/utils/pronunciation.js'
+
+const scriptureText = ref('观自在菩萨，行深般若波罗蜜多时')
+const highlightedText = ref('')
+const annotatedText = ref('')
+
+onMounted(async () => {
+  // Load dictionary and build trie
+  const { default: dictionary } = await import('@/data/dictionary.js')
+  const trie = buildTrie(dictionary)
+  
+  // Find matches and highlight
+  const matches = findMatches(trie, scriptureText.value)
+  const nonOverlapping = removeOverlaps(matches)
+  
+  // Render highlighted text
+  highlightedText.value = renderHighlights(scriptureText.value, nonOverlapping)
+  
+  // Add pinyin annotations
+  annotatedText.value = addPinyinAnnotation(scriptureText.value)
+})
+
+function speak() {
+  ttsEngine.speak(scriptureText.value, { rate: 0.8 })
+}
+</script>
+
+<template>
+  <div class="reader">
+    <div v-html="annotatedText" class="scripture-text"></div>
+    <button @click="speak">播放</button>
+  </div>
+</template>
+```
+
+---
+
+## Performance Notes
+
+1. **Trie Building**: Do this in Web Worker to avoid blocking
+2. **TTS Initialization**: Requires user gesture on mobile browsers
+3. **Pinyin Annotation**: Can be CPU-intensive for long texts, consider caching
+4. **Dictionary Size**: For MVP, use 100 terms. For production, implement tiered loading (L1/L2/L3)
+
+---
+
+## References
+
+- Web Speech API: https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API
+- HTML Ruby Annotation: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ruby
+- Trie Tree Algorithm: Standard prefix tree implementation

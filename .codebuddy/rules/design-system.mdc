@@ -1,0 +1,180 @@
+---
+alwaysApply: true
+description: Zen aesthetics design system and UI guidelines
+---
+
+# Design System - Zen Aesthetics
+
+## Design Philosophy
+**禅意留白 · 专注诵读 · 温暖极简**
+- Minimalist, restrained, distraction-free with pure backgrounds
+- Generous spacing and breathing room
+- Experience over features, hide non-essential UI
+- Warm accents, not cold/mechanical
+- No autoplay animations/sounds, no decorative elements
+
+## Color Palette
+
+### Day Mode (Default)
+```scss
+--primary-color: #FF6B35;       // 赤褐色 - warm, Buddhist-inspired
+--highlight-bg: #FFF3CD;        // 金黄 - wisdom/golden light
+--bg-page: #F5F5F5;            // 宣纸白 - rice paper
+--bg-card: #FFFFFF;             // 纯白 - pure white
+--text-primary: #333333;         // 墨黑 - ink black
+--text-secondary: #666666;      // 辅助文本
+--text-hint: #999999;          // 提示文本
+--border-color: #E0E0E0;       // 边框颜色
+--divider-color: #EEEEEE;      // 分割线颜色
+```
+
+### Night Mode
+```scss
+--bg-page: #1A1A1A;            // 深空灰 - deep night
+--bg-card: #2A2A2A;            // 禅堂灰 - meditation hall
+--highlight-bg: #4A4A4A;        // 夜间高亮 - night highlight
+--text-primary: #E0E0E0;       // 夜间主文本
+--text-secondary: #B0B0B0;    // 夜间辅助文本
+--text-hint: #808080;          // 夜间提示文本
+--border-color: #3A3A3A;       // 夜间边框
+--divider-color: #333333;      // 夜间分割线
+```
+
+**Usage**: Toggle dark mode by adding `.dark-mode` class to root element.
+
+## Typography
+
+### Font Families
+```scss
+--font-heading: 'Source Han Serif CN', 'Noto Serif SC', serif;  // Headers
+--font-body: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;   // Body
+--font-sanskrit: 'Noto Sans Devanagari', sans-serif;            // Sanskrit
+```
+
+### Typography Scale (12 levels)
+```scss
+--font-size-xs: 12px;     // 0.75rem   - Small labels
+--font-size-sm: 14px;     // 0.875rem  - Body text (default)
+--font-size-base: 16px;   // 1rem      - Base size
+--font-size-lg: 18px;     // 1.125rem  - Subheadings
+--font-size-xl: 20px;     // 1.25rem   - Section titles
+--font-size-2xl: 24px;    // 1.5rem    - Page titles
+--font-size-3xl: 30px;    // 1.875rem  - Large headings
+--font-size-4xl: 36px;    // 2.25rem   - Hero titles
+--font-size-5xl: 48px;    // 3rem      - Display
+--font-size-6xl: 60px;    // 3.75rem   - Hero display
+--font-size-7xl: 72px;    // 4.5rem    - Extra large
+--font-size-8xl: 96px;    // 6rem      - Massive
+```
+
+### Line Heights
+```scss
+--line-height-tight: 1.2;   // Headings
+--line-height-base: 1.5;    // Body text
+--line-height-loose: 1.8;   // Scripture text (breathing room)
+--line-height-relaxed: 2;   // Extra breathing room
+```
+
+### Font Weights
+```scss
+--font-weight-light: 300;
+--font-weight-normal: 400;
+--font-weight-medium: 500;
+--font-weight-semibold: 600;
+--font-weight-bold: 700;
+```
+
+## Spacing System
+
+Base unit: 8px
+
+```scss
+--space-1: 4px;     // 0.25rem   - Micro spacing
+--space-2: 8px;     // 0.5rem    - Base spacing
+--space-3: 12px;    // 0.75rem   - Small spacing
+--space-4: 16px;    // 1rem      - Normal spacing
+--space-5: 20px;    // 1.25rem   - Medium spacing
+--space-6: 24px;    // 1.5rem    - Large spacing
+--space-8: 32px;    // 2rem      - Extra large
+--space-10: 48px;   // 3rem      - Section spacing
+--space-12: 64px;   // 4rem      - Page spacing
+```
+
+## Border Radius
+
+```scss
+--radius-sm: 8px;    // Small elements
+--radius-md: 12px;   // Cards (bookshelf)
+--radius-lg: 16px;   // Statistics cards
+--radius-xl: 24px;   - Large cards
+--radius-full: 9999px; // Pill-shaped buttons
+```
+
+## Box Shadows
+
+```scss
+--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+--shadow-base: 0 2px 8px rgba(0, 0, 0, 0.08);
+--shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+--shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+```
+
+## Transitions
+
+```scss
+--transition-fast: 0.15s ease;
+--transition-base: 0.3s ease;
+--transition-slow: 0.5s ease;
+```
+
+## Component Specifications
+
+### Bookshelf Cards
+- **Radius**: 12px
+- **Shadow**: Subtle (0 2px 8px rgba(0,0,0,0.05))
+- **Hover**: Slight lift with enhanced shadow
+
+### Statistics Cards
+- **Radius**: 16px
+- **Shadow**: Soft (0 4px 16px rgba(0,0,0,0.08))
+
+### Settings Cards
+- **Radius**: 12px
+- **Shadow**: Minimal (0 1px 4px rgba(0,0,0,0.05))
+
+### Dictionary Popup
+- **Mobile**: Bottom drawer (60% height), slides up from bottom
+- **Tablet**: Intelligent bubble positioned near clicked term
+- **Desktop**: Right sidebar panel (400px width), slides in from right
+
+## Reading Content
+
+- **Line Height**: 1.8x (for breathing room)
+- **Paragraph Spacing**: 24px
+- **Font Size**: 14-28px (adjustable, 2px steps)
+- **Text Alignment**: Justified or left-aligned
+- **Dictionary Highlight**: Golden yellow background (#FFF3CD)
+
+## Touch Optimization
+
+- **Minimum Tap Target**: 44px × 44px
+- **Bottom Toolbar**: Easy thumb reach zone
+- **Swipe Gestures**: Page navigation
+
+## Accessibility
+
+- **Color Contrast**: WCAG AA compliant (4.5:1 for normal text)
+- **Focus States**: Clear visual indicators
+- **Semantic HTML**: Proper heading hierarchy
+- **Alt Text**: Descriptive text for images
+
+## Reference Implementation
+
+For complete design specifications, refer to:
+- [docs/DESIGN.md](mdc:docs/DESIGN.md) - Full design system
+- [DESIGN-BUDDHIST-READER.md](mdc:DESIGN-BUDDHIST-READER.md) - Detailed UI specifications
+- [prototypes/](mdc:prototypes/) - Visual references for mobile/tablet/desktop
+
+## SCSS Variables Location
+
+All variables are defined in [src/assets/styles/variables.scss](mdc:src/assets/styles/variables.scss)

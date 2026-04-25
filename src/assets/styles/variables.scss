@@ -1,0 +1,101 @@
+// Color Palette - Day Mode
+:root {
+  --primary-color: #FF6B35;       // 赤褐色 - warm, Buddhist-inspired
+  --highlight-bg: #FFF3CD;        // 金黄 - wisdom/golden light
+  --bg-page: #F5F5F5;            // 宣纸白 - rice paper
+  --bg-card: #FFFFFF;             // 纯白 - pure white
+  --text-primary: #333333;         // 墨黑 - ink black
+  --text-secondary: #666666;      // 辅助文本
+  --text-hint: #999999;          // 提示文本
+  --border-color: #E0E0E0;       // 边框颜色
+  --divider-color: #EEEEEE;      // 分割线颜色
+}
+
+// Night Mode
+.dark-mode {
+  --bg-page: #1A1A1A;            // 深空灰 - deep night
+  --bg-card: #2A2A2A;            // 禅堂灰 - meditation hall
+  --highlight-bg: #4A4A4A;        // 夜间高亮 - night highlight
+  --text-primary: #E0E0E0;       // 夜间主文本
+  --text-secondary: #B0B0B0;    // 夜间辅助文本
+  --text-hint: #808080;          // 夜间提示文本
+  --border-color: #3A3A3A;       // 夜间边框
+  --divider-color: #333333;      // 夜间分割线
+}
+
+// Font Families
+:root {
+  --font-heading: 'Source Han Serif CN', 'Noto Serif SC', serif;
+  --font-body: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
+  --font-sanskrit: 'Noto Sans Devanagari', sans-serif;
+}
+
+// Typography Scale (12 levels)
+:root {
+  --font-size-xs: 12px;     // 0.75rem
+  --font-size-sm: 14px;     // 0.875rem
+  --font-size-base: 16px;   // 1rem
+  --font-size-lg: 18px;     // 1.125rem
+  --font-size-xl: 20px;     // 1.25rem
+  --font-size-2xl: 24px;    // 1.5rem
+  --font-size-3xl: 30px;    // 1.875rem
+  --font-size-4xl: 36px;    // 2.25rem
+  --font-size-5xl: 48px;    // 3rem
+  --font-size-6xl: 60px;    // 3.75rem
+  --font-size-7xl: 72px;    // 4.5rem
+  --font-size-8xl: 96px;    // 6rem
+}
+
+// Line Heights
+:root {
+  --line-height-tight: 1.2;
+  --line-height-base: 1.5;
+  --line-height-loose: 1.8;
+  --line-height-relaxed: 2;
+}
+
+// Font Weights
+:root {
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+}
+
+// Spacing System (base: 8px)
+:root {
+  --space-1: 4px;     // 0.25rem
+  --space-2: 8px;     // 0.5rem
+  --space-3: 12px;    // 0.75rem
+  --space-4: 16px;    // 1rem
+  --space-5: 20px;    // 1.25rem
+  --space-6: 24px;    // 1.5rem
+  --space-8: 32px;    // 2rem
+  --space-10: 48px;   // 3rem
+  --space-12: 64px;   // 4rem
+}
+
+// Border Radius
+:root {
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}
+
+// Box Shadows
+:root {
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+// Transitions
+:root {
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}

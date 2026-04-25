@@ -1,0 +1,143 @@
+---
+alwaysApply: true
+description: Development workflow and coding standards
+---
+
+# Development Workflow
+
+## Before Making Changes
+
+1. **Read the Documentation**
+   - Check [docs/DEVELOPMENT_GUIDE.md](mdc:docs/DEVELOPMENT_GUIDE.md) for detailed task breakdown
+   - Refer to [docs/DESIGN.md](mdc:docs/DESIGN.md) and [DESIGN-BUDDHIST-READER.md](mdc:DESIGN-BUDDHIST-READER.md) for design specs
+   - Review [docs/CHECKLIST.md](mdc:docs/CHECKLIST.md) to ensure all requirements are met
+
+2. **Check Existing Code**
+   - Look for similar implementations in existing files
+   - Follow the established patterns and conventions
+   - Reuse components where possible
+
+3. **Update Dev Log**
+   - Record daily progress in [docs/DEVELOPMENT_LOG.md](mdc:docs/DEVELOPMENT_LOG.md)
+   - Document problems and solutions
+   - Plan next steps
+
+## Coding Standards
+
+### Vue Components
+- Use `<script setup>` syntax with Composition API
+- Use TypeScript or JSDoc for type hints (optional but recommended)
+- Follow Vue 3 best practices:
+  ```vue
+  <script setup>
+  import { ref, computed } from 'vue'
+  import { useRouter } from 'vue-router'
+  
+  const props = defineProps({
+    title: { type: String, required: true }
+  })
+  
+  const router = useRouter()
+  const count = ref(0)
+  
+  const doubleCount = computed(() => count.value * 2)
+  </script>
+  
+  <template>
+    <div class="component">
+      <h1>{{ title }}</h1>
+      <p>Count: {{ doubleCount }}</p>
+    </div>
+  </template>
+  
+  <style scoped>
+  .component {
+    /* Scoped styles here */
+  }
+  </style>
+  ```
+
+### JavaScript/TypeScript
+- Use modern ES6+ syntax (const/let, arrow functions, template literals, destructuring)
+- Prefer async/await over promises for async code
+- Add JSDoc comments for complex functions:
+  ```javascript
+  /**
+   * Build a trie tree from dictionary data
+   * @param {Array} dictionary - Array of dictionary entries
+   * @returns {Object} Trie tree structure
+   */
+  export function buildTrie(dictionary) {
+    // Implementation
+  }
+  ```
+
+### SCSS/CSS
+- Use SCSS variables from [src/assets/styles/variables.scss](mdc:src/assets/styles/variables.scss)
+- Follow BEM-like naming: `.block__element--modifier`
+- Use responsive mixins from global.scss
+- Add CSS comments for complex styles
+
+### File Naming
+- Vue components: PascalCase (e.g., `BookCard.vue`, `DictionaryPopup.vue`)
+- Utilities: camelCase (e.g., `trie.js`, `tts.js`)
+- Stores: camelCase (e.g., `settings.js`, `progress.js`)
+- Styles: kebab-case (e.g., `variables.scss`, `global.scss`)
+
+## Git Commit Guidelines
+
+Use conventional commits format:
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting, etc.)
+- `refactor:` - Code refactoring
+- `perf:` - Performance improvements
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+
+Example: `feat: add dictionary popup component with multi-terminal support`
+
+## Testing Guidelines
+
+- Write unit tests for utility functions in `src/utils/`
+- Test component rendering and interactions
+- Test responsive behavior across breakpoints
+- Verify TTS functionality across browsers
+- Check localStorage persistence
+
+## Performance Considerations
+
+- Build Trie tree in Web Worker to avoid blocking main thread
+- Use lazy loading for large dictionaries (L1/L2/L3 tiered)
+- Implement virtual scrolling for long texts (planned)
+- Use WebP images with fallbacks
+- Code splitting for routes
+
+## Common Commands
+
+```bash
+# Start dev server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Run tests
+npm run test
+
+# Lint and fix
+npm run lint
+```
+
+## Responsive Design Breakpoints
+
+- Mobile portrait: < 600px (primary target)
+- Mobile landscape: 600px - 768px
+- Tablet: 768px - 1024px
+- Desktop: > 1024px
+
+Use `@vueuse/core` `useWindowSize()` for responsive detection in components.

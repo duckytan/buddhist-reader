@@ -1,0 +1,444 @@
+---
+alwaysApply: false
+description: Data structures and formats for scriptures, dictionary, and pronunciation map
+description: Data structure specifications for sutras, dictionary entries, and pronunciation mapping
+---
+
+# Data Structures
+
+## Sutra Data Structure
+
+### File Location
+[src/data/sutras.js](mdc:src/data/sutras.js)
+
+### Sutra Entry Schema
+
+```javascript
+{
+  id: 'xin-jing',              // Unique identifier (kebab-case)
+  title: '心经',                // Short title (displayed in bookshelf)
+  fullName: '《般若波罗蜜多心经》', // Full title with book name
+  translator: '唐三藏法师玄奘译',   // Translator/author
+  cover: '📖',                  // Emoji or image path
+  description: '般若经类中最短的一部，阐述般若思想的精髓。', // Brief description
+  
+  // Chapters/Sections
+  chapters: [
+    {
+      id: 'full-text',         // Chapter ID
+      title: '全文',            // Chapter title
+      content: '观自在菩萨，行深般若波罗蜜多时，照见五蕴皆空，度一切苦厄...', // Full scripture text
+      wordCount: 260            // Word count (optional)
+    }
+  ],
+  
+  // Metadata
+  wordCount: 260,              // Total word count
+  category: '般若部',           // Category (optional)
+  tags: ['般若', '心经'],       // Tags for search/filtering (optional)
+  difficulty: 'beginner'       // Difficulty level (optional)
+}
+```
+
+### MVP Scriptures (3-5 Classics)
+
+1. **心经** (xin-jing)
+   - Title: 《般若波罗蜜多心经》
+   - Translator: 唐三藏法师玄奘译
+   - Word Count: 260
+
+2. **金刚经** (jin-gang-jing)
+   - Title: 《金刚般若波罗蜜经》
+   - Translator: 姚秦三藏法师鸠摩罗什译
+   - Word Count: ~5,200
+
+3. **大势至菩萨念佛圆通章** (da-shi-zhi)
+   - Title: 《大势至菩萨念佛圆通章》
+   - Translator: 唐般刺密谛译
+   - Word Count: ~240
+
+4. **普门品** (pu-men-pin)
+   - Title: 《观世音菩萨普门品》
+   - Translator: 姚秦三藏法师鸠摩罗什译
+   - Word Count: ~2,500
+
+5. **佛说阿弥陀经** (a-mi-tuo)
+   - Title: 《佛说阿弥陀经》
+   - Translator: 姚秦三藏法师鸠摩罗什译
+   - Word Count: ~1,800
+
+### Usage Example
+
+```javascript
+// Import sutras
+import sutras from '@/data/sutras.js'
+
+// Get all sutras for bookshelf
+const allSutras = sutras
+
+// Find sutra by ID
+const sutra = sutras.find(s => s.id === 'xin-jing')
+
+// Get chapter content
+const chapterContent = sutra.chapters[0].content
+```
+
+---
+
+## Dictionary Data Structure
+
+### File Location
+[src/data/dictionary.js](mdc:src/data/dictionary.js)
+
+### Dictionary Entry Schema
+
+```javascript
+{
+  term: '般若',                 // Term text (for matching)
+  pinyin: 'bō rě',            // Pinyin pronunciation
+  sanskrit: 'prajñā',         // Sanskrit original (optional)
+  definition: '梵语 prajñā 的音译，意为智慧、胜义慧。佛教中指能通达真理、破除无明的智慧。', // Detailed definition
+  category: '核心术语',        // Category (for filtering)
+  examples: [                 // Example sentences (optional)
+    '行深般若波罗蜜多时',
+    '般若波罗蜜多心经'
+  ],
+  related: [                  // Related terms (optional)
+    '智慧',
+    '菩提'
+  ],
+  level: 1                   // Importance level (1=core, 2=common, 3=advanced)
+}
+```
+
+### MVP Dictionary (100+ Terms)
+
+Categories:
+- **核心术语** (20): 般若, 菩萨, 菩提, 涅槃, 如来, etc.
+- **人物称谓** (15): 释迦牟尼, 观世音, 弥勒, etc.
+- **地理名相** (10): 西方极乐世界, 娑婆世界, etc.
+- **修行方法** (15): 禅定, 持戒, 布施, etc.
+- **佛教名数** (10): 三界, 六道, 四圣谛, etc.
+- **常见梵语** (10): 南无, 阿弥陀佛, etc.
+- **其他术语** (20): ...
+
+### Usage Example
+
+```javascript
+// Import dictionary
+import dictionary from '@/data/dictionary.js'
+
+// Search term
+const term = '般若'
+const entry = dictionary.find(d => d.term === term)
+
+// Filter by category
+const coreTerms = dictionary.filter(d => d.category === '核心术语')
+
+// Build trie for matching
+import { buildTrie } from '@/utils/trie.js'
+const trie = buildTrie(dictionary)
+```
+
+---
+
+## Pronunciation Map Structure
+
+### File Location
+[src/data/pronunciation-map.js](mdc:src/data/pronunciation-map.js)
+
+### Pronunciation Entry Schema
+
+#### Simple Pronunciation
+```javascript
+{
+  '般若': 'bō rě',
+  '菩萨': 'pú sà',
+  '菩提': 'pú tí'
+}
+```
+
+#### Context-Specific Pronunciation
+```javascript
+{
+  '佛': {
+    '佛陀': 'fó',
+    '佛教': 'fó',
+    default: 'fó'
+  },
+  '色': {
+    '色即是空': 'sè',
+    '五蕴': 'sè',
+    default: 'sè'
+  }
+}
+```
+
+### Pronunciation Rules
+
+1. **梵语音译词** use original Sanskrit pronunciation:
+   - 般若: bō rě (not bān ruò)
+   - 菩萨: pú sà (not pú sà)
+   - 南无: nā mó (not nán wú)
+
+2. **多音字** use Buddhist context:
+   - 色: sè (in "色即是空")
+   - 空: kōng (in "空中无色")
+
+3. **特殊读法**:
+   - 阿弥陀佛: ē mí tuó fó
+   - 迦叶: jiā shè
+   - 舍利: shè lì
+
+### MVP Pronunciation Map (50+ Terms)
+
+Common Buddhist terms with correct pronunciations:
+```javascript
+export const pronunciationMap = {
+  // Core terms
+  '般若': 'bō rě',
+  '菩萨': 'pú sà',
+  '菩提': 'pú tí',
+  '涅槃': 'niè pán',
+  '南无': 'nā mó',
+  '阿弥陀佛': 'ē mí tuó fó',
+  
+  // Characters
+  '观': 'guān',
+  '自在': 'zì zài',
+  '色': 'sè',
+  '空': 'kōng',
+  '受': 'shòu',
+  '想': 'xiǎng',
+  '行': 'xíng',
+  '识': 'shí',
+  
+  // Names
+  '舍利弗': 'shè lì fú',
+  '须菩提': 'xū pú tí',
+  '曼殊室利': 'màn shū shì lì',
+  
+  // Context-specific
+  '度': {
+    '度一切苦厄': 'dù',
+    default: 'dù'
+  },
+  
+  // ... more entries
+}
+```
+
+### Usage Example
+
+```javascript
+import { pronunciationMap } from '@/data/pronunciation-map.js'
+import { addPinyinAnnotation } from '@/utils/pronunciation.js'
+
+// Get pronunciation for a term
+const term = '般若'
+const pinyin = pronunciationMap[term]
+console.log(pinyin) // 'bō rě'
+
+// Add pinyin to scripture text
+const text = "观自在菩萨，行深般若波罗蜜多时"
+const annotated = addPinyinAnnotation(text)
+```
+
+---
+
+## Reading Progress Data Structure
+
+### localStorage Key: `readingProgress`
+
+```javascript
+{
+  // Progress per sutra
+  'xin-jing': {
+    sutraId: 'xin-jing',
+    currentChapter: 'full-text',
+    scrollPosition: 0.5,        // Scroll percentage (0-1)
+    lastReadAt: '2026-04-25T23:51:00Z',
+    completed: false
+  },
+  
+  'jin-gang-jing': {
+    sutraId: 'jin-gang-jing',
+    currentChapter: 'chapter-1',
+    scrollPosition: 0.25,
+    lastReadAt: '2026-04-24T10:30:00Z',
+    completed: false
+  }
+}
+```
+
+### Usage Example
+
+```javascript
+import { saveProgress, loadProgress, getProgress } from '@/utils/storage.js'
+
+// Save progress
+saveProgress('xin-jing', {
+  scrollPosition: 0.5,
+  currentChapter: 'full-text'
+})
+
+// Load progress
+const progress = loadProgress('xin-jing')
+
+// Get completion percentage
+const completion = progress.scrollPosition * 100
+```
+
+---
+
+## User Settings Data Structure
+
+### localStorage Key: `userSettings`
+
+```javascript
+{
+  fontSize: 18,                  // Font size in pixels (14-28)
+  theme: 'light',                // 'light' or 'dark'
+  ttsSpeed: 0.8,                 // TTS speed (0.5-2.0)
+  ttsPitch: 1.0,                 // TTS pitch (0.5-2.0)
+  showPinyin: true,              // Show/hide pinyin
+  autoPlayTTS: false,            // Auto-play TTS on page load
+  highlightMatches: true,        // Highlight dictionary terms
+  fontFamily: 'sans-serif',      // Font family preference
+  lineSpacing: 'loose'          // Line spacing (tight/base/loose/relaxed)
+}
+```
+
+### Default Settings
+
+```javascript
+const defaultSettings = {
+  fontSize: 18,
+  theme: 'light',
+  ttsSpeed: 0.8,
+  ttsPitch: 1.0,
+  showPinyin: true,
+  autoPlayTTS: false,
+  highlightMatches: true,
+  fontFamily: 'sans-serif',
+  lineSpacing: 'loose'
+}
+```
+
+### Usage Example
+
+```javascript
+import { saveSettings, loadSettings, updateSettings } from '@/utils/storage.js'
+
+// Load settings
+const settings = loadSettings()
+
+// Update a setting
+updateSettings({ fontSize: 20 })
+
+// Reset to default
+saveSettings(defaultSettings)
+```
+
+---
+
+## Chanting Statistics Data Structure
+
+### localStorage Key: `chantingStats`
+
+```javascript
+{
+  totalChants: 120,             // Total chant count
+  currentStreak: 5,              // Current day streak
+  longestStreak: 15,             // Longest streak ever
+  
+  // Daily stats
+  dailyStats: {
+    '2026-04-25': {
+      count: 3,
+      duration: 1800            // Duration in seconds
+    },
+    '2026-04-24': {
+      count: 2,
+      duration: 1200
+    }
+  },
+  
+  // Per-sutra stats
+  sutraStats: {
+    'xin-jing': {
+      totalCount: 50,
+      lastChantedAt: '2026-04-25T23:00:00Z'
+    }
+  }
+}
+```
+
+### Usage Example
+
+```javascript
+import { recordChant, getStats, getStreak } from '@/utils/storage.js'
+
+// Record a chant
+recordChant('xin-jing', 600) // Sutra ID, duration in seconds
+
+// Get overall stats
+const stats = getStats()
+
+// Get current streak
+const streak = getStreak()
+```
+
+---
+
+## Data Format Conventions
+
+### ID Format
+- Sutras: `kebab-case` (e.g., `xin-jing`, `jin-gang-jing`)
+- Chapters: `kebab-case` with prefix (e.g., `chapter-1`, `full-text`)
+- Dictionary terms: Chinese characters (e.g., `般若`, `菩萨`)
+
+### Date Format
+- Use ISO 8601: `YYYY-MM-DDTHH:mm:ssZ`
+- Example: `'2026-04-25T23:51:00Z'`
+
+### Number Format
+- All numbers are plain JavaScript `Number` type
+- Percentages: 0-1 (multiply by 100 for display)
+- Durations: seconds
+
+---
+
+## Data Loading Strategy
+
+### Tiered Loading (Planned for Production)
+
+**L1 - Core Data** (Immediate load on app start)
+- 50 most common dictionary terms
+- Basic pronunciation map
+- Sutra metadata
+
+**L2 - Extended Data** (Load on demand)
+- 500+ dictionary terms
+- Extended pronunciation map
+- Full sutra content
+
+**L3 - Complete Data** (Load in background)
+- Full dictionary (748k terms from FoJin API)
+- Complete pronunciation map
+- Historical texts
+
+### Caching Strategy
+
+- Build trie in Web Worker and cache in IndexedDB
+- Cache loaded dictionary terms in memory
+- Use localStorage for user data (progress, settings, stats)
+
+---
+
+## References
+
+- [src/data/sutras.js](mdc:src/data/sutras.js) - Complete sutra data
+- [src/data/dictionary.js](mdc:src/data/dictionary.js) - Complete dictionary
+- [src/data/pronunciation-map.js](mdc:src/data/pronunciation-map.js) - Complete pronunciation map
+- [src/utils/storage.js](mdc:src/utils/storage.js) - localStorage helpers

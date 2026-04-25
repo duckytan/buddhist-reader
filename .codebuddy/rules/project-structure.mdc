@@ -1,0 +1,64 @@
+---
+alwaysApply: true
+description: Project structure and key files guide
+---
+
+# Project Structure Guide
+
+## Project Overview
+Buddhist Scripture Reader (般若佛经阅读器) - A Zen-inspired reading platform built with Vue 3 + Vite + Vant.
+
+## Key Entry Points
+- **Main Application**: [src/main.js](mdc:src/main.js) - Application entry point
+- **Root Component**: [src/App.vue](mdc:src/App.vue) - Root Vue component
+- **Router**: [src/router/index.js](mdc:src/router/index.js) - Route definitions
+- **Data Files**: 
+  - [src/data/sutras.js](mdc:src/data/sutras.js) - Scripture data (3-5 classics for MVP)
+  - [src/data/dictionary.js](mdc:src/data/dictionary.js) - Buddhist terms dictionary (100+ terms)
+  - [src/data/pronunciation-map.js](mdc:src/data/pronunciation-map.js) - Multi-tone character mapping
+
+## Core Components
+- **BookCard**: [src/components/BookCard.vue](mdc:src/components/BookCard.vue) - Sutra card for bookshelf
+- **ReaderContent**: [src/components/ReaderContent.vue](mdc:src/components/ReaderContent.vue) - Reading content display
+- **DictionaryPopup**: [src/components/DictionaryPopup.vue](mdc:src/components/DictionaryPopup.vue) - Multi-terminal dictionary popup (mobile drawer / tablet tooltip / PC sidebar)
+- **AudioPlayer**: [src/components/AudioPlayer.vue](mdc:src/components/AudioPlayer.vue) - TTS audio controls
+- **ThemeToggle**: [src/components/ThemeToggle.vue](mdc:src/components/ThemeToggle.vue) - Theme switcher
+
+## Page Components
+- **Bookshelf**: [src/pages/Bookshelf.vue](mdc:src/pages/Bookshelf.vue) - Bookshelf page with grid layout
+- **Reader**: [src/pages/Reader.vue](mdc:src/pages/Reader.vue) - Reader page (core feature)
+- **Settings**: [src/pages/Settings.vue](mdc:src/pages/Settings.vue) - Settings page
+
+## State Management (Pinia)
+- **Settings Store**: [src/stores/settings.js](mdc:src/stores/settings.js) - User preferences (font size, theme, TTS speed, pronunciation toggle)
+- **Progress Store**: [src/stores/progress.js](mdc:src/stores/progress.js) - Reading progress persistence
+- **Theme Store**: [src/stores/theme.js](mdc:src/stores/theme.js) - Theme state (day/night mode)
+
+## Core Utilities
+- **Trie Tree**: [src/utils/trie.js](mdc:src/utils/trie.js) - Dictionary matching algorithm (buildTrie, findMatches, removeOverlaps)
+- **TTS Engine**: [src/utils/tts.js](mdc:src/utils/tts.js) - Web Speech API wrapper (TTSEngine class)
+- **Pronunciation**: [src/utils/pronunciation.js](mdc:src/utils/pronunciation.js) - Buddhist pronunciation mapping and annotation
+- **Storage**: [src/utils/storage.js](mdc:src/utils/storage.js) - localStorage helpers
+
+## Styles
+- **Variables**: [src/assets/styles/variables.scss](mdc:src/assets/styles/variables.scss) - SCSS variables (colors, fonts, spacing)
+- **Reset**: [src/assets/styles/reset.scss](mdc:src/assets/styles/reset.scss) - Global reset
+- **Global**: [src/assets/styles/global.scss](mdc:src/assets/styles/global.scss) - Global styles with mixins
+
+## Documentation
+- **Development Guide**: [docs/DEVELOPMENT_GUIDE.md](mdc:docs/DEVELOPMENT_GUIDE.md) - 43 detailed development tasks (5 phases, 13 days)
+- **Checklist**: [docs/CHECKLIST.md](mdc:docs/CHECKLIST.md) - 200+ development checklist items
+- **Acceptance**: [docs/ACCEPTANCE.md](mdc:docs/ACCEPTANCE.md) - Acceptance criteria with test scripts
+- **Dev Log**: [docs/DEVELOPMENT_LOG.md](mdc:docs/DEVELOPMENT_LOG.md) - Daily development log template
+- **Design System**: [docs/DESIGN.md](mdc:docs/DESIGN.md) - Complete Zen aesthetics design system
+- **Design Specs**: [DESIGN-BUDDHIST-READER.md](mdc:DESIGN-BUDDHIST-READER.md) - Detailed design specifications
+
+## Prototypes
+- [prototypes/mobile/](mdc:prototypes/mobile/) - Mobile UI prototypes (375×812)
+- [prototypes/tablet/](mdc:prototypes/tablet/) - Tablet UI prototypes (768×1024)
+- [prototypes/desktop/](mdc:prototypes/desktop/) - Desktop UI prototypes (1920×1080)
+
+## Configuration Files
+- [package.json](mdc:package.json) - Dependencies and scripts
+- [vite.config.js](mdc:vite.config.js) - Vite configuration
+- [CODEBUDDY.md](mdc:CODEBUDDY.md) - AI assistant guidance

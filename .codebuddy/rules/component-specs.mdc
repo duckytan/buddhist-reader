@@ -1,0 +1,784 @@
+---
+alwaysApply: false
+description: Component specifications and implementation details for all Vue components
+description: Detailed specifications for Vue components: BookCard, ReaderContent, DictionaryPopup, AudioPlayer, ThemeToggle
+---
+
+# Component Specifications
+
+## BookCard Component
+
+### File Location
+[src/components/BookCard.vue](mdc:src/components/BookCard.vue)
+
+### Purpose
+Display sutra information on the bookshelf with progress indicator.
+
+### Props
+
+```javascript
+{
+  sutra: {
+    type: Object,
+    required: true,
+    validator: (value) => {
+      return value.id && value.title && value.cover
+    }
+  },
+  progress: {
+    type: Number,
+    default: 0,
+    validator: (value) => value >= 0 && value <= 100
+  }
+}
+```
+
+### Events
+
+```javascript
+// Emits when card is clicked
+@click
+```
+
+### Slots
+
+```vue
+<template>
+  <div class="book-card" @click="handleClick">
+    <!-- Cover -->
+    <div class="book-cover">
+      <slot name="cover">
+        {{ sutra.cover }}
+      </slot>
+    </div>
+    
+    <!-- Title -->
+    <div class="book-title">
+      <slot name="title">
+        {{ sutra.title }}
+      </slot>
+    </div>
+    
+    <!-- Progress -->
+    <div class="book-progress" v-if="progress > 0">
+      <slot name="progress" :progress="progress">
+        <div class="progress-bar">
+          <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+        </div>
+        <span class="progress-text">{{ progress }}%</span>
+      </slot>
+    </div>
+  </div>
+</template>
+```
+
+### Responsive Behavior
+
+- **Mobile (< 600px)**: Full width card, compact layout
+- **Tablet (600-1024px)**: 2-column grid, medium card size
+- **Desktop (> 1024px)**: 3-4 column grid, large card size
+
+### Styling
+
+```scss
+.book-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  cursor: pointer;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-base);
+  }
+  
+  .book-cover {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: var(--space-3);
+  }
+  
+  .book-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    text-align: center;
+    margin-bottom: var(--space-2);
+  }
+  
+  .book-progress {
+    margin-top: var(--space-3);
+    
+    .progress-bar {
+      height: 4px;
+      background: var(--divider-color);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: var(--space-1);
+      
+      .progress-fill {
+        height: 100%;
+        background: var(--primary-color);
+        transition: width var(--transition-base);
+      }
+    }
+    
+    .progress-text {
+      font-size: var(--font-size-xs);
+      color: var(--text-hint);
+      text-align: center;
+      display: block;
+    }
+  }
+}
+```
+
+---
+
+## ReaderContent Component
+
+### File Location
+[src/components/ReaderContent.vue](mdc:src/components/ReaderContent.vue)
+
+### Purpose
+Display scripture content with dictionary highlighting and pinyin annotations.
+
+### Props
+
+```javascript
+{
+  content: {
+    type: String,
+    required: true
+  },
+  showPinyin: {
+    type: Boolean,
+    default: true
+  },
+  highlightMatches: {
+    type: Boolean,
+    default: true
+  },
+  currentSentence: {
+    type: Number,
+    default: -1
+  }
+}
+```
+
+### State
+
+```javascript
+const highlightedContent = ref('')
+const trie = ref(null)
+const matches = ref([])
+```
+
+### Methods
+
+```javascript
+// Initialize trie with dictionary
+async function initTrie() {
+  const dictionary = await import('@/data/dictionary.js')
+  trie.value = buildTrie(dictionary.default)
+}
+
+// Find and highlight dictionary matches
+function highlightDictionary(text) {
+  if (!highlightMatches.value || !trie.value) return text
+  
+  const matches = findMatches(trie.value, text)
+  const nonOverlapping = removeOverlaps(matches)
+  
+  return renderHighlights(text, nonOverlapping)
+}
+
+// Render highlighted text
+function renderHighlights(text, matches) {
+  if (matches.length === 0) return text
+  
+  let result = ''
+  let lastIndex = 0
+  
+  matches.forEach(match => {
+    // Add text before match
+    result += text.substring(lastIndex, match.start)
+    
+    // Add highlighted term
+    result += `<span class="dict-term" data-term="${match.data.term}">${text.substring(match.start, match.end)}</span>`
+    
+    lastIndex = match.end
+  })
+  
+  // Add remaining text
+  result += text.substring(lastIndex)
+  
+  return result
+}
+```
+
+### Events
+
+```javascript
+// Emits when dictionary term is clicked
+@term-click
+// Emits when sentence changes
+@sentence-change
+```
+
+### Styling
+
+```scss
+.reader-content {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-loose);
+  color: var(--text-primary);
+  padding: var(--space-6);
+  text-align: justify;
+  
+  ruby {
+    rt {
+      font-size: 0.6em;
+      color: var(--text-secondary);
+      font-weight: normal;
+      text-align: center;
+    }
+    
+    &.hide-pinyin rt {
+      display: none;
+    }
+  }
+  
+  .dict-term {
+    background: var(--highlight-bg);
+    padding: 2px 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    
+    &:hover {
+      background: darken(var(--highlight-bg), 10%);
+    }
+  }
+  
+  .current-sentence {
+    background: var(--highlight-bg);
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+  }
+  
+  p {
+    margin-bottom: var(--space-6);
+  }
+}
+```
+
+---
+
+## DictionaryPopup Component
+
+### File Location
+[src/components/DictionaryPopup.vue](mdc:src/components/DictionaryPopup.vue)
+
+### Purpose
+Display dictionary entry with multi-terminal responsive design (mobile drawer / tablet tooltip / PC sidebar).
+
+### Props
+
+```javascript
+{
+  visible: {
+    type: Boolean,
+    required: true
+  },
+  termData: {
+    type: Object,
+    required: true
+  },
+  position: {
+    type: Object,
+    default: () => ({ x: 0, y: 0 })
+  }
+}
+```
+
+### Events
+
+```javascript
+@close
+```
+
+### Responsive Detection
+
+```javascript
+import { useWindowSize } from '@vueuse/core'
+
+const { width } = useWindowSize()
+const isMobile = computed(() => width.value < 768)
+const isTablet = computed(() => width.value >= 768 && width.value < 1024)
+const isDesktop = computed(() => width.value >= 1024)
+
+// Popup position based on device
+const popupPosition = computed(() => {
+  if (isMobile.value) return 'bottom'
+  if (isTablet.value) return 'bubble'
+  return 'right'
+})
+```
+
+### Template Structure
+
+```vue
+<template>
+  <teleport to="body">
+    <transition :name="transitionName">
+      <van-popup
+        v-if="visible"
+        :position="popupPosition"
+        :style="popupStyle"
+        @click-overlay="$emit('close')"
+      >
+        <!-- Mobile: Bottom drawer -->
+        <div v-if="isMobile" class="dict-popup mobile">
+          <div class="popup-header">
+            <h3 class="term-title">{{ termData.term }}</h3>
+            <van-icon name="cross" @click="$emit('close')" />
+          </div>
+          <div class="popup-content">
+            <!-- Content here -->
+          </div>
+        </div>
+        
+        <!-- Tablet: Bubble -->
+        <div v-else-if="isTablet" class="dict-popup tablet" :style="bubbleStyle">
+          <!-- Content here -->
+        </div>
+        
+        <!-- Desktop: Sidebar -->
+        <div v-else class="dict-popup desktop">
+          <!-- Content here -->
+        </div>
+      </van-popup>
+    </transition>
+  </teleport>
+</template>
+```
+
+### Styling
+
+```scss
+.dict-popup {
+  &.mobile {
+    height: 60vh;
+    
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--divider-color);
+      
+      .term-title {
+        font-size: var(--font-size-xl);
+        font-weight: var(--font-weight-semibold);
+      }
+    }
+    
+    .popup-content {
+      padding: var(--space-4);
+      overflow-y: auto;
+    }
+  }
+  
+  &.tablet {
+    position: fixed;
+    width: 320px;
+    max-width: 90vw;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+  }
+  
+  &.desktop {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 400px;
+    height: 100vh;
+    background: var(--bg-card);
+    border-left: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+  }
+}
+```
+
+---
+
+## AudioPlayer Component
+
+### File Location
+[src/components/AudioPlayer.vue](mdc:src/components/AudioPlayer.vue)
+
+### Purpose
+TTS playback controls with play/pause/stop and sentence highlighting.
+
+### Props
+
+```javascript
+{
+  text: {
+    type: String,
+    required: true
+  },
+  speed: {
+    type: Number,
+    default: 0.8,
+    validator: (value) => value >= 0.5 && value <= 2.0
+  },
+  pitch: {
+    type: Number,
+    default: 1.0,
+    validator: (value) => value >= 0.5 && value <= 2.0
+  }
+}
+```
+
+### Events
+
+```javascript
+// Emits when playing state changes
+@play
+@pause
+@stop
+// Emits when current sentence changes
+@sentence-change
+```
+
+### State
+
+```javascript
+import { ttsEngine } from '@/utils/tts.js'
+
+const isPlaying = ref(false)
+const isPaused = ref(false)
+const currentSentence = ref(0)
+
+// Listen to TTS events
+ttsEngine.onSentenceChange = (index) => {
+  currentSentence.value = index
+  emit('sentence-change', index)
+}
+
+// Update status
+function updateStatus() {
+  const status = ttsEngine.getStatus()
+  isPlaying.value = status.isPlaying
+  isPaused.value = status.isPaused
+}
+```
+
+### Methods
+
+```javascript
+function play() {
+  ttsEngine.speak(props.text, {
+    rate: props.speed,
+    pitch: props.pitch
+  })
+  emit('play')
+  updateStatus()
+}
+
+function pause() {
+  ttsEngine.pause()
+  emit('pause')
+  updateStatus()
+}
+
+function resume() {
+  ttsEngine.resume()
+  updateStatus()
+}
+
+function stop() {
+  ttsEngine.stop()
+  emit('stop')
+  currentSentence.value = 0
+  updateStatus()
+}
+```
+
+### Template
+
+```vue
+<template>
+  <div class="audio-player">
+    <!-- Progress indicator -->
+    <div class="player-progress">
+      <span class="sentence-indicator">
+        {{ currentSentence }}/{{ totalSentences }}
+      </span>
+    </div>
+    
+    <!-- Controls -->
+    <div class="player-controls">
+      <van-button
+        :icon="isPaused ? 'play-o' : 'pause-o'"
+        @click="isPaused ? resume() : pause()"
+        :disabled="!isPlaying"
+      >
+        {{ isPaused ? '继续' : '暂停' }}
+      </van-button>
+      
+      <van-button
+        icon="play-circle-o"
+        @click="play"
+        :disabled="isPlaying && !isPaused"
+      >
+        播放
+      </van-button>
+      
+      <van-button
+        icon="cross"
+        @click="stop"
+        :disabled="!isPlaying"
+      >
+        停止
+      </van-button>
+    </div>
+  </div>
+</template>
+```
+
+### Styling
+
+```scss
+.audio-player {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  
+  .player-progress {
+    text-align: center;
+    
+    .sentence-indicator {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+  }
+  
+  .player-controls {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    
+    .van-button {
+      flex: 1;
+      max-width: 120px;
+    }
+  }
+}
+```
+
+---
+
+## ThemeToggle Component
+
+### File Location
+[src/components/ThemeToggle.vue](mdc:src/components/ThemeToggle.vue)
+
+### Purpose
+Toggle between light and dark themes.
+
+### Props
+
+```javascript
+{
+  modelValue: {
+    type: String,
+    default: 'light',
+    validator: (value) => ['light', 'dark'].includes(value)
+  }
+}
+```
+
+### Events
+
+```javascript
+@update:modelValue
+```
+
+### Methods
+
+```javascript
+function toggleTheme() {
+  const newTheme = props.modelValue === 'light' ? 'dark' : 'light'
+  emit('update:modelValue', newTheme)
+  
+  // Apply theme to root element
+  if (newTheme === 'dark') {
+    document.documentElement.classList.add('dark-mode')
+  } else {
+    document.documentElement.classList.remove('dark-mode')
+  }
+  
+  // Save to localStorage
+  localStorage.setItem('theme', newTheme)
+}
+```
+
+### Template
+
+```vue
+<template>
+  <div class="theme-toggle" @click="toggleTheme">
+    <van-icon :name="themeIcon" size="24" />
+    <span class="theme-label">{{ themeLabel }}</span>
+  </div>
+</template>
+```
+
+### State
+
+```javascript
+const themeIcon = computed(() => {
+  return props.modelValue === 'light' ? 'sun-o' : 'moon-o'
+})
+
+const themeLabel = computed(() => {
+  return props.modelValue === 'light' ? '日间模式' : '夜间模式'
+})
+```
+
+### Styling
+
+```scss
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  
+  &:hover {
+    background: var(--divider-color);
+  }
+  
+  .theme-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+  }
+}
+```
+
+---
+
+## Component Integration Example
+
+### Reader Page
+
+```vue
+<script setup>
+import { ref, onMounted } from 'vue'
+import ReaderContent from '@/components/ReaderContent.vue'
+import AudioPlayer from '@/components/AudioPlayer.vue'
+import DictionaryPopup from '@/components/DictionaryPopup.vue'
+import { loadProgress, saveProgress } from '@/utils/storage.js'
+
+const content = ref('')
+const selectedTerm = ref(null)
+const showDictPopup = ref(false)
+
+onMounted(async () => {
+  // Load scripture content
+  content.value = await loadScripture()
+})
+
+function handleTermClick(term, position) {
+  selectedTerm.value = term
+  showDictPopup.value = true
+}
+</script>
+
+<template>
+  <div class="reader-page">
+    <ReaderContent
+      :content="content"
+      @term-click="handleTermClick"
+    />
+    
+    <AudioPlayer :text="content" />
+    
+    <DictionaryPopup
+      v-if="showDictPopup"
+      :visible="showDictPopup"
+      :term-data="selectedTerm"
+      @close="showDictPopup = false"
+    />
+  </div>
+</template>
+```
+
+---
+
+## Common Component Patterns
+
+### 1. Props Validation
+Always validate props with `type` and `required`/`default`:
+```javascript
+{
+  title: {
+    type: String,
+    required: true
+  },
+  count: {
+    type: Number,
+    default: 0
+  }
+}
+```
+
+### 2. Emit Naming
+Use `update:modelValue` for two-way binding:
+```javascript
+emit('update:modelValue', newValue)
+```
+
+### 3. Computed Properties
+Use computed for derived state:
+```javascript
+const isMobile = computed(() => width.value < 768)
+```
+
+### 4. Lifecycle Hooks
+Use `onMounted` for initialization:
+```javascript
+onMounted(() => {
+  // Initialize component
+})
+```
+
+### 5. Responsive Design
+Use CSS variables and mixins:
+```scss
+.element {
+  padding: var(--space-4);
+  
+  @include breakpoint(mobile) {
+    padding: var(--space-3);
+  }
+}
+```
+
+---
+
+## References
+
+- [Design System](mdc:.codebuddy/rules/design-system.mdc) - Complete design specifications
+- [Data Structures](mdc:.codebuddy/rules/data-structures.mdc) - Component data formats
+- [Core Algorithms](mdc:.codebuddy/rules/core-algorithms.mdc) - Utility functions
