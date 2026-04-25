@@ -52,6 +52,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { sutras } from '@/data/sutras'
+import { dynamicSutras } from '@/data/sutras-config'
 import { createDynamicSutra } from '@/utils/sutra-loader'
 import ReaderContent from '@/components/ReaderContent.vue'
 import AudioPlayer from '@/components/AudioPlayer.vue'
@@ -72,19 +73,11 @@ const showPinyin = computed(() => settingsStore.showPinyin)
 const selectedTerm = ref(null)
 const popupPosition = ref({ x: 0, y: 0 })
 
-// 动态经文配置（可从后端或配置文件加载）
-const dynamicSutraConfigs = {
-  'xin-jing-dynamic': {
-    id: 'xin-jing-dynamic',
-    title: '心经 (动态)',
-    fullName: '《般若波罗蜜多心经》',
-    translator: '唐三藏法师玄奘译',
-    cover: '📖',
-    description: '般若经类中最短的一部，共260字，是大乘佛教的核心经典之一',
-    wordCount: 260,
-    chapters: [{ title: '全文', url: '/sutras/xin-jing.txt' }]
-  }
-}
+// 将动态经文配置转换为对象，方便按 ID 查找
+const dynamicSutraConfigs = {}
+dynamicSutras.forEach(sutra => {
+  dynamicSutraConfigs[sutra.id] = sutra
+})
 
 const loadSutra = async () => {
   loading.value = true
