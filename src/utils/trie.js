@@ -32,7 +32,7 @@ export function buildTrie(dictionary) {
 }
 
 /**
- * 在文本中查找所有匹配的词典词条
+ * 在文本中查找所有匹配的词典词条（只匹配词组，不匹配单字）
  * @param {Object} trie - Trie树的根节点
  * @param {String} text - 待匹配的文本
  * @returns {Array} 匹配结果数组，每项包含 { term, start, end }
@@ -50,8 +50,8 @@ export function findMatches(trie, text) {
         node = node[char]
         j++
 
-        // 如果匹配到完整词条，记录位置
-        if (node.isEnd && node.term) {
+        // 如果匹配到完整词条，且词长度大于1（跳过单字），记录位置
+        if (node.isEnd && node.term && node.term.length > 1) {
           matches.push({
             term: node.term,
             start: i,
