@@ -6,6 +6,9 @@
       </button>
       <h1 class="title">{{ currentSutra?.fullName }}</h1>
       <div class="header-actions">
+        <button class="chapter-btn" @click="showChapterDrawer = true">
+          ☷
+        </button>
         <ThemeToggle />
       </div>
     </header>
@@ -24,7 +27,11 @@
 
     <!-- 正常状态 -->
     <template v-else>
-      <div class="reader-content">
+      <div 
+        ref="contentRef"
+        class="reader-content"
+        @scroll="handleScroll"
+      >
         <ReaderContent
           :sutra="currentSutra"
           :show-pinyin="showPinyin"
@@ -32,9 +39,17 @@
         />
       </div>
 
+      <!-- 进度跳转控制 -->
+      <div class="jump-section">
+        <JumpControl
+          v-model="scrollPercent"
+          @jump="handleJump"
+        />
+      </div>
+
       <div class="reader-footer">
         <AudioPlayer
-          :text="currentSutra?.chapters[0]?.content"
+          :text="currentSutra?.chapters[currentChapterIndex]?.content"
         />
       </div>
 
@@ -44,12 +59,20 @@
         :position="popupPosition"
         @close="handleClosePopup"
       />
+
+      <!-- 章节导航抽屉 -->
+      <ChapterDrawer
+        v-model="showChapterDrawer"
+        :chapters="currentSutra?.chapters || []"
+        :current-chapter-index="currentChapterIndex"
+        @chapter-change="handleChapterChange"
+      />
     </template>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { sutras } from '@/data/sutras'
 import { dynamicSutras } from '@/data/sutras-config'
@@ -58,11 +81,15 @@ import ReaderContent from '@/components/ReaderContent.vue'
 import AudioPlayer from '@/components/AudioPlayer.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import DictionaryPopup from '@/components/DictionaryPopup.vue'
+import ChapterDrawer from '@/components/ChapterDrawer.vue'
+import JumpControl from '@/components/JumpControl.vue'
 import { useSettingsStore } from '@/stores/settings'
+import { useProgressStore } from '@/stores/progress'
 
 const route = useRoute()
 const router = useRouter()
 const settingsStore = useSettingsStore()
+const progressStore = useProgressStore()
 
 const currentSutra = ref(null)
 const loading = ref(true)
@@ -72,6 +99,14 @@ const showPinyin = computed(() => settingsStore.showPinyin)
 
 const selectedTerm = ref(null)
 const popupPosition = ref({ x: 0, y: 0 })
+
+const contentRef = ref(null)
+const scrollPercent = ref(0)
+const currentChapterIndex = ref(0)
+const showChapterDrawer = ref(false)
+const savedProgress = ref(null)
+
+let scrollTimeout = null
 
 // 将动态经文配置转换为对象，方便按 ID 查找
 const dynamicSutraConfigs = {}
@@ -97,6 +132,19 @@ const loadSutra = async () => {
     
     if (sutra) {
       currentSutra.value = sutra
+      
+      // 加载阅读进度
+      const progress = progressStore.getProgress(route.params.id)
+      savedProgress.value = progress
+      
+      currentChapterIndex.value = progress.chapterIndex || 0
+      scrollPercent.value = progress.percentage || 0
+      
+      // 等待DOM更新后恢复滚动位置
+      await nextTick()
+      if (progress.scrollPosition && contentRef.value) {
+        contentRef.value.scrollTop = progress.scrollPosition
+      }
     } else {
       error.value = '经文未找到'
     }
@@ -108,7 +156,63 @@ const loadSutra = async () => {
   }
 }
 
+const handleScroll = () => {
+  if (!contentRef.value) return
+  
+  // 节流处理，避免频繁保存
+  if (scrollTimeout) clearTimeout(scrollTimeout)
+  
+  scrollTimeout = setTimeout(() => {
+    const scrollTop = contentRef.value.scrollTop
+    const scrollHeight = contentRef.value.scrollHeight
+    const clientHeight = contentRef.value.clientHeight
+    
+    // 计算滚动百分比
+    const percent = (scrollTop / (scrollHeight - clientHeight)) * 100
+    scrollPercent.value = Math.min(100, Math.max(0, percent))
+    
+    // 保存进度
+    saveReadingProgress()
+  }, 300)
+}
+
+const saveReadingProgress = () => {
+  if (!contentRef.value || !currentSutra.value) return
+  
+  progressStore.saveProgress(currentSutra.value.id, {
+    percentage: scrollPercent.value,
+    chapterIndex: currentChapterIndex.value,
+    scrollPosition: contentRef.value.scrollTop
+  })
+}
+
+const handleJump = (percent) => {
+  if (!contentRef.value) return
+  
+  const scrollHeight = contentRef.value.scrollHeight
+  const clientHeight = contentRef.value.clientHeight
+  const targetScroll = (percent / 100) * (scrollHeight - clientHeight)
+  
+  contentRef.value.scrollTo({
+    top: targetScroll,
+    behavior: 'smooth'
+  })
+}
+
+const handleChapterChange = (index) => {
+  currentChapterIndex.value = index
+  
+  // 滚动到对应章节
+  const chapterElements = contentRef.value?.querySelectorAll('.chapter')
+  if (chapterElements && chapterElements[index]) {
+    chapterElements[index].scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+  
+  saveReadingProgress()
+}
+
 const handleBack = () => {
+  saveReadingProgress()
   router.back()
 }
 
@@ -123,6 +227,12 @@ const handleClosePopup = () => {
 
 onMounted(() => {
   loadSutra()
+})
+
+onBeforeUnmount(() => {
+  // 组件卸载前保存进度
+  saveReadingProgress()
+  if (scrollTimeout) clearTimeout(scrollTimeout)
 })
 </script>
 
@@ -170,6 +280,13 @@ onMounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-4);
+  scroll-behavior: smooth;
+}
+
+.jump-section {
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  padding: var(--space-3) var(--space-4);
 }
 
 .reader-footer {
@@ -178,6 +295,7 @@ onMounted(() => {
   padding: var(--space-4);
   position: sticky;
   bottom: 0;
+  z-index: 9;
 }
 
 .loading-container,

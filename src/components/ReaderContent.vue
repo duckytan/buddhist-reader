@@ -1,14 +1,21 @@
 <template>
   <div class="reader-content" :style="{ fontSize: `${fontSize}px` }">
-    <div class="chapter-title">
-      <h2>{{ sutra?.chapters[0]?.title }}</h2>
-    </div>
-
     <div
-      class="content-text"
-      v-html="formattedContent"
-      @click="handleContentClick"
-    ></div>
+      v-for="(chapter, index) in sutra?.chapters || []"
+      :key="index"
+      class="chapter"
+      :data-chapter-index="index"
+    >
+      <div class="chapter-title">
+        <h2>{{ chapter.title }}</h2>
+      </div>
+
+      <div
+        class="content-text"
+        v-html="formatChapterContent(chapter.content)"
+        @click="handleContentClick"
+      ></div>
+    </div>
   </div>
 </template>
 
@@ -40,35 +47,35 @@ const fontSize = computed(() => settingsStore.fontSize)
 
 const trie = ref(null)
 
-const formattedContent = computed(() => {
-  if (!props.sutra?.chapters[0]?.content) return ''
+const formatChapterContent = (content) => {
+  if (!content) return ''
 
-  let content = props.sutra.chapters[0].content
+  let formatted = content
 
   // 添加拼音标注
   if (props.showPinyin) {
-    content = addPinyinAnnotation(content)
+    formatted = addPinyinAnnotation(formatted)
   }
 
   // 词典高亮
   if (trie.value) {
-    const matches = findMatches(trie.value, content)
+    const matches = findMatches(trie.value, formatted)
     const uniqueMatches = removeOverlaps(matches)
 
     // 按位置从后往前替换，避免索引变化
     uniqueMatches.reverse().forEach(match => {
       const term = dictionary.find(d => d.term === match.term)
       if (term) {
-        const before = content.substring(0, match.start)
-        const after = content.substring(match.end)
+        const before = formatted.substring(0, match.start)
+        const after = formatted.substring(match.end)
         const highlight = `<span class="dict-term" data-term="${match.term}">${match.term}</span>`
-        content = before + highlight + after
+        formatted = before + highlight + after
       }
     })
   }
 
-  return content
-})
+  return formatted
+}
 
 const handleContentClick = (event) => {
   const target = event.target
@@ -79,22 +86,10 @@ const handleContentClick = (event) => {
   }
 }
 
-const saveProgress = () => {
-  if (props.sutra?.id) {
-    progressStore.saveProgress(props.sutra.id, 100) // MVP: 简化处理，标记为已阅读
-  }
-}
-
 onMounted(() => {
   // 构建 Trie 树
   trie.value = buildTrie(dictionary)
-  saveProgress()
 })
-
-// 监听内容变化，自动保存进度
-watch(() => props.sutra?.id, () => {
-  saveProgress()
-}, { immediate: true })
 </script>
 
 <style scoped lang="scss">
@@ -105,9 +100,18 @@ watch(() => props.sutra?.id, () => {
   line-height: var(--line-height-loose);
 }
 
+.chapter {
+  margin-bottom: var(--space-8);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
 .chapter-title {
   text-align: center;
   margin-bottom: var(--space-6);
+  padding-top: var(--space-6);
 
   h2 {
     font-size: var(--font-size-2xl);
@@ -120,6 +124,7 @@ watch(() => props.sutra?.id, () => {
   color: var(--text-primary);
   white-space: pre-wrap;
   word-break: break-word;
+  text-align: justify;
 
   :deep(.dict-term) {
     background-color: var(--highlight-bg);
