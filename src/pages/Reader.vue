@@ -39,15 +39,30 @@
         />
       </div>
 
-      <!-- 进度跳转控制 -->
-      <div class="jump-section">
-        <JumpControl
-          v-model="scrollPercent"
-          @jump="handleJump"
-        />
-      </div>
-
+      <!-- 底部工具栏 -->
       <div class="reader-footer">
+        <div class="footer-toolbar">
+          <!-- 进度条 -->
+          <div class="progress-bar-container">
+            <div class="progress-bar" @click="handleProgressBarClick">
+              <div class="progress-fill" :style="{ width: `${scrollPercent}%` }"></div>
+              <div class="progress-handle" :style="{ left: `${scrollPercent}%` }"></div>
+            </div>
+            <span class="progress-text">{{ Math.round(scrollPercent) }}%</span>
+          </div>
+          
+          <!-- 工具按钮 -->
+          <div class="toolbar-buttons">
+            <button class="toolbar-btn" @click="showJumpDialog = true" title="跳转到">
+              ↗
+            </button>
+            <button class="toolbar-btn" @click="showChapterDrawer = true" title="目录">
+              ☷
+            </button>
+          </div>
+        </div>
+        
+        <!-- 音频播放器 -->
         <AudioPlayer
           :text="currentSutra?.chapters[currentChapterIndex]?.content"
         />
@@ -67,6 +82,38 @@
         :current-chapter-index="currentChapterIndex"
         @chapter-change="handleChapterChange"
       />
+
+      <!-- 跳转对话框 -->
+      <van-dialog
+        v-model:show="showJumpDialog"
+        title="跳转到"
+        show-cancel-button
+        @confirm="handleJumpConfirm"
+      >
+        <div class="jump-dialog-content">
+          <div class="jump-input-row">
+            <input
+              v-model="jumpInputValue"
+              type="number"
+              min="0"
+              max="100"
+              class="jump-input"
+              placeholder="0-100"
+            />
+            <span class="jump-unit">%</span>
+          </div>
+          <div class="quick-jump-buttons">
+            <button
+              v-for="percent in [25, 50, 75]"
+              :key="percent"
+              class="quick-jump-btn"
+              @click="jumpInputValue = percent"
+            >
+              {{ percent }}%
+            </button>
+          </div>
+        </div>
+      </van-dialog>
     </template>
   </div>
 </template>
@@ -82,7 +129,6 @@ import AudioPlayer from '@/components/AudioPlayer.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import DictionaryPopup from '@/components/DictionaryPopup.vue'
 import ChapterDrawer from '@/components/ChapterDrawer.vue'
-import JumpControl from '@/components/JumpControl.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useProgressStore } from '@/stores/progress'
 
@@ -104,6 +150,8 @@ const contentRef = ref(null)
 const scrollPercent = ref(0)
 const currentChapterIndex = ref(0)
 const showChapterDrawer = ref(false)
+const showJumpDialog = ref(false)
+const jumpInputValue = ref(0)
 const savedProgress = ref(null)
 
 let scrollTimeout = null
@@ -186,6 +234,16 @@ const saveReadingProgress = () => {
   })
 }
 
+const handleProgressBarClick = (e) => {
+  if (!contentRef.value) return
+  
+  const rect = e.currentTarget.getBoundingClientRect()
+  const percent = ((e.clientX - rect.left) / rect.width) * 100
+  const clampedPercent = Math.max(0, Math.min(100, percent))
+  
+  handleJump(clampedPercent)
+}
+
 const handleJump = (percent) => {
   if (!contentRef.value) return
   
@@ -197,6 +255,15 @@ const handleJump = (percent) => {
     top: targetScroll,
     behavior: 'smooth'
   })
+}
+
+const handleJumpConfirm = () => {
+  let percent = parseInt(jumpInputValue.value)
+  if (isNaN(percent)) percent = 0
+  percent = Math.max(0, Math.min(100, percent))
+  
+  handleJump(percent)
+  showJumpDialog.value = false
 }
 
 const handleChapterChange = (index) => {
@@ -283,19 +350,144 @@ onBeforeUnmount(() => {
   scroll-behavior: smooth;
 }
 
-.jump-section {
-  background-color: var(--bg-card);
-  border-top: 1px solid var(--border-color);
-  padding: var(--space-3) var(--space-4);
-}
-
 .reader-footer {
   background-color: var(--bg-card);
   border-top: 1px solid var(--border-color);
-  padding: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   position: sticky;
   bottom: 0;
   z-index: 9;
+}
+
+.footer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.progress-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background-color: var(--divider-color);
+  border-radius: var(--radius-full);
+  position: relative;
+  cursor: pointer;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-base);
+}
+
+.progress-handle {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background-color: var(--primary-color);
+  border: 2px solid var(--bg-card);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+  pointer-events: none;
+}
+
+.progress-text {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  min-width: 40px;
+  text-align: right;
+}
+
+.toolbar-buttons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.toolbar-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 18px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+}
+
+.jump-dialog-content {
+  padding: var(--space-4);
+}
+
+.jump-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.jump-input {
+  width: 100px;
+  padding: var(--space-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xl);
+  text-align: center;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+}
+
+.jump-unit {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+}
+
+.quick-jump-buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.quick-jump-btn {
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
 }
 
 .loading-container,

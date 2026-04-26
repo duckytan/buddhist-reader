@@ -1,9 +1,8 @@
 <template>
-  <van-drawer
+  <van-popup
     v-model:show="showDrawer"
-    :lock-scroll="true"
     position="left"
-    :style="{ width: isMobile ? '80%' : '320px' }"
+    :style="{ width: isMobile ? '80%' : '320px', height: '100%' }"
     class="chapter-drawer"
   >
     <div class="drawer-header">
@@ -30,7 +29,7 @@
         </div>
       </div>
     </div>
-  </van-drawer>
+  </van-popup>
 </template>
 
 <script setup>
@@ -77,7 +76,9 @@ const handleChapterClick = (index) => {
 
 <style scoped lang="scss">
 .chapter-drawer {
-  background-color: var(--bg-page);
+  background-color: var(--bg-page) !important;
+  display: flex;
+  flex-direction: column;
 }
 
 .drawer-header {
@@ -112,7 +113,9 @@ const handleChapterClick = (index) => {
 }
 
 .drawer-content {
+  flex: 1;
   padding: var(--space-4);
+  overflow-y: auto;
 }
 
 .current-chapter {
