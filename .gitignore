@@ -48,3 +48,9 @@ Thumbs.db
 
 # Reference files (not part of the app)
 reference/
+
+# MDict builder and temporary files
+mdict/*.zip
+mdict/*/
+mdict/*.mdd
+.spec-workflow/
