@@ -10,11 +10,23 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000,
+    port: 5173,
     host: true
   },
   build: {
     outDir: 'dist',
     sourcemap: true
+  },
+  optimizeDeps: {
+    include: ['mdict-ts'],
+    esbuildOptions: {
+      // Node.js global to browser globalThis
+      define: {
+        global: 'globalThis'
+      }
+    }
+  },
+  commonjsOptions: {
+    transformMixedEsModules: true
   }
 })

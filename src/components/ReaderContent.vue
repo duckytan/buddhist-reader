@@ -25,7 +25,7 @@ import { buildTrie, findMatches, removeOverlaps } from '@/utils/trie'
 import { addPinyinAnnotation } from '@/utils/pronunciation'
 import { dictionary } from '@/data/dictionary'
 import { useSettingsStore } from '@/stores/settings'
-import { useProgressStore } from '@/stores/progress'
+import { useDictionariesStore } from '@/stores/dictionaries'
 
 const props = defineProps({
   sutra: {
@@ -41,54 +41,152 @@ const props = defineProps({
 const emit = defineEmits(['term-click'])
 
 const settingsStore = useSettingsStore()
-const progressStore = useProgressStore()
+const dictionariesStore = useDictionariesStore()
 
 const fontSize = computed(() => settingsStore.fontSize)
 
-const trie = ref(null)
+// 外部词典词条（异步加载）
+const externalEntries = ref([])
+const isLoadingExternal = ref(false)
+
+// 内置词典的 Trie（每次渲染时重建，因为词典是静态的）
+const internalTrie = computed(() => buildTrie(dictionary))
+
+// 外部词典的 Trie（从异步加载的词条构建）
+const externalTrie = computed(() => {
+  if (externalEntries.value.length === 0) return null
+  return buildTrie(externalEntries.value)
+})
+
+// 加载外部词典词条
+async function loadExternalDictEntries() {
+  if (dictionariesStore.enabledCount === 0) {
+    externalEntries.value = []
+    return
+  }
+
+  isLoadingExternal.value = true
+  try {
+    const entries = await dictionariesStore.getAllEnabledDictEntries()
+    externalEntries.value = entries
+  } catch (e) {
+    console.warn('Failed to load external dict entries:', e)
+    externalEntries.value = []
+  } finally {
+    isLoadingExternal.value = false
+  }
+}
+
+// 监听词典切换，重新加载词条
+watch(
+  () => dictionariesStore.enabledDictIds,
+  () => {
+    // 清除缓存以确保重新加载
+    dictionariesStore.clearDictEntriesCache()
+    loadExternalDictEntries()
+  },
+  { deep: true }
+)
 
 const formatChapterContent = (content) => {
   if (!content) return ''
 
   let formatted = content
 
-  // 添加拼音标注
+  // 1. 添加拼音标注
   if (props.showPinyin) {
     formatted = addPinyinAnnotation(formatted)
   }
 
-  // 词典高亮
-  if (trie.value) {
-    const matches = findMatches(trie.value, formatted)
-    const uniqueMatches = removeOverlaps(matches)
+  // 2. 收集所有匹配
+  const allMatches = []
 
-    // 按位置从后往前替换，避免索引变化
-    uniqueMatches.reverse().forEach(match => {
-      const term = dictionary.find(d => d.term === match.term)
-      if (term) {
-        const before = formatted.substring(0, match.start)
-        const after = formatted.substring(match.end)
-        const highlight = `<span class="dict-term" data-term="${match.term}">${match.term}</span>`
-        formatted = before + highlight + after
-      }
-    })
+  // 内置词典匹配
+  if (internalTrie.value) {
+    const internalMatches = findMatches(internalTrie.value, formatted)
+    for (const m of internalMatches) {
+      allMatches.push({
+        ...m,
+        _source: 'builtin',
+        _dictId: '__builtin__'
+      })
+    }
+  }
+
+  // 外部词典匹配（MDX）
+  if (externalTrie.value) {
+    const externalMatches = findMatches(externalTrie.value, formatted)
+    for (const m of externalMatches) {
+      allMatches.push({
+        ...m,
+        _source: 'external',
+        _dictId: m._dictId || '__external__'
+      })
+    }
+  }
+
+  // 3. 去重（最长匹配优先）
+  const uniqueMatches = removeOverlapsWithSource(allMatches)
+
+  // 4. 从后往前替换，避免索引问题
+  uniqueMatches.sort((a, b) => b.start - a.start)
+
+  for (const match of uniqueMatches) {
+    const before = formatted.substring(0, match.start)
+    const after = formatted.substring(match.end)
+    const sources = match._dictId
+    const highlight = `<span class="dict-term" data-term="${match.term}" data-source="${sources}">${match.term}</span>`
+    formatted = before + highlight + after
   }
 
   return formatted
+}
+
+/**
+ * 带来源去重的 removeOverlaps
+ */
+function removeOverlapsWithSource(matches) {
+  if (matches.length === 0) return []
+
+  // 按起始位置排序，起始相同则按长度降序
+  matches.sort((a, b) => {
+    if (a.start !== b.start) {
+      return a.start - b.start
+    }
+    return (b.end - b.start) - (a.end - a.start)
+  })
+
+  const result = []
+  let lastEnd = -1
+
+  for (const match of matches) {
+    if (match.start >= lastEnd) {
+      result.push(match)
+      lastEnd = match.end
+    }
+    // 重叠的被跳过（因为更长的已在前面）
+  }
+
+  return result
 }
 
 const handleContentClick = (event) => {
   const target = event.target
   if (target.classList.contains('dict-term')) {
     const term = target.dataset.term
+    const source = target.dataset.source
     const rect = target.getBoundingClientRect()
     emit('term-click', term, rect.left, rect.top)
   }
 }
 
-onMounted(() => {
-  // 构建 Trie 树
-  trie.value = buildTrie(dictionary)
+onMounted(async () => {
+  // 初始化预置词典
+  if (!dictionariesStore.isInitialized) {
+    await dictionariesStore.initPresetDicts()
+  }
+  // 加载外部词典词条
+  await loadExternalDictEntries()
 })
 </script>
 

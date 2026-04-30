@@ -6,6 +6,7 @@
       </button>
       <h1 class="title">{{ currentSutra?.fullName }}</h1>
       <div class="header-actions">
+        <DictionarySelector />
         <button class="chapter-btn" @click="showChapterDrawer = true">
           ☷
         </button>
@@ -128,6 +129,7 @@ import ReaderContent from '@/components/ReaderContent.vue'
 import AudioPlayer from '@/components/AudioPlayer.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import DictionaryPopup from '@/components/DictionaryPopup.vue'
+import DictionarySelector from '@/components/DictionarySelector.vue'
 import ChapterDrawer from '@/components/ChapterDrawer.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useProgressStore } from '@/stores/progress'

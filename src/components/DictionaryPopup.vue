@@ -8,22 +8,50 @@
           :style="popupStyle"
           @click.stop
         >
-          <div class="dict-entry">
-            <h3 class="term-title">{{ dictData.term }}</h3>
-
-            <div class="term-pinyin">
-              <span class="pinyin">{{ dictData.pinyin }}</span>
-              <span class="sanskrit" v-if="dictData.sanskrit">
-                {{ dictData.sanskrit }}
-              </span>
+          <!-- 多个词典的释义 -->
+          <div class="dict-entries">
+            <!-- 内置词典释义 -->
+            <div v-if="internalDef" class="dict-entry source-builtin">
+              <div class="source-badge builtin">
+                <span class="badge-icon">📖</span>
+                <span class="badge-text">内置词典</span>
+              </div>
+              <h3 class="term-title">{{ internalDef.term }}</h3>
+              <div class="term-pinyin" v-if="internalDef.pinyin">
+                <span class="pinyin">{{ internalDef.pinyin }}</span>
+                <span class="sanskrit" v-if="internalDef.sanskrit">
+                  {{ internalDef.sanskrit }}
+                </span>
+              </div>
+              <p class="term-definition">{{ internalDef.definition }}</p>
+              <div class="term-category" v-if="internalDef.category">
+                <span class="category-tag">{{ internalDef.category }}</span>
+              </div>
             </div>
 
-            <p class="term-definition">
-              {{ dictData.definition }}
-            </p>
+            <!-- MDX 词典释义（可能有多个） -->
+            <div
+              v-for="(def, index) in externalDefs"
+              :key="def.dictId + '-' + index"
+              class="dict-entry source-external"
+            >
+              <div class="source-badge external">
+                <span class="badge-icon">📚</span>
+                <span class="badge-text">{{ def.dictName }}</span>
+              </div>
+              <div
+                v-if="def.isHtml"
+                class="term-definition-html"
+                v-html="def.definition"
+              />
+              <p v-else class="term-definition">{{ def.definition }}</p>
+            </div>
 
-            <div class="term-category" v-if="dictData.category">
-              <span class="category-tag">{{ dictData.category }}</span>
+            <!-- 无释义提示 -->
+            <div v-if="!internalDef && externalDefs.length === 0" class="no-definition">
+              <span class="no-def-icon">🔍</span>
+              <p>暂无释义</p>
+              <p class="no-def-hint">可以在词典设置中添加更多词典</p>
             </div>
           </div>
 
@@ -37,9 +65,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useWindowSize } from '@vueuse/core'
 import { dictionary } from '@/data/dictionary'
+import { useDictionariesStore } from '@/stores/dictionaries'
 
 const props = defineProps({
   term: {
@@ -55,23 +84,40 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const { width } = useWindowSize()
+const dictionariesStore = useDictionariesStore()
 
-const dictData = computed(() => {
-  return dictionary.find(d => d.term === props.term) || {
-    term: props.term,
-    pinyin: '',
-    sanskrit: '',
-    definition: '暂无释义',
-    category: ''
-  }
+// 内置词典释义
+const internalDef = computed(() => {
+  return dictionary.find(d => d.term === props.term) || null
 })
 
+// 外部词典释义（查询 MDX）
+const externalDefs = ref([])
+
+// 异步加载外部词典释义
+watch(() => props.term, async (term) => {
+  if (!term || !dictionariesStore.enabledCount) {
+    externalDefs.value = []
+    return
+  }
+
+  try {
+    const results = await dictionariesStore.lookupTerm(term)
+    externalDefs.value = results || []
+  } catch (e) {
+    console.warn('Lookup failed:', e)
+    externalDefs.value = []
+  }
+}, { immediate: true })
+
+// 设备类型
 const deviceClass = computed(() => {
   if (width.value < 768) return 'mobile'
   if (width.value < 1024) return 'tablet'
   return 'desktop'
 })
 
+// 弹窗位置
 const popupStyle = computed(() => {
   if (width.value >= 1024) {
     return {
@@ -89,9 +135,16 @@ const popupStyle = computed(() => {
     }
   }
 
-  // Mobile: bottom drawer, no specific positioning
+  // Mobile: bottom drawer
   return {}
 })
+
+// ESC 键关闭
+const handleEscape = (e) => {
+  if (e.key === 'Escape') {
+    emit('close')
+  }
+}
 
 onMounted(() => {
   document.addEventListener('keydown', handleEscape)
@@ -100,12 +153,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleEscape)
 })
-
-const handleEscape = (e) => {
-  if (e.key === 'Escape') {
-    emit('close')
-  }
-}
 </script>
 
 <style scoped lang="scss">
@@ -132,73 +179,167 @@ const handleEscape = (e) => {
 
   &.mobile {
     width: 100%;
-    height: 60vh;
+    max-height: 60vh;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
   &.tablet {
     width: 320px;
+    max-height: 70vh;
     padding: var(--space-4);
     position: absolute;
   }
 
   &.desktop {
     width: 400px;
+    max-height: 80vh;
     padding: var(--space-6);
     position: fixed;
   }
 }
 
+.dict-entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
 .dict-entry {
   padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-page);
 
-  .term-title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-    margin-bottom: var(--space-3);
-    font-family: var(--font-heading);
+  &.source-builtin {
+    background-color: rgba(255, 107, 53, 0.08);
+    border-left: 3px solid var(--primary-color);
   }
 
-  .term-pinyin {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-4);
-    flex-wrap: wrap;
+  &.source-external {
+    background-color: var(--bg-page);
+    border-left: 3px solid #666;
+  }
+}
 
-    .pinyin {
-      font-size: var(--font-size-lg);
-      color: var(--text-secondary);
-      font-family: var(--font-sanskrit);
-    }
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
 
-    .sanskrit {
-      font-size: var(--font-size-sm);
-      color: var(--text-hint);
-      font-family: var(--font-sanskrit);
-      padding: 2px 8px;
-      background-color: var(--highlight-bg);
-      border-radius: var(--radius-full);
-    }
+  .badge-icon {
+    font-size: 12px;
   }
 
-  .term-definition {
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-loose);
-    color: var(--text-primary);
-    margin-bottom: var(--space-4);
+  &.builtin {
+    background-color: var(--primary-color);
+    color: white;
   }
 
-  .term-category {
-    .category-tag {
-      display: inline-block;
-      padding: 4px 12px;
-      background-color: var(--highlight-bg);
-      color: var(--text-secondary);
-      font-size: var(--font-size-xs);
-      border-radius: var(--radius-full);
+  &.external {
+    background-color: #666;
+    color: white;
+  }
+}
+
+.term-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+  font-family: var(--font-heading);
+}
+
+.term-pinyin {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+
+  .pinyin {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-family: var(--font-sanskrit);
+  }
+
+  .sanskrit {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    font-family: var(--font-sanskrit);
+    padding: 2px 8px;
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: var(--radius-full);
+  }
+}
+
+.term-definition {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-loose);
+  color: var(--text-primary);
+}
+
+.term-definition-html {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-loose);
+  color: var(--text-primary);
+
+  :deep(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+    margin: var(--space-2) 0;
+  }
+
+  :deep(audio) {
+    width: 100%;
+    margin: var(--space-2) 0;
+  }
+
+  :deep(a) {
+    color: var(--primary-color);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
     }
+  }
+}
+
+.term-category {
+  margin-top: var(--space-2);
+
+  .category-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    border-radius: var(--radius-full);
+  }
+}
+
+.no-definition {
+  text-align: center;
+  padding: var(--space-6);
+  color: var(--text-tertiary);
+
+  .no-def-icon {
+    font-size: 32px;
+    display: block;
+    margin-bottom: var(--space-2);
+  }
+
+  p {
+    font-size: var(--font-size-sm);
+  }
+
+  .no-def-hint {
+    margin-top: var(--space-1);
+    font-size: var(--font-size-xs);
   }
 }
 
@@ -214,7 +355,7 @@ const handleEscape = (e) => {
   font-size: 24px;
   color: var(--text-secondary);
   border-radius: var(--radius-full);
-  background-color: var(--bg-page);
+  background-color: var(--bg-card);
   transition: all var(--transition-fast);
 
   &:hover {
