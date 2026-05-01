@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useWindowSize } from '@vueuse/core'
 import { dictionary } from '@/data/dictionary'
 import { useDictionariesStore } from '@/stores/dictionaries'
@@ -91,24 +91,20 @@ const internalDef = computed(() => {
   return dictionary.find(d => d.term === props.term) || null
 })
 
-// 外部词典释义（查询 MDX）
-const externalDefs = ref([])
-
-// 异步加载外部词典释义
-watch(() => props.term, async (term) => {
-  if (!term || !dictionariesStore.enabledCount) {
-    externalDefs.value = []
-    return
-  }
-
-  try {
-    const results = await dictionariesStore.lookupTerm(term)
-    externalDefs.value = results || []
-  } catch (e) {
-    console.warn('Lookup failed:', e)
-    externalDefs.value = []
-  }
-}, { immediate: true })
+// 外部词典释义（从 store 的 allEntries 中查找）
+const externalDefs = computed(() => {
+  const entries = dictionariesStore.allEntries.filter(e => 
+    e.term === props.term && e._dictId !== 'builtin'
+  )
+  
+  // 转换为显示格式
+  return entries.map(entry => ({
+    dictName: entry._dictName || '佛教词典合集',
+    dictId: entry._dictId,
+    definition: entry.definition,
+    isHtml: false
+  }))
+})
 
 // 设备类型
 const deviceClass = computed(() => {

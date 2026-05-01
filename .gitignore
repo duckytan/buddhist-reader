@@ -60,3 +60,4 @@ mdict/*.mdd
 src/data/dictionary*.js
 public/dictionary.js
 public/dictionary.json
+public/dictionary-data.json*

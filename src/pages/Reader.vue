@@ -285,7 +285,7 @@ const handleBack = () => {
   router.back()
 }
 
-const handleTermClick = (term, x, y) => {
+const handleTermClick = (term, x, y, source) => {
   selectedTerm.value = term
   popupPosition.value = { x, y }
 }
