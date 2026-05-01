@@ -25,19 +25,38 @@ async function loadExternalDictionary() {
     
     const raw = await response.json()
     
-    // 转换为统一格式
-    externalDictCache = raw.map(entry => ({
-      term: entry.t,
-      pinyin: entry.p,
-      sanskrit: entry.s,
-      definition: Array.isArray(entry.d) 
-        ? entry.d.map(d => `【${d.s}】${d.c}`).join('\n\n')
-        : entry.d,
-      category: entry.c,
-      _dictId: 'external-mdx',
-      _dictName: '佛教词典合集'
-    }))
+    // 转换为统一格式，多来源词条拆分为独立条目
+    const entries = []
+    for (const entry of raw) {
+      const sources = Array.isArray(entry.d) ? entry.d : null
+      if (sources) {
+        // 多来源：拆分为独立条目，每条对应一个来源
+        for (const src of sources) {
+          entries.push({
+            term: entry.t,
+            pinyin: entry.p,
+            sanskrit: entry.s,
+            definition: src.c,
+            category: entry.c,
+            _dictId: `source-${src.s}`,
+            _dictName: src.s
+          })
+        }
+      } else {
+        // 单来源
+        entries.push({
+          term: entry.t,
+          pinyin: entry.p,
+          sanskrit: entry.s,
+          definition: entry.d,
+          category: entry.c,
+          _dictId: 'external-mdx',
+          _dictName: '佛教词典合集'
+        })
+      }
+    }
     
+    externalDictCache = entries
     console.log(`[Dictionaries] Loaded ${externalDictCache.length} external entries`)
     return externalDictCache
   })()

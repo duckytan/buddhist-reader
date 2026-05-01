@@ -29,26 +29,22 @@
               </div>
             </div>
 
-            <!-- MDX 词典释义（可能有多个） -->
+            <!-- 外部词典释义（按来源分组显示） -->
             <div
-              v-for="(def, index) in externalDefs"
-              :key="def.dictId + '-' + index"
+              v-for="(def, index) in parsedExternalDefs"
+              :key="index"
               class="dict-entry source-external"
+              :style="{ borderLeftColor: getSourceColor(index) }"
             >
-              <div class="source-badge external">
+              <div class="source-badge external" :style="{ backgroundColor: getSourceColor(index) }">
                 <span class="badge-icon">📚</span>
-                <span class="badge-text">{{ def.dictName }}</span>
+                <span class="badge-text">{{ def.source }}</span>
               </div>
-              <div
-                v-if="def.isHtml"
-                class="term-definition-html"
-                v-html="def.definition"
-              />
-              <p v-else class="term-definition">{{ def.definition }}</p>
+              <p class="term-definition">{{ def.content }}</p>
             </div>
 
             <!-- 无释义提示 -->
-            <div v-if="!internalDef && externalDefs.length === 0" class="no-definition">
+            <div v-if="!internalDef && parsedExternalDefs.length === 0" class="no-definition">
               <span class="no-def-icon">🔍</span>
               <p>暂无释义</p>
               <p class="no-def-hint">可以在词典设置中添加更多词典</p>
@@ -91,20 +87,23 @@ const internalDef = computed(() => {
   return dictionary.find(d => d.term === props.term) || null
 })
 
-// 外部词典释义（从 store 的 allEntries 中查找）
-const externalDefs = computed(() => {
+// 外部词典释义（按来源分组，每个来源独立卡片）
+const parsedExternalDefs = computed(() => {
   const entries = dictionariesStore.allEntries.filter(e => 
     e.term === props.term && e._dictId !== 'builtin'
   )
-  
-  // 转换为显示格式
+
   return entries.map(entry => ({
-    dictName: entry._dictName || '佛教词典合集',
-    dictId: entry._dictId,
-    definition: entry.definition,
-    isHtml: false
+    source: entry._dictName || '佛教词典合集',
+    content: entry.definition
   }))
 })
+
+// 为不同来源分配颜色
+const sourceColors = ['#666', '#8B5CF6', '#059669', '#DC2626', '#D97706', '#0891B2']
+function getSourceColor(index) {
+  return sourceColors[index % sourceColors.length]
+}
 
 // 设备类型
 const deviceClass = computed(() => {
@@ -276,6 +275,8 @@ onBeforeUnmount(() => {
   font-size: var(--font-size-base);
   line-height: var(--line-height-loose);
   color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .term-definition-html {
