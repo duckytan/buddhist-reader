@@ -128,6 +128,39 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
   // 外部词典来源列表（动态生成）
   const externalSources = ref([])
 
+  // 词典颜色配置 { dictId: color }
+  const dictColors = ref({})
+
+  // 默认颜色池
+  const defaultColors = [
+    '#FF6B35', // 内置 - 赤褐色
+    '#0891B2', // 青色
+    '#8B5CF6', // 紫色
+    '#059669', // 绿色
+    '#DC2626', // 红色
+    '#D97706', // 橙色
+    '#2563EB', // 蓝色
+    '#7C3AED', // 紫罗兰
+    '#DB2777', // 粉色
+    '#059669'  // 深绿
+  ]
+
+  // 获取词典颜色
+  function getDictColor(dictId) {
+    if (dictColors.value[dictId]) {
+      return dictColors.value[dictId]
+    }
+    // 自动分配默认颜色
+    const index = Object.keys(dictColors.value).length % defaultColors.length
+    return defaultColors[index]
+  }
+
+  // 设置词典颜色
+  function setDictColor(dictId, color) {
+    dictColors.value[dictId] = color
+    persistSettings()
+  }
+
   // ============ Getters ============
 
   // 内置词典词条（按词条分组）
@@ -150,7 +183,9 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     
     // 内置词典
     if (enabledDictIds.value.has('builtin')) {
-      entries = [...entries, ...builtinEntries.value]
+      const color = getDictColor('builtin')
+      const colorEntries = builtinEntries.value.map(e => ({ ...e, _dictColor: color }))
+      entries = [...entries, ...colorEntries]
     }
     
     // 外部词典（按来源过滤）
@@ -159,7 +194,10 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
       if (enabledSources.length > 0) {
         const filtered = externalDictCache.filter(entry => 
           enabledDictIds.value.has(`source-${entry._sourceId}`) || enabledDictIds.value.has(entry._dictId)
-        )
+        ).map(entry => ({
+          ...entry,
+          _dictColor: getDictColor(`source-${entry._sourceId}`)
+        }))
         entries = [...entries, ...filtered]
       }
     }
@@ -168,7 +206,10 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     if (userDictEntriesCache.length > 0) {
       const filtered = userDictEntriesCache.filter(entry => 
         enabledDictIds.value.has(entry._dictId)
-      )
+      ).map(entry => ({
+        ...entry,
+        _dictColor: getDictColor(entry._dictId)
+      }))
       entries = [...entries, ...filtered]
     }
     
@@ -185,31 +226,36 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
       name: '内置词典',
       type: 'builtin',
       enabled: enabledDictIds.value.has('builtin'),
-      entryCount: builtinDictionary.length
+      entryCount: builtinDictionary.length,
+      color: getDictColor('builtin')
     })
 
     // 外部词典来源
     if (externalDictLoaded.value && externalSources.value.length > 0) {
       for (const source of externalSources.value) {
+        const dictId = `source-${source.id}`
         list.push({
-          id: `source-${source.id}`,
+          id: dictId,
           name: source.name,
           type: 'external',
-          enabled: enabledDictIds.value.has(`source-${source.id}`),
-          entryCount: source.count
+          enabled: enabledDictIds.value.has(dictId),
+          entryCount: source.count,
+          color: getDictColor(dictId)
         })
       }
     }
 
     // 用户自定义词典
     for (const dict of userDictList.value) {
+      const dictId = `user-${dict.id}`
       list.push({
-        id: `user-${dict.id}`,
+        id: dictId,
         name: dict.name,
         type: 'user',
-        enabled: enabledDictIds.value.has(`user-${dict.id}`),
+        enabled: enabledDictIds.value.has(dictId),
         entryCount: dict.entries?.length || 0,
-        userId: dict.id
+        userId: dict.id,
+        color: getDictColor(dictId)
       })
     }
 
@@ -406,7 +452,8 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
    */
   function persistSettings() {
     saveDictSettings({
-      enabledDictIds: [...enabledDictIds.value]
+      enabledDictIds: [...enabledDictIds.value],
+      dictColors: { ...dictColors.value }
     })
   }
 
@@ -415,8 +462,13 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
    */
   function restoreSettings() {
     const settings = loadDictSettings()
-    if (settings && settings.enabledDictIds) {
-      enabledDictIds.value = new Set(settings.enabledDictIds)
+    if (settings) {
+      if (settings.enabledDictIds) {
+        enabledDictIds.value = new Set(settings.enabledDictIds)
+      }
+      if (settings.dictColors) {
+        dictColors.value = settings.dictColors
+      }
     }
   }
 
@@ -451,6 +503,7 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     userDictList,
     externalSources,
     enabledDictIds,
+    dictColors,
     presetDicts,
     isInitialized,
 
@@ -460,6 +513,7 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     dictList,
     isLoading,
     externalDictEnabled,
+    getDictColor,
 
     // Actions
     initPresetDicts,
@@ -469,6 +523,7 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     clearUserDictionaries,
     exportDictionaries,
     importDictionaries,
+    setDictColor,
     toggleDict,
     enableAllDicts,
     disableAllDicts,

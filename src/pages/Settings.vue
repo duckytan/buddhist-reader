@@ -127,13 +127,22 @@
               <span class="dict-item-name">{{ builtinDict.name }}</span>
               <span class="dict-item-count">{{ builtinDict.entryCount }} 条</span>
             </div>
-            <button
-              class="dict-toggle"
-              :class="{ active: builtinDict.enabled }"
-              @click="toggleDict(builtinDict.id, !builtinDict.enabled)"
-            >
-              <span class="toggle-slider"></span>
-            </button>
+            <div class="dict-item-actions">
+              <input
+                type="color"
+                :value="builtinDict.color"
+                @input="setDictColor(builtinDict.id, $event.target.value)"
+                class="dict-color-picker"
+                title="选择高亮颜色"
+              />
+              <button
+                class="dict-toggle"
+                :class="{ active: builtinDict.enabled }"
+                @click="toggleDict(builtinDict.id, !builtinDict.enabled)"
+              >
+                <span class="toggle-slider"></span>
+              </button>
+            </div>
           </div>
 
           <!-- 外部词典 -->
@@ -149,13 +158,22 @@
                 <span class="dict-item-name">{{ dict.name }}</span>
                 <span class="dict-item-count">{{ dict.entryCount.toLocaleString() }} 条</span>
               </div>
-              <button
-                class="dict-toggle"
-                :class="{ active: dict.enabled }"
-                @click="toggleDict(dict.id, !dict.enabled)"
-              >
-                <span class="toggle-slider"></span>
-              </button>
+              <div class="dict-item-actions">
+                <input
+                  type="color"
+                  :value="dict.color"
+                  @input="setDictColor(dict.id, $event.target.value)"
+                  class="dict-color-picker"
+                  title="选择高亮颜色"
+                />
+                <button
+                  class="dict-toggle"
+                  :class="{ active: dict.enabled }"
+                  @click="toggleDict(dict.id, !dict.enabled)"
+                >
+                  <span class="toggle-slider"></span>
+                </button>
+              </div>
             </div>
           </div>
           <div v-else class="dict-loading">
@@ -176,6 +194,13 @@
                 <span class="dict-item-count">{{ dict.entryCount.toLocaleString() }} 条</span>
               </div>
               <div class="dict-item-actions">
+                <input
+                  type="color"
+                  :value="dict.color"
+                  @input="setDictColor(dict.id, $event.target.value)"
+                  class="dict-color-picker"
+                  title="选择高亮颜色"
+                />
                 <button
                   class="dict-toggle"
                   :class="{ active: dict.enabled }"
@@ -285,6 +310,10 @@ const userDicts = computed(() =>
 // 词典操作
 const toggleDict = (dictId, enabled) => {
   dictionariesStore.toggleDict(dictId, enabled)
+}
+
+const setDictColor = (dictId, color) => {
+  dictionariesStore.setDictColor(dictId, color)
 }
 
 const enableAllDicts = () => {
@@ -784,6 +813,35 @@ const uploadDictionary = async (file) => {
     display: flex;
     align-items: center;
     gap: var(--space-2);
+
+    .dict-color-picker {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      background: none;
+      overflow: hidden;
+
+      &::-webkit-color-swatch-wrapper {
+        padding: 0;
+      }
+
+      &::-webkit-color-swatch {
+        border: none;
+        border-radius: 50%;
+      }
+
+      &::-moz-color-swatch {
+        border: none;
+        border-radius: 50%;
+      }
+
+      &:hover {
+        border-color: var(--primary-color);
+      }
+    }
 
     .dict-remove {
       width: 28px;

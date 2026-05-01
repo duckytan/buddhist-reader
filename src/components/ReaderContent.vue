@@ -107,7 +107,9 @@ const formatChapterContent = (content) => {
       const before = formatted.substring(0, match.start)
       const after = formatted.substring(match.end)
       const sources = match._dictId || '__builtin__'
-      const highlight = `<span class="dict-term" data-term="${match.term}" data-source="${sources}">${match.term}</span>`
+      const color = match._dictColor || ''
+      const styleAttr = color ? `style="--highlight-color: ${color}"` : ''
+      const highlight = `<span class="dict-term" data-term="${match.term}" data-source="${sources}" ${styleAttr}>${match.term}</span>`
       formatted = before + highlight + after
     }
   }
@@ -173,6 +175,11 @@ onMounted(async () => {
     padding: 2px 4px;
     cursor: pointer;
     transition: all var(--transition-fast);
+
+    // 使用自定义颜色
+    &[style*="--highlight-color"] {
+      background-color: var(--highlight-color);
+    }
 
     &:hover {
       background-color: #FFE082;
