@@ -162,22 +162,30 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
   }
 
   /**
-   * 上传用户自定义词典 JSON 文件
+   * 上传用户自定义词典
    * @param {File} file - JSON 文件
    * @param {Function} onProgress - 进度回调
+   * @param {string} customName - 自定义词典名称（可选）
    */
-  async function uploadUserDictionary(file, onProgress) {
-    const text = await file.text()
-    const data = JSON.parse(text)
+  async function uploadUserDictionary(file, onProgress, customName) {
+    let data
+
+    // 判断是否已经是解析后的数据
+    if (typeof file === 'object' && Array.isArray(file)) {
+      data = file
+    } else {
+      const text = await file.text()
+      data = JSON.parse(text)
+    }
 
     // 验证数据格式
     if (!Array.isArray(data)) {
-      throw new Error('词典文件必须是 JSON 数组格式')
+      throw new Error('词典数据必须是数组格式')
     }
 
     // 生成唯一 ID
     const id = `user-${Date.now()}`
-    const name = file.name.replace(/\.json$/i, '')
+    const name = customName || file.name.replace(/\.(json|mdx)$/i, '')
 
     // 保存到 IndexedDB
     await saveUserDictionary(id, name, data)

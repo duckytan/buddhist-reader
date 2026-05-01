@@ -94,15 +94,15 @@
         <p class="section-hint">上传 JSON 格式的自定义词典文件</p>
         
         <div class="upload-area" @click="triggerFileUpload" @dragover.prevent @drop.prevent="handleFileDrop">
-          <input
-            ref="fileInput"
-            type="file"
-            accept=".json"
-            class="hidden-input"
-            @change="handleFileSelect"
-          />
+        <input
+          ref="fileInput"
+          type="file"
+          accept=".json,.mdx"
+          class="hidden-input"
+          @change="handleFileSelect"
+        />
           <span class="upload-icon">📚</span>
-          <span class="upload-text">点击或拖拽上传词典 JSON 文件</span>
+          <span class="upload-text">点击或拖拽上传 .mdx 或 .json 词典文件</span>
         </div>
 
         <div v-if="dictionariesStore.userDictList.length > 0" class="user-dict-list">
@@ -120,7 +120,8 @@
         </div>
 
         <div class="dict-help">
-          <p>💡 提示：MDX 词典需先转换为 JSON 格式</p>
+          <p>支持格式：.mdx（直接解析）或 .json（需转换）</p>
+          <p>MDX 转换命令：</p>
           <p class="dict-help-code">python scripts/convert-mdx-to-json.py dict.mdx</p>
         </div>
       </section>
@@ -220,17 +221,44 @@ const handleFileDrop = async (event) => {
 }
 
 const uploadDictionary = async (file) => {
-  if (!file.name.endsWith('.json')) {
-    showToast('请上传 JSON 格式的词典文件')
+  const isMDX = file.name.toLowerCase().endsWith('.mdx')
+  const isJSON = file.name.toLowerCase().endsWith('.json')
+
+  if (!isMDX && !isJSON) {
+    showToast('请上传 .mdx 或 .json 格式的词典文件')
     return
   }
 
   try {
     showToast({ type: 'loading', message: '正在导入词典...', duration: 0 })
-    const result = await dictionariesStore.uploadUserDictionary(file)
+
+    let result
+
+    if (isMDX) {
+      // 直接解析 MDX 文件
+      const { parseMDX } = await import('@/utils/mdxParser')
+      const entries = await parseMDX(file)
+      result = await dictionariesStore.uploadUserDictionary(
+        new File([JSON.stringify(entries)], file.name.replace('.mdx', '.json'), { type: 'application/json' }),
+        () => {},
+        file.name.replace(/\.mdx$/i, '')
+      )
+    } else {
+      // 上传 JSON 文件
+      result = await dictionariesStore.uploadUserDictionary(file)
+    }
+
     showToast({ type: 'success', message: `已导入 ${result.entryCount.toLocaleString()} 条词条` })
   } catch (e) {
-    showToast({ type: 'fail', message: `导入失败：${e.message}` })
+    if (e.message.includes('无法解析')) {
+      showToast({
+        type: 'fail',
+        message: 'MDX 格式不支持，请先转换为 JSON',
+        duration: 5000
+      })
+    } else {
+      showToast({ type: 'fail', message: `导入失败：${e.message}` })
+    }
   }
 }
 

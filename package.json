@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@vueuse/core": "^10.7.0",
+    "lzo-wasm": "^0.0.4",
+    "mdict-js": "^10.0.1",
     "mdict-ts": "^1.0.2",
     "pinia": "^2.1.0",
     "vant": "^4.8.0",
