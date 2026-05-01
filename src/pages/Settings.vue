@@ -88,6 +88,42 @@
           清除全部忽略
         </button>
       </section>
+
+      <section class="settings-section">
+        <h2 class="section-title">词典管理</h2>
+        <p class="section-hint">上传 JSON 格式的自定义词典文件</p>
+        
+        <div class="upload-area" @click="triggerFileUpload" @dragover.prevent @drop.prevent="handleFileDrop">
+          <input
+            ref="fileInput"
+            type="file"
+            accept=".json"
+            class="hidden-input"
+            @change="handleFileSelect"
+          />
+          <span class="upload-icon">📚</span>
+          <span class="upload-text">点击或拖拽上传词典 JSON 文件</span>
+        </div>
+
+        <div v-if="dictionariesStore.userDictList.length > 0" class="user-dict-list">
+          <div
+            v-for="dict in dictionariesStore.userDictList"
+            :key="dict.id"
+            class="user-dict-item"
+          >
+            <div class="user-dict-info">
+              <span class="user-dict-name">{{ dict.name }}</span>
+              <span class="user-dict-count">{{ dict.entries.length }} 条</span>
+            </div>
+            <button @click="removeUserDict(dict.id)" class="user-dict-remove">×</button>
+          </div>
+        </div>
+
+        <div class="dict-help">
+          <p>💡 提示：MDX 词典需先转换为 JSON 格式</p>
+          <p class="dict-help-code">python scripts/convert-mdx-to-json.py dict.mdx</p>
+        </div>
+      </section>
     </div>
 
     <nav class="bottom-nav">
@@ -104,16 +140,19 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { showToast } from 'vant'
 import { useSettingsStore } from '@/stores/settings'
 import { useThemeStore } from '@/stores/theme'
 import { useIgnoredTermsStore } from '@/stores/ignoredTerms'
+import { useDictionariesStore } from '@/stores/dictionaries'
 import { clearStorage } from '@/utils/storage'
 
 const settingsStore = useSettingsStore()
 const themeStore = useThemeStore()
 const ignoredTermsStore = useIgnoredTermsStore()
+const dictionariesStore = useDictionariesStore()
+const fileInput = ref(null)
 
 const fontSize = computed({
   get: () => settingsStore.fontSize,
@@ -160,6 +199,48 @@ const removeIgnored = (term) => {
 const handleClearIgnored = () => {
   ignoredTermsStore.clearAll()
   showToast('已清除全部忽略')
+}
+
+const triggerFileUpload = () => {
+  fileInput.value?.click()
+}
+
+const handleFileSelect = async (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  await uploadDictionary(file)
+  // Reset input so same file can be selected again
+  event.target.value = ''
+}
+
+const handleFileDrop = async (event) => {
+  const file = event.dataTransfer?.files?.[0]
+  if (!file) return
+  await uploadDictionary(file)
+}
+
+const uploadDictionary = async (file) => {
+  if (!file.name.endsWith('.json')) {
+    showToast('请上传 JSON 格式的词典文件')
+    return
+  }
+
+  try {
+    showToast({ type: 'loading', message: '正在导入词典...', duration: 0 })
+    const result = await dictionariesStore.uploadUserDictionary(file)
+    showToast({ type: 'success', message: `已导入 ${result.entryCount.toLocaleString()} 条词条` })
+  } catch (e) {
+    showToast({ type: 'fail', message: `导入失败：${e.message}` })
+  }
+}
+
+const removeUserDict = async (id) => {
+  try {
+    await dictionariesStore.removeUserDictionary(id)
+    showToast('已删除词典')
+  } catch (e) {
+    showToast({ type: 'fail', message: '删除失败' })
+  }
 }
 </script>
 
@@ -367,6 +448,113 @@ const handleClearIgnored = () => {
     &:hover {
       color: #c62828;
     }
+  }
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-page);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(255, 107, 53, 0.05);
+  }
+
+  .upload-icon {
+    font-size: 32px;
+  }
+
+  .upload-text {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+}
+
+.hidden-input {
+  display: none;
+}
+
+.user-dict-list {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.user-dict-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background-color: var(--bg-page);
+  border-radius: var(--radius-md);
+
+  .user-dict-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    .user-dict-name {
+      font-size: var(--font-size-base);
+      color: var(--text-primary);
+    }
+
+    .user-dict-count {
+      font-size: var(--font-size-xs);
+      color: var(--text-tertiary);
+      background-color: var(--highlight-bg);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+    }
+  }
+
+  .user-dict-remove {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-hint);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+
+    &:hover {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+  }
+}
+
+.dict-help {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background-color: rgba(8, 145, 178, 0.08);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+
+  p {
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .dict-help-code {
+    font-family: monospace;
+    color: var(--primary-color);
+    margin-top: var(--space-1);
   }
 }
 

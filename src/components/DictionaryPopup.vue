@@ -40,7 +40,7 @@
                 <span class="badge-icon">📚</span>
                 <span class="badge-text">{{ def.source }}</span>
               </div>
-              <p class="term-definition">{{ def.content }}</p>
+              <div class="term-definition-html" v-html="def.htmlContent"></div>
             </div>
 
             <!-- 无释义提示 -->
@@ -65,6 +65,7 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useWindowSize } from '@vueuse/core'
 import { dictionary } from '@/data/dictionary'
 import { useDictionariesStore } from '@/stores/dictionaries'
+import { formatDefinition } from '@/utils/formatDefinition'
 
 const props = defineProps({
   term: {
@@ -95,7 +96,8 @@ const parsedExternalDefs = computed(() => {
 
   return entries.map(entry => ({
     source: entry._dictName || '佛教词典合集',
-    content: entry.definition
+    content: entry.definition,
+    htmlContent: formatDefinition(entry.definition)
   }))
 })
 
@@ -283,6 +285,25 @@ onBeforeUnmount(() => {
   font-size: var(--font-size-base);
   line-height: var(--line-height-loose);
   color: var(--text-primary);
+
+  :deep(p) {
+    margin: 0.5em 0;
+    text-indent: 2em;
+    text-align: justify;
+
+    &:first-child {
+      text-indent: 0;
+    }
+  }
+
+  :deep(.dict-section) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary-color);
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    text-indent: 0;
+    font-size: var(--font-size-sm);
+  }
 
   :deep(img) {
     max-width: 100%;

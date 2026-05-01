@@ -1,19 +1,25 @@
 /**
  * 词典状态管理
- * 管理内置词典和外部词典的加载、切换、查询
+ * 管理内置词典、外部词典和用户自定义词典的加载、切换、查询
  */
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { dictionary as builtinDictionary } from '@/data/dictionary'
+import {
+  getUserDictEntries,
+  saveUserDictionary,
+  deleteUserDictionary,
+  getUserDictionaries,
+  clearAllUserDictionaries
+} from '@/utils/userDictStorage'
 
 // 缓存已加载的外部词典数据
 let externalDictCache = null
 let externalDictLoadingPromise = null
 
 /**
- * 加载外部词典数据（从 public/dictionary.js）
- * 使用 fetch + 正则解析，避免 Vite 模块加载大文件
+ * 加载外部词典数据（从 public/dictionary.json）
  */
 async function loadExternalDictionary() {
   if (externalDictCache) return externalDictCache
@@ -79,6 +85,12 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
   // 加载错误
   const loadError = ref(null)
 
+  // 用户自定义词典列表
+  const userDictList = ref([])
+  
+  // 用户自定义词典词条缓存
+  let userDictEntriesCache = []
+
   // ============ Getters ============
 
   // 内置词典词条
@@ -94,12 +106,18 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     }))
   )
 
-  // 所有词条（内置 + 外部）
+  // 所有词条（内置 + 外部 + 用户）
   const allEntries = computed(() => {
-    if (!externalDictEnabled.value || !externalDictLoaded.value) {
-      return builtinEntries.value
+    let entries = [...builtinEntries.value]
+    
+    if (externalDictEnabled.value && externalDictLoaded.value) {
+      entries = [...entries, ...(externalDictCache || [])]
     }
-    return [...builtinEntries.value, ...(externalDictCache || [])]
+    
+    // 添加用户自定义词典词条
+    entries = [...entries, ...userDictEntriesCache]
+    
+    return entries
   })
 
   // 是否正在加载
@@ -125,6 +143,66 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
       // 降级到只使用内置词典
       externalDictEnabled.value = false
     }
+
+    // 加载用户自定义词典
+    await loadUserDictionaries()
+  }
+
+  /**
+   * 加载用户自定义词典
+   */
+  async function loadUserDictionaries() {
+    try {
+      userDictList.value = await getUserDictionaries()
+      userDictEntriesCache = await getUserDictEntries()
+      console.log(`[Dictionaries] Loaded ${userDictEntriesCache.length} user dictionary entries from ${userDictList.value.length} dicts`)
+    } catch (e) {
+      console.error('Failed to load user dictionaries:', e)
+    }
+  }
+
+  /**
+   * 上传用户自定义词典 JSON 文件
+   * @param {File} file - JSON 文件
+   * @param {Function} onProgress - 进度回调
+   */
+  async function uploadUserDictionary(file, onProgress) {
+    const text = await file.text()
+    const data = JSON.parse(text)
+
+    // 验证数据格式
+    if (!Array.isArray(data)) {
+      throw new Error('词典文件必须是 JSON 数组格式')
+    }
+
+    // 生成唯一 ID
+    const id = `user-${Date.now()}`
+    const name = file.name.replace(/\.json$/i, '')
+
+    // 保存到 IndexedDB
+    await saveUserDictionary(id, name, data)
+
+    // 更新状态
+    await loadUserDictionaries()
+
+    return { id, name, entryCount: data.length }
+  }
+
+  /**
+   * 删除用户自定义词典
+   */
+  async function removeUserDictionary(id) {
+    await deleteUserDictionary(id)
+    await loadUserDictionaries()
+  }
+
+  /**
+   * 清空所有用户自定义词典
+   */
+  async function clearUserDictionaries() {
+    await clearAllUserDictionaries()
+    userDictList.value = []
+    userDictEntriesCache = []
   }
 
   /**
@@ -143,7 +221,6 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
 
   // 兼容旧接口
   const presetDicts = ref([])
-  const userDicts = ref([])
   const enabledDictIds = ref(new Set())
   const isInitialized = ref(false)
   
@@ -156,8 +233,8 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     externalDictLoaded,
     loadProgress,
     loadError,
+    userDictList,
     presetDicts,
-    userDicts,
     enabledDictIds,
     isInitialized,
 
@@ -168,6 +245,10 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
 
     // Actions
     initPresetDicts,
+    loadUserDictionaries,
+    uploadUserDictionary,
+    removeUserDictionary,
+    clearUserDictionaries,
     getAllEnabledDictEntries,
     toggleExternalDict,
     toggleDict,
