@@ -9,7 +9,7 @@ import { dictionary as builtinDictionary } from '@/data/dictionary'
 
 // 缓存已加载的外部词典数据
 let externalDictCache = null
-let externalDictLoading = null
+let externalDictLoadingPromise = null
 
 /**
  * 加载外部词典数据（从 public/dictionary.js）
@@ -17,9 +17,9 @@ let externalDictLoading = null
  */
 async function loadExternalDictionary() {
   if (externalDictCache) return externalDictCache
-  if (externalDictLoading) return externalDictLoading
+  if (externalDictLoadingPromise) return externalDictLoadingPromise
 
-  externalDictLoading = (async () => {
+  externalDictLoadingPromise = (async () => {
     const response = await fetch('/dictionary.js')
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     
@@ -46,7 +46,7 @@ async function loadExternalDictionary() {
     return externalDictCache
   })()
 
-  return externalDictLoading
+  return externalDictLoadingPromise
 }
 
 export const useDictionariesStore = defineStore('dictionaries', () => {
@@ -88,7 +88,7 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
   })
 
   // 是否正在加载
-  const isLoading = computed(() => externalDictLoading !== null && !externalDictLoaded.value)
+  const isLoading = computed(() => externalDictLoadingPromise !== null && !externalDictLoaded.value)
 
   // ============ Actions ============
 
