@@ -22,7 +22,6 @@
           <van-switch
             v-model="externalEnabled"
             size="16px"
-            @change="handleToggleExternal"
           />
         </div>
 
@@ -63,14 +62,13 @@ const dictionariesStore = useDictionariesStore()
 
 const showPopover = ref(false)
 
-const externalEnabled = ref(dictionariesStore.externalDictEnabled)
+const externalEnabled = computed({
+  get: () => dictionariesStore.externalDictEnabled,
+  set: (val) => dictionariesStore.toggleExternalDict(val)
+})
 const isLoading = computed(() => dictionariesStore.isLoading)
 const dictLoaded = computed(() => dictionariesStore.externalDictLoaded)
 const loadError = computed(() => dictionariesStore.loadError)
-
-function handleToggleExternal(enabled) {
-  dictionariesStore.toggleExternalDict(enabled)
-}
 </script>
 
 <style scoped lang="scss">

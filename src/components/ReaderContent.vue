@@ -55,17 +55,26 @@ function rebuildTrie() {
   const entries = dictionariesStore.allEntries
   if (entries.length > 0) {
     trie.value = buildTrie(entries)
-    console.log(`[Trie] Built with ${entries.length} entries`)
+    console.log(`[Trie] Built with ${entries.length} entries (enabled: ${dictionariesStore.externalDictEnabled})`)
+  } else {
+    // 没有词条时清空 Trie
+    trie.value = null
+    console.log('[Trie] Cleared (no entries)')
   }
 }
 
-// 监听词典加载完成
+// 监听词典状态变化（加载完成或启用/禁用）
 watch(
-  () => dictionariesStore.externalDictLoaded,
+  () => ({
+    loaded: dictionariesStore.externalDictLoaded,
+    enabled: dictionariesStore.externalDictEnabled,
+    userDicts: dictionariesStore.userDictList.length
+  }),
   () => {
     rebuildTrie()
     refreshKey.value++
-  }
+  },
+  { deep: true }
 )
 
 // 用于强制重新渲染
