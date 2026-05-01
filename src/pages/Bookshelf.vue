@@ -75,7 +75,12 @@
         </button>
       </div>
       <div class="toolbar-right">
-        <span class="result-count">{{ filteredSutras.length }} 部经文</span>
+        <select v-model="sortBy" class="sort-select">
+          <option value="default">默认排序</option>
+          <option value="recent">最近阅读</option>
+          <option value="progress">阅读进度</option>
+        </select>
+        <span class="result-count">{{ sortedSutras.length }} 部经文</span>
       </div>
     </div>
 
@@ -115,7 +120,7 @@
       <!-- 网格视图 -->
       <div v-else-if="viewMode === 'grid'" class="sutra-grid">
         <BookCard
-          v-for="sutra in filteredSutras"
+          v-for="sutra in sortedSutras"
           :key="sutra.id"
           :sutra="sutra"
           @click="handleSutraClick(sutra)"
@@ -125,7 +130,7 @@
       <!-- 列表视图 -->
       <div v-else class="sutra-list">
         <BookListItem
-          v-for="sutra in filteredSutras"
+          v-for="sutra in sortedSutras"
           :key="sutra.id"
           :sutra="sutra"
           @click="handleSutraClick(sutra)"
@@ -134,7 +139,7 @@
       </div>
 
       <!-- 空状态 -->
-      <div v-if="!loading && filteredSutras.length === 0" class="empty-state">
+      <div v-if="!loading && sortedSutras.length === 0" class="empty-state">
         <p>未找到匹配的经文</p>
         <button class="clear-search-btn" @click="clearSearch">清除搜索</button>
       </div>
@@ -167,6 +172,7 @@ const router = useRouter()
 const progressStore = useProgressStore()
 const loading = ref(false)
 const viewMode = ref('grid') // 'grid' | 'list'
+const sortBy = ref('default') // 'default' | 'recent' | 'progress'
 const searchQuery = ref('')
 const showSearchHistory = ref(false)
 const searchHistory = ref([])
@@ -236,6 +242,31 @@ const filteredSutras = computed(() => {
       sutra.description?.toLowerCase().includes(query)
     )
   })
+})
+
+// 排序后的经文列表
+const sortedSutras = computed(() => {
+  const sutras = [...filteredSutras.value]
+
+  if (sortBy.value === 'recent') {
+    const recentMap = new Map()
+    for (const reading of progressStore.getRecentReadings(100)) {
+      recentMap.set(reading.sutraId, reading.lastReadAt || 0)
+    }
+    sutras.sort((a, b) => {
+      const aTime = recentMap.get(a.id) || 0
+      const bTime = recentMap.get(b.id) || 0
+      return bTime - aTime
+    })
+  } else if (sortBy.value === 'progress') {
+    sutras.sort((a, b) => {
+      const aProgress = progressStore.getProgress(a.id)
+      const bProgress = progressStore.getProgress(b.id)
+      return bProgress - aProgress
+    })
+  }
+
+  return sutras
 })
 
 // 最近阅读
@@ -517,6 +548,25 @@ onMounted(() => {
 }
 
 .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+
+  .sort-select {
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    outline: none;
+
+    &:focus {
+      border-color: var(--primary-color);
+    }
+  }
+
   .result-count {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
@@ -628,19 +678,15 @@ onMounted(() => {
 
 .sutra-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
 
-  @media (max-width: 767px) {
-    grid-template-columns: 1fr;
-  }
-
-  @media (min-width: 768px) and (max-width: 1023px) {
-    grid-template-columns: repeat(2, 1fr);
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   @media (min-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 

@@ -101,6 +101,25 @@
             <button class="dict-action-btn" @click="disableAllDicts">全部禁用</button>
           </div>
 
+          <!-- 备份按钮 -->
+          <div class="dict-backup-actions">
+            <button class="dict-backup-btn" @click="handleExportDicts">
+              <span class="btn-icon">📤</span>
+              <span>导出备份</span>
+            </button>
+            <button class="dict-backup-btn" @click="triggerImportFile">
+              <span class="btn-icon">📥</span>
+              <span>导入恢复</span>
+            </button>
+            <input
+              ref="importFileInput"
+              type="file"
+              accept=".json"
+              class="hidden-input"
+              @change="handleImportFile"
+            />
+          </div>
+
           <!-- 内置词典 -->
           <div v-if="builtinDict" class="dict-item">
             <div class="dict-item-info">
@@ -217,6 +236,40 @@ const themeStore = useThemeStore()
 const ignoredTermsStore = useIgnoredTermsStore()
 const dictionariesStore = useDictionariesStore()
 const fileInput = ref(null)
+const importFileInput = ref(null)
+
+// 词典导入导出
+const handleExportDicts = async () => {
+  try {
+    const count = await dictionariesStore.exportDictionaries()
+    if (count > 0) {
+      showToast({ type: 'success', message: `已导出 ${count} 个词典` })
+    } else {
+      showToast({ type: 'fail', message: '没有可导出的词典' })
+    }
+  } catch (e) {
+    showToast({ type: 'fail', message: `导出失败：${e.message}` })
+  }
+}
+
+const triggerImportFile = () => {
+  importFileInput.value?.click()
+}
+
+const handleImportFile = async (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+
+  try {
+    showToast({ type: 'loading', message: '正在导入...', duration: 0 })
+    const count = await dictionariesStore.importDictionaries(file)
+    showToast({ type: 'success', message: `已导入 ${count} 个词典` })
+  } catch (e) {
+    showToast({ type: 'fail', message: `导入失败：${e.message}` })
+  }
+
+  event.target.value = ''
+}
 
 // 词典列表分类
 const builtinDict = computed(() => 
@@ -623,6 +676,43 @@ const uploadDictionary = async (file) => {
     &:hover {
       border-color: var(--primary-color);
       color: var(--primary-color);
+    }
+  }
+}
+
+.dict-backup-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+
+  .dict-backup-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-2);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-page);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      background-color: rgba(255, 107, 53, 0.05);
+
+      .btn-icon {
+        transform: scale(1.1);
+      }
+    }
+
+    .btn-icon {
+      font-size: 16px;
+      transition: transform var(--transition-fast);
     }
   }
 }

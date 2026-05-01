@@ -106,3 +106,58 @@ export async function clearAllUserDictionaries() {
     tx.onerror = () => reject(tx.error)
   })
 }
+
+/**
+ * 导出所有用户词典为 JSON 文件
+ * @returns {Promise<Object>} - 词典数据对象
+ */
+export async function exportUserDictionaries() {
+  const dicts = await getUserDictionaries()
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    dictionaries: dicts.map(dict => ({
+      id: dict.id,
+      name: dict.name,
+      entries: dict.entries,
+      createdAt: dict.createdAt
+    }))
+  }
+}
+
+/**
+ * 从 JSON 数据导入用户词典
+ * @param {Object} data - 导出的词典数据
+ */
+export async function importUserDictionaries(data) {
+  if (!data || !data.dictionaries || !Array.isArray(data.dictionaries)) {
+    throw new Error('无效的词典备份文件格式')
+  }
+
+  const db = await openDB()
+  let importedCount = 0
+
+  for (const dict of data.dictionaries) {
+    if (!dict.id || !dict.name || !Array.isArray(dict.entries)) {
+      console.warn(`Skipping invalid dictionary: ${dict.name}`)
+      continue
+    }
+
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite')
+      const store = tx.objectStore(STORE_NAME)
+      store.put({
+        id: dict.id,
+        name: dict.name,
+        entries: dict.entries,
+        createdAt: dict.createdAt || Date.now()
+      })
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(tx.error)
+    })
+
+    importedCount++
+  }
+
+  return importedCount
+}

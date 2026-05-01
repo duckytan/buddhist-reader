@@ -12,7 +12,9 @@ import {
   saveUserDictionary,
   deleteUserDictionary,
   getUserDictionaries,
-  clearAllUserDictionaries
+  clearAllUserDictionaries,
+  exportUserDictionaries,
+  importUserDictionaries
 } from '@/utils/userDictStorage'
 
 // 本地存储 key
@@ -337,6 +339,35 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
   }
 
   /**
+   * 导出所有用户词典为 JSON 文件
+   */
+  async function exportDictionaries() {
+    const data = await exportUserDictionaries()
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `buddhist-reader-dicts-backup-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    return data.dictionaries.length
+  }
+
+  /**
+   * 从 JSON 文件导入用户词典
+   */
+  async function importDictionaries(file) {
+    const text = await file.text()
+    const data = JSON.parse(text)
+    const importedCount = await importUserDictionaries(data)
+    await loadUserDictionaries()
+    persistSettings()
+    return importedCount
+  }
+
+  /**
    * 切换词典启用状态
    */
   function toggleDict(dictId, enabled) {
@@ -436,6 +467,8 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     uploadUserDictionary,
     removeUserDictionary,
     clearUserDictionaries,
+    exportDictionaries,
+    importDictionaries,
     toggleDict,
     enableAllDicts,
     disableAllDicts,
