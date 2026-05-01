@@ -27,7 +27,9 @@
 :root {
   --font-heading: 'Source Han Serif CN', 'Noto Serif SC', serif;
   --font-body: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
-  --font-sanskrit: 'Noto Sans Devanagari', sans-serif;
+  --font-sanskrit: 'Noto Sans Devanagari', 'Sanskrit 2003', 'ITF Devanagari', 'Mangal', sans-serif;
+  --font-tibetan: 'Noto Sans Tibetan', 'Microsoft Himalaya', sans-serif;
+  --font-pali: 'Noto Sans Devanagari', 'VU Palatino Linotype', sans-serif;
 }
 
 // Typography Scale (12 levels)

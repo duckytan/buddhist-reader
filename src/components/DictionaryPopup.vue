@@ -314,6 +314,77 @@ onBeforeUnmount(() => {
     font-style: italic;
   }
 
+  :deep(.dict-sanskrit) {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-loose);
+    color: var(--text-secondary);
+    background-color: rgba(255, 255, 255, 0.4);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary-color);
+    margin: 0.5em 0;
+
+    &[data-script="sanskrit"] {
+      font-family: var(--font-sanskrit, 'Noto Sans Devanagari', 'Sanskrit 2003', 'ITF Devanagari', 'Mangal', sans-serif);
+    }
+
+    &[data-script="tibetan"] {
+      font-family: var(--font-tibetan, 'Noto Sans Tibetan', 'Microsoft Himalaya', sans-serif);
+      font-size: var(--font-size-base);
+    }
+
+    &[data-script="pali"] {
+      font-family: var(--font-pali, 'Noto Sans Devanagari', 'VU Palatino Linotype', sans-serif);
+    }
+  }
+
+  :deep(.dict-html-content) {
+    line-height: var(--line-height-loose);
+
+    :deep(p) {
+      margin: 0.5em 0;
+      text-indent: 2em;
+      text-align: justify;
+
+      &:first-child {
+        text-indent: 0;
+      }
+    }
+
+    :deep(.dict-section) {
+      font-weight: var(--font-weight-semibold);
+      color: var(--primary-color);
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      text-indent: 0;
+      font-size: var(--font-size-sm);
+    }
+
+    :deep(.dict-sanskrit) {
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-loose);
+      color: var(--text-secondary);
+      background-color: rgba(255, 255, 255, 0.4);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--primary-color);
+      margin: 0.5em 0;
+
+      &[data-script="sanskrit"] {
+        font-family: var(--font-sanskrit, 'Noto Sans Devanagari', 'Sanskrit 2003', 'ITF Devanagari', 'Mangal', sans-serif);
+      }
+
+      &[data-script="tibetan"] {
+        font-family: var(--font-tibetan, 'Noto Sans Tibetan', 'Microsoft Himalaya', sans-serif);
+        font-size: var(--font-size-base);
+      }
+
+      &[data-script="pali"] {
+        font-family: var(--font-pali, 'Noto Sans Devanagari', 'VU Palatino Linotype', sans-serif);
+      }
+    }
+  }
+
   :deep(img) {
     max-width: 100%;
     height: auto;
