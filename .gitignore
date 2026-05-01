@@ -54,3 +54,9 @@ mdict/*.zip
 mdict/*/
 mdict/*.mdd
 .spec-workflow/
+
+# Large data files (>1MB)
+*.js.map
+src/data/dictionary*.js
+public/dictionary.js
+public/dictionary.json

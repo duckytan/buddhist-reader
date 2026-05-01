@@ -26,6 +26,7 @@ import { addPinyinAnnotation } from '@/utils/pronunciation'
 import { dictionary } from '@/data/dictionary'
 import { useSettingsStore } from '@/stores/settings'
 import { useDictionariesStore } from '@/stores/dictionaries'
+import { useIgnoredTermsStore } from '@/stores/ignoredTerms'
 
 const props = defineProps({
   sutra: {
@@ -42,6 +43,7 @@ const emit = defineEmits(['term-click'])
 
 const settingsStore = useSettingsStore()
 const dictionariesStore = useDictionariesStore()
+const ignoredTermsStore = useIgnoredTermsStore()
 
 const fontSize = computed(() => settingsStore.fontSize)
 
@@ -128,10 +130,15 @@ const formatChapterContent = (content) => {
   // 3. 去重（最长匹配优先）
   const uniqueMatches = removeOverlapsWithSource(allMatches)
 
-  // 4. 从后往前替换，避免索引问题
-  uniqueMatches.sort((a, b) => b.start - a.start)
+  // 4. 过滤忽略的词条
+  const filteredMatches = uniqueMatches.filter(match => {
+    return !ignoredTermsStore.isIgnored(match.term)
+  })
 
-  for (const match of uniqueMatches) {
+  // 5. 从后往前替换，避免索引问题
+  filteredMatches.sort((a, b) => b.start - a.start)
+
+  for (const match of filteredMatches) {
     const before = formatted.substring(0, match.start)
     const after = formatted.substring(match.end)
     const sources = match._dictId

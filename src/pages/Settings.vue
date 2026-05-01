@@ -70,6 +70,24 @@
           清除缓存
         </button>
       </section>
+
+      <section class="settings-section" v-if="ignoredTermsStore.getAll().length > 0">
+        <h2 class="section-title">忽略的词条</h2>
+        <p class="section-hint">点击 × 移除忽略，恢复高亮</p>
+        <div class="ignored-list">
+          <span
+            v-for="term in ignoredTermsStore.getAll()"
+            :key="term"
+            class="ignored-tag"
+          >
+            {{ term }}
+            <button @click="removeIgnored(term)" class="remove-btn">×</button>
+          </span>
+        </div>
+        <button class="clear-btn" @click="handleClearIgnored">
+          清除全部忽略
+        </button>
+      </section>
     </div>
 
     <nav class="bottom-nav">
@@ -90,10 +108,12 @@ import { computed } from 'vue'
 import { showToast } from 'vant'
 import { useSettingsStore } from '@/stores/settings'
 import { useThemeStore } from '@/stores/theme'
+import { useIgnoredTermsStore } from '@/stores/ignoredTerms'
 import { clearStorage } from '@/utils/storage'
 
 const settingsStore = useSettingsStore()
 const themeStore = useThemeStore()
+const ignoredTermsStore = useIgnoredTermsStore()
 
 const fontSize = computed({
   get: () => settingsStore.fontSize,
@@ -130,6 +150,16 @@ const decreaseFontSize = () => {
 const handleClearCache = () => {
   clearStorage()
   showToast('缓存已清除')
+}
+
+const removeIgnored = (term) => {
+  ignoredTermsStore.removeIgnoredTerm(term)
+  showToast('已恢复高亮')
+}
+
+const handleClearIgnored = () => {
+  ignoredTermsStore.clearAll()
+  showToast('已清除全部忽略')
 }
 </script>
 
@@ -299,6 +329,44 @@ const handleClearCache = () => {
 
   &:hover {
     background-color: #ffcdd2;
+  }
+}
+
+.section-hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.ignored-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.ignored-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--highlight-bg);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--text-hint);
+    cursor: pointer;
+    padding: 0 2px;
+    font-size: var(--font-size-lg);
+    line-height: 1;
+
+    &:hover {
+      color: #c62828;
+    }
   }
 }
 
