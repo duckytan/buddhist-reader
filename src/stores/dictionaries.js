@@ -337,8 +337,19 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     if (typeof file === 'object' && Array.isArray(file)) {
       data = file
     } else {
+      // 大文件读取进度
+      const fileSize = file.size
+      if (fileSize > 1024 * 1024 && onProgress) {
+        onProgress(10) // 开始读取
+      }
       const text = await file.text()
+      if (fileSize > 1024 * 1024 && onProgress) {
+        onProgress(30) // 读取完成
+      }
       data = JSON.parse(text)
+      if (fileSize > 1024 * 1024 && onProgress) {
+        onProgress(50) // 解析完成
+      }
     }
 
     if (!Array.isArray(data)) {
@@ -348,12 +359,24 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     const id = `user-${Date.now()}`
     const name = customName || file.name.replace(/\.(json|mdx)$/i, '')
 
+    // 保存到 IndexedDB（大文件可能需要时间）
+    if (data.length > 1000 && onProgress) {
+      onProgress(70)
+    }
     await saveUserDictionary(id, name, data)
+    if (data.length > 1000 && onProgress) {
+      onProgress(90)
+    }
+
     await loadUserDictionaries()
 
     // 默认启用新上传的词典
     enabledDictIds.value.add(`user-${id}`)
     persistSettings()
+
+    if (onProgress) {
+      onProgress(100)
+    }
 
     return { id, name, entryCount: data.length }
   }
