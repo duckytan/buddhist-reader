@@ -6,6 +6,19 @@ export const useSettingsStore = defineStore('settings', () => {
   const fontSize = ref(18)
   const showPinyin = ref(false)
   const ttsSpeed = ref(1.0)
+  const lineHeight = ref('loose')
+
+  const lineHeightLabelMap = {
+    tight: '紧凑',
+    base: '标准',
+    loose: '宽松'
+  }
+
+  const lineHeightCssMap = {
+    tight: 'var(--line-height-tight)',
+    base: 'var(--line-height-base)',
+    loose: 'var(--line-height-loose)'
+  }
 
   // Load from localStorage on initialization
   const loadSettings = () => {
@@ -16,6 +29,7 @@ export const useSettingsStore = defineStore('settings', () => {
         fontSize.value = parsed.fontSize || 18
         showPinyin.value = parsed.showPinyin !== undefined ? parsed.showPinyin : false
         ttsSpeed.value = parsed.ttsSpeed || 1.0
+        lineHeight.value = parsed.lineHeight || 'loose'
       }
     } catch (error) {
       console.error('Failed to load settings:', error)
@@ -38,12 +52,18 @@ export const useSettingsStore = defineStore('settings', () => {
     saveSettings()
   }
 
+  const setLineHeight = (value) => {
+    lineHeight.value = value
+    saveSettings()
+  }
+
   const saveSettings = () => {
     try {
       const settings = {
         fontSize: fontSize.value,
         showPinyin: showPinyin.value,
-        ttsSpeed: ttsSpeed.value
+        ttsSpeed: ttsSpeed.value,
+        lineHeight: lineHeight.value
       }
       localStorage.setItem('buddhist-reader-settings', JSON.stringify(settings))
     } catch (error) {
@@ -59,9 +79,13 @@ export const useSettingsStore = defineStore('settings', () => {
     fontSize,
     showPinyin,
     ttsSpeed,
+    lineHeight,
+    lineHeightLabelMap,
+    lineHeightCssMap,
     // Actions
     setFontSize,
     setShowPinyin,
-    setTtsSpeed
+    setTtsSpeed,
+    setLineHeight
   }
 })

@@ -18,6 +18,21 @@
         </div>
 
         <div class="setting-item">
+          <label class="setting-label">行间距</label>
+          <div class="lineheight-control">
+            <button
+              v-for="opt in lineHeightOptions"
+              :key="opt.value"
+              class="lineheight-btn"
+              :class="{ active: lineHeight === opt.value }"
+              @click="lineHeight = opt.value"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-item">
           <label class="setting-label">显示拼音</label>
           <button
             class="toggle-btn"
@@ -30,7 +45,7 @@
       </section>
 
       <section class="settings-section">
-        <h2 class="section-title">语音设置</h2>
+        <h2 class="section-title">朗读设置</h2>
 
         <div class="setting-item">
           <label class="setting-label">朗读速度</label>
@@ -56,7 +71,7 @@
           <button
             class="toggle-btn"
             :class="{ active: isDarkMode }"
-            @click="isDarkMode = !isDarkMode"
+            @click="themeStore.toggleDarkMode()"
           >
             <span class="toggle-slider"></span>
           </button>
@@ -64,29 +79,53 @@
       </section>
 
       <section class="settings-section">
-        <h2 class="section-title">数据</h2>
+        <h2 class="section-title">数据管理</h2>
 
-        <button class="clear-btn" @click="handleClearCache">
-          清除缓存
-        </button>
+        <div class="setting-item">
+          <label class="setting-label">清除本地缓存</label>
+          <button class="danger-btn" @click="handleClearCache">清除</button>
+        </div>
+
+        <div v-if="ignoredTermsStore.getAll().length > 0" class="setting-item-vertical">
+          <label class="setting-label">忽略的词条</label>
+          <span class="section-hint">点击移除，恢复高亮</span>
+          <div class="ignored-list">
+            <span
+              v-for="term in ignoredTermsStore.getAll()"
+              :key="term"
+              class="ignored-tag"
+            >
+              {{ term }}
+              <button @click="removeIgnored(term)" class="remove-btn">×</button>
+            </span>
+          </div>
+          <button class="danger-btn" @click="handleClearIgnored">清除全部忽略</button>
+        </div>
       </section>
 
-      <section class="settings-section" v-if="ignoredTermsStore.getAll().length > 0">
-        <h2 class="section-title">忽略的词条</h2>
-        <p class="section-hint">点击 × 移除忽略，恢复高亮</p>
-        <div class="ignored-list">
-          <span
-            v-for="term in ignoredTermsStore.getAll()"
-            :key="term"
-            class="ignored-tag"
-          >
-            {{ term }}
-            <button @click="removeIgnored(term)" class="remove-btn">×</button>
-          </span>
+      <section class="settings-section">
+        <h2 class="section-title">关于</h2>
+
+        <div class="setting-item">
+          <label class="setting-label">版本</label>
+          <span class="about-value">1.0.0</span>
         </div>
-        <button class="clear-btn" @click="handleClearIgnored">
-          清除全部忽略
-        </button>
+
+        <div class="setting-item">
+          <label class="setting-label">反馈</label>
+          <a
+            href="https://github.com/user/buddhist-reader/issues"
+            target="_blank"
+            class="about-link"
+            rel="noopener noreferrer"
+          >
+            提交 Issue
+          </a>
+        </div>
+
+        <div class="about-description">
+          般若佛经阅读器 — 一款禅意风格的佛经在线阅读平台，支持多词典查询、语音朗读、拼音标注等功能。
+        </div>
       </section>
 
       <section class="settings-section">
@@ -348,10 +387,16 @@ const ttsSpeed = computed({
   set: (val) => settingsStore.setTtsSpeed(val)
 })
 
-const isDarkMode = computed({
-  get: () => themeStore.isDarkMode,
-  set: (val) => themeStore.setDarkMode(val)
+const lineHeight = computed({
+  get: () => settingsStore.lineHeight,
+  set: (val) => settingsStore.setLineHeight(val)
 })
+
+const lineHeightOptions = [
+  { value: 'tight', label: '紧凑' },
+  { value: 'base', label: '标准' },
+  { value: 'loose', label: '宽松' }
+]
 
 const increaseFontSize = () => {
   if (fontSize.value < 28) {
@@ -593,21 +638,85 @@ const uploadDictionary = async (file) => {
   }
 }
 
-.clear-btn {
-  width: 100%;
-  padding: var(--space-3);
+.lineheight-control {
+  display: flex;
+  gap: var(--space-2);
+
+  .lineheight-btn {
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-page);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    &.active {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+      color: #fff;
+    }
+  }
+}
+
+.setting-item-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+
+  .setting-label {
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+  }
+}
+
+.danger-btn {
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   background-color: #ffebee;
   color: #c62828;
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   transition: background-color var(--transition-fast);
   border: none;
   cursor: pointer;
+  align-self: flex-start;
 
   &:hover {
     background-color: #ffcdd2;
   }
+}
+
+.about-value {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+}
+
+.about-link {
+  font-size: var(--font-size-base);
+  color: var(--primary-color);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.about-description {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--bg-page);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
 .section-hint {

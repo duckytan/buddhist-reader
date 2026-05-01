@@ -1,5 +1,5 @@
 <template>
-  <div class="reader-content" :style="{ fontSize: `${fontSize}px` }">
+  <div class="reader-content" :style="{ fontSize: `${fontSize}px`, lineHeight: lineHeightCss }">
     <div
       v-for="(chapter, index) in sutra?.chapters || []"
       :key="index"
@@ -46,6 +46,7 @@ const dictionariesStore = useDictionariesStore()
 const ignoredTermsStore = useIgnoredTermsStore()
 
 const fontSize = computed(() => settingsStore.fontSize)
+const lineHeightCss = computed(() => settingsStore.lineHeightCssMap[settingsStore.lineHeight])
 
 // Trie 树（响应式）
 const trie = shallowRef(null)
@@ -140,7 +141,6 @@ onMounted(async () => {
   max-width: 800px;
   margin: 0 auto;
   padding: var(--space-4);
-  line-height: var(--line-height-loose);
 }
 
 .chapter {
