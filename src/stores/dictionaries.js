@@ -20,14 +20,10 @@ async function loadExternalDictionary() {
   if (externalDictLoadingPromise) return externalDictLoadingPromise
 
   externalDictLoadingPromise = (async () => {
-    const response = await fetch('/dictionary.js')
+    const response = await fetch('/dictionary.json')
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     
-    const text = await response.text()
-    const match = text.match(/\[[\s\S]*\]/)
-    if (!match) throw new Error('Failed to parse dictionary')
-    
-    const raw = JSON.parse(match[0])
+    const raw = await response.json()
     
     // 转换为统一格式
     externalDictCache = raw.map(entry => ({

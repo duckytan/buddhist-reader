@@ -83,7 +83,6 @@
     <div v-if="recentReadings.length > 0" class="recent-section">
       <div class="section-header">
         <h3 class="section-title">最近阅读</h3>
-        <span class="section-hint">最近阅读</span>
       </div>
       <div class="recent-horizontal">
         <div
@@ -277,6 +276,7 @@ const loadAllDynamicSutras = async () => {
 }
 
 const handleSutraClick = (sutra) => {
+  if (!sutra?.id) return
   router.push(`/reader/${sutra.id}`)
 }
 
