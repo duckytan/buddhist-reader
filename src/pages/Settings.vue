@@ -91,38 +91,101 @@
 
       <section class="settings-section">
         <h2 class="section-title">词典管理</h2>
-        <p class="section-hint">上传 JSON 格式的自定义词典文件</p>
-        
-        <div class="upload-area" @click="triggerFileUpload" @dragover.prevent @drop.prevent="handleFileDrop">
-        <input
-          ref="fileInput"
-          type="file"
-          accept=".json,.mdx"
-          class="hidden-input"
-          @change="handleFileSelect"
-        />
-          <span class="upload-icon">📚</span>
-          <span class="upload-text">点击或拖拽上传 .mdx 或 .json 词典文件</span>
-        </div>
+        <p class="section-hint">点击开关控制每个词典的启用状态</p>
 
-        <div v-if="dictionariesStore.userDictList.length > 0" class="user-dict-list">
-          <div
-            v-for="dict in dictionariesStore.userDictList"
-            :key="dict.id"
-            class="user-dict-item"
-          >
-            <div class="user-dict-info">
-              <span class="user-dict-name">{{ dict.name }}</span>
-              <span class="user-dict-count">{{ dict.entries.length }} 条</span>
-            </div>
-            <button @click="removeUserDict(dict.id)" class="user-dict-remove">×</button>
+        <!-- 词典列表 -->
+        <div class="dict-management">
+          <!-- 操作按钮 -->
+          <div class="dict-actions">
+            <button class="dict-action-btn" @click="enableAllDicts">全部启用</button>
+            <button class="dict-action-btn" @click="disableAllDicts">全部禁用</button>
           </div>
-        </div>
 
-        <div class="dict-help">
-          <p>支持格式：.mdx（直接解析）或 .json（需转换）</p>
-          <p>MDX 转换命令：</p>
-          <p class="dict-help-code">python scripts/convert-mdx-to-json.py dict.mdx</p>
+          <!-- 内置词典 -->
+          <div v-if="builtinDict" class="dict-item">
+            <div class="dict-item-info">
+              <span class="dict-type-badge builtin">内置</span>
+              <span class="dict-item-name">{{ builtinDict.name }}</span>
+              <span class="dict-item-count">{{ builtinDict.entryCount }} 条</span>
+            </div>
+            <button
+              class="dict-toggle"
+              :class="{ active: builtinDict.enabled }"
+              @click="toggleDict(builtinDict.id, !builtinDict.enabled)"
+            >
+              <span class="toggle-slider"></span>
+            </button>
+          </div>
+
+          <!-- 外部词典 -->
+          <div v-if="dictionariesStore.externalDictLoaded">
+            <div class="dict-group-title">外部词典</div>
+            <div
+              v-for="dict in externalDicts"
+              :key="dict.id"
+              class="dict-item"
+            >
+              <div class="dict-item-info">
+                <span class="dict-type-badge external">外部</span>
+                <span class="dict-item-name">{{ dict.name }}</span>
+                <span class="dict-item-count">{{ dict.entryCount.toLocaleString() }} 条</span>
+              </div>
+              <button
+                class="dict-toggle"
+                :class="{ active: dict.enabled }"
+                @click="toggleDict(dict.id, !dict.enabled)"
+              >
+                <span class="toggle-slider"></span>
+              </button>
+            </div>
+          </div>
+          <div v-else class="dict-loading">
+            <span>正在加载外部词典...</span>
+          </div>
+
+          <!-- 用户自定义词典 -->
+          <div v-if="userDicts.length > 0">
+            <div class="dict-group-title">我的词典</div>
+            <div
+              v-for="dict in userDicts"
+              :key="dict.id"
+              class="dict-item"
+            >
+              <div class="dict-item-info">
+                <span class="dict-type-badge user">用户</span>
+                <span class="dict-item-name">{{ dict.name }}</span>
+                <span class="dict-item-count">{{ dict.entryCount.toLocaleString() }} 条</span>
+              </div>
+              <div class="dict-item-actions">
+                <button
+                  class="dict-toggle"
+                  :class="{ active: dict.enabled }"
+                  @click="toggleDict(dict.id, !dict.enabled)"
+                >
+                  <span class="toggle-slider"></span>
+                </button>
+                <button class="dict-remove" @click="removeUserDict(dict.userId)">×</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 上传区域 -->
+          <div class="upload-area" @click="triggerFileUpload" @dragover.prevent @drop.prevent="handleFileDrop">
+            <input
+              ref="fileInput"
+              type="file"
+              accept=".json,.mdx"
+              class="hidden-input"
+              @change="handleFileSelect"
+            />
+            <span class="upload-icon">📚</span>
+            <span class="upload-text">点击或拖拽上传 .mdx 或 .json 词典文件</span>
+          </div>
+
+          <div class="dict-help">
+            <p>支持格式：.mdx（直接解析）或 .json（需转换）</p>
+            <p>词典数据保存在浏览器本地，下次访问自动加载</p>
+          </div>
         </div>
       </section>
     </div>
@@ -154,6 +217,39 @@ const themeStore = useThemeStore()
 const ignoredTermsStore = useIgnoredTermsStore()
 const dictionariesStore = useDictionariesStore()
 const fileInput = ref(null)
+
+// 词典列表分类
+const builtinDict = computed(() => 
+  dictionariesStore.dictList.find(d => d.type === 'builtin')
+)
+const externalDicts = computed(() => 
+  dictionariesStore.dictList.filter(d => d.type === 'external')
+)
+const userDicts = computed(() => 
+  dictionariesStore.dictList.filter(d => d.type === 'user')
+)
+
+// 词典操作
+const toggleDict = (dictId, enabled) => {
+  dictionariesStore.toggleDict(dictId, enabled)
+}
+
+const enableAllDicts = () => {
+  dictionariesStore.enableAllDicts()
+}
+
+const disableAllDicts = () => {
+  dictionariesStore.disableAllDicts()
+}
+
+const removeUserDict = async (userId) => {
+  try {
+    await dictionariesStore.removeUserDictionary(userId)
+    showToast('已删除词典')
+  } catch (e) {
+    showToast({ type: 'fail', message: '删除失败' })
+  }
+}
 
 const fontSize = computed({
   get: () => settingsStore.fontSize,
@@ -259,15 +355,6 @@ const uploadDictionary = async (file) => {
     } else {
       showToast({ type: 'fail', message: `导入失败：${e.message}` })
     }
-  }
-}
-
-const removeUserDict = async (id) => {
-  try {
-    await dictionariesStore.removeUserDictionary(id)
-    showToast('已删除词典')
-  } catch (e) {
-    showToast({ type: 'fail', message: '删除失败' })
   }
 }
 </script>
@@ -511,58 +598,162 @@ const removeUserDict = async (id) => {
   display: none;
 }
 
-.user-dict-list {
-  margin-top: var(--space-3);
+.dict-management {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
-.user-dict-item {
+.dict-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+
+  .dict-action-btn {
+    flex: 1;
+    padding: var(--space-2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+  }
+}
+
+.dict-group-title {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dict-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3);
   background-color: var(--bg-page);
   border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
 
-  .user-dict-info {
+  .dict-item-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+    min-width: 0;
+
+    .dict-type-badge {
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+
+      &.builtin {
+        background-color: rgba(255, 107, 53, 0.15);
+        color: var(--primary-color);
+      }
+
+      &.external {
+        background-color: rgba(8, 145, 178, 0.15);
+        color: #0891b2;
+      }
+
+      &.user {
+        background-color: rgba(139, 92, 246, 0.15);
+        color: #8b5cf6;
+      }
+    }
+
+    .dict-item-name {
+      font-size: var(--font-size-base);
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dict-item-count {
+      font-size: var(--font-size-xs);
+      color: var(--text-tertiary);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+  }
+
+  .dict-item-actions {
     display: flex;
     align-items: center;
     gap: var(--space-2);
 
-    .user-dict-name {
-      font-size: var(--font-size-base);
-      color: var(--text-primary);
-    }
-
-    .user-dict-count {
-      font-size: var(--font-size-xs);
-      color: var(--text-tertiary);
-      background-color: var(--highlight-bg);
-      padding: 2px 8px;
+    .dict-remove {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--text-hint);
+      font-size: var(--font-size-lg);
+      cursor: pointer;
       border-radius: var(--radius-full);
+      transition: all var(--transition-fast);
+
+      &:hover {
+        background-color: #ffebee;
+        color: #c62828;
+      }
     }
   }
+}
 
-  .user-dict-remove {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: var(--text-hint);
-    font-size: var(--font-size-lg);
-    cursor: pointer;
-    border-radius: var(--radius-full);
-    transition: all var(--transition-fast);
+.dict-loading {
+  text-align: center;
+  padding: var(--space-4);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+}
 
-    &:hover {
-      background-color: #ffebee;
-      color: #c62828;
-    }
+.dict-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: var(--divider-color);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  border: none;
+  padding: 0;
+  flex-shrink: 0;
+
+  &.active {
+    background-color: var(--primary-color);
+  }
+
+  .toggle-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform var(--transition-fast);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  &.active .toggle-slider {
+    transform: translateX(20px);
   }
 }
 
@@ -578,11 +769,19 @@ const removeUserDict = async (id) => {
     margin: 0;
     line-height: 1.5;
   }
+}
 
-  .dict-help-code {
-    font-family: monospace;
-    color: var(--primary-color);
-    margin-top: var(--space-1);
+.dict-help {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background-color: rgba(8, 145, 178, 0.08);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+
+  p {
+    margin: 0;
+    line-height: 1.5;
   }
 }
 

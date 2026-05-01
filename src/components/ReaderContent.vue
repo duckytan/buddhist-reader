@@ -67,7 +67,7 @@ function rebuildTrie() {
 watch(
   () => ({
     loaded: dictionariesStore.externalDictLoaded,
-    enabled: dictionariesStore.externalDictEnabled,
+    enabledIds: [...dictionariesStore.enabledDictIds].join(','),
     userDicts: dictionariesStore.userDictList.length
   }),
   () => {

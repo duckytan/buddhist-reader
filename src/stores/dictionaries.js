@@ -1,10 +1,11 @@
 /**
  * 词典状态管理
  * 管理内置词典、外部词典和用户自定义词典的加载、切换、查询
+ * 支持每个词典单独开关，状态持久化到 localStorage
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { dictionary as builtinDictionary } from '@/data/dictionary'
 import {
   getUserDictEntries,
@@ -13,6 +14,9 @@ import {
   getUserDictionaries,
   clearAllUserDictionaries
 } from '@/utils/userDictStorage'
+
+// 本地存储 key
+const STORAGE_KEY = 'buddhist-reader-dict-settings'
 
 // 缓存已加载的外部词典数据
 let externalDictCache = null
@@ -45,7 +49,8 @@ async function loadExternalDictionary() {
             definition: src.c,
             category: entry.c,
             _dictId: `source-${src.s}`,
-            _dictName: src.s
+            _dictName: src.s,
+            _sourceId: src.s
           })
         }
       } else {
@@ -57,7 +62,8 @@ async function loadExternalDictionary() {
           definition: entry.d,
           category: entry.c,
           _dictId: 'external-mdx',
-          _dictName: '佛教词典合集'
+          _dictName: '佛教词典合集',
+          _sourceId: 'external-mdx'
         })
       }
     }
@@ -70,12 +76,35 @@ async function loadExternalDictionary() {
   return externalDictLoadingPromise
 }
 
+/**
+ * 从 localStorage 加载词典设置
+ */
+function loadDictSettings() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      return JSON.parse(saved)
+    }
+  } catch (e) {
+    console.error('Failed to load dict settings:', e)
+  }
+  return null
+}
+
+/**
+ * 保存词典设置到 localStorage
+ */
+function saveDictSettings(settings) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+  } catch (e) {
+    console.error('Failed to save dict settings:', e)
+  }
+}
+
 export const useDictionariesStore = defineStore('dictionaries', () => {
   // ============ State ============
 
-  // 是否启用外部词典
-  const externalDictEnabled = ref(true)
-  
   // 外部词典是否已加载
   const externalDictLoaded = ref(false)
   
@@ -91,9 +120,15 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
   // 用户自定义词典词条缓存
   let userDictEntriesCache = []
 
+  // 启用的词典 ID 集合
+  const enabledDictIds = ref(new Set())
+
+  // 外部词典来源列表（动态生成）
+  const externalSources = ref([])
+
   // ============ Getters ============
 
-  // 内置词典词条
+  // 内置词典词条（按词条分组）
   const builtinEntries = computed(() => 
     builtinDictionary.map(item => ({
       term: item.term,
@@ -102,22 +137,81 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
       definition: item.definition,
       category: item.category,
       _dictId: 'builtin',
-      _dictName: '内置词典'
+      _dictName: '内置词典',
+      _sourceId: 'builtin'
     }))
   )
 
-  // 所有词条（内置 + 外部 + 用户）
+  // 所有词条（根据启用状态过滤）
   const allEntries = computed(() => {
-    let entries = [...builtinEntries.value]
+    let entries = []
     
-    if (externalDictEnabled.value && externalDictLoaded.value) {
-      entries = [...entries, ...(externalDictCache || [])]
+    // 内置词典
+    if (enabledDictIds.value.has('builtin')) {
+      entries = [...entries, ...builtinEntries.value]
     }
     
-    // 添加用户自定义词典词条
-    entries = [...entries, ...userDictEntriesCache]
+    // 外部词典（按来源过滤）
+    if (externalDictLoaded.value && externalDictCache) {
+      const enabledSources = [...enabledDictIds.value].filter(id => id.startsWith('source-') || id === 'external-mdx')
+      if (enabledSources.length > 0) {
+        const filtered = externalDictCache.filter(entry => 
+          enabledDictIds.value.has(`source-${entry._sourceId}`) || enabledDictIds.value.has(entry._dictId)
+        )
+        entries = [...entries, ...filtered]
+      }
+    }
+    
+    // 用户自定义词典（按 ID 过滤）
+    if (userDictEntriesCache.length > 0) {
+      const filtered = userDictEntriesCache.filter(entry => 
+        enabledDictIds.value.has(entry._dictId)
+      )
+      entries = [...entries, ...filtered]
+    }
     
     return entries
+  })
+
+  // 词典列表（用于设置页面显示）
+  const dictList = computed(() => {
+    const list = []
+
+    // 内置词典
+    list.push({
+      id: 'builtin',
+      name: '内置词典',
+      type: 'builtin',
+      enabled: enabledDictIds.value.has('builtin'),
+      entryCount: builtinDictionary.length
+    })
+
+    // 外部词典来源
+    if (externalDictLoaded.value && externalSources.value.length > 0) {
+      for (const source of externalSources.value) {
+        list.push({
+          id: `source-${source.id}`,
+          name: source.name,
+          type: 'external',
+          enabled: enabledDictIds.value.has(`source-${source.id}`),
+          entryCount: source.count
+        })
+      }
+    }
+
+    // 用户自定义词典
+    for (const dict of userDictList.value) {
+      list.push({
+        id: `user-${dict.id}`,
+        name: dict.name,
+        type: 'user',
+        enabled: enabledDictIds.value.has(`user-${dict.id}`),
+        entryCount: dict.entries?.length || 0,
+        userId: dict.id
+      })
+    }
+
+    return list
   })
 
   // 是否正在加载
@@ -137,11 +231,28 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     try {
       await loadExternalDictionary()
       externalDictLoaded.value = true
+
+      // 提取外部词典来源列表
+      const sourceMap = new Map()
+      for (const entry of externalDictCache) {
+        const id = entry._sourceId
+        if (!sourceMap.has(id)) {
+          sourceMap.set(id, { id, name: entry._dictName, count: 0 })
+        }
+        sourceMap.get(id).count++
+      }
+      externalSources.value = [...sourceMap.values()]
+
+      // 默认启用所有词典
+      if (enabledDictIds.value.size === 0) {
+        enabledDictIds.value.add('builtin')
+        for (const source of externalSources.value) {
+          enabledDictIds.value.add(`source-${source.id}`)
+        }
+      }
     } catch (e) {
       loadError.value = e.message
       console.error('Failed to load external dictionary:', e)
-      // 降级到只使用内置词典
-      externalDictEnabled.value = false
     }
 
     // 加载用户自定义词典
@@ -156,6 +267,14 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
       userDictList.value = await getUserDictionaries()
       userDictEntriesCache = await getUserDictEntries()
       console.log(`[Dictionaries] Loaded ${userDictEntriesCache.length} user dictionary entries from ${userDictList.value.length} dicts`)
+
+      // 默认启用新加载的用户词典
+      for (const dict of userDictList.value) {
+        enabledDictIds.value.add(`user-${dict.id}`)
+      }
+
+      // 保存设置
+      persistSettings()
     } catch (e) {
       console.error('Failed to load user dictionaries:', e)
     }
@@ -163,14 +282,10 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
 
   /**
    * 上传用户自定义词典
-   * @param {File} file - JSON 文件
-   * @param {Function} onProgress - 进度回调
-   * @param {string} customName - 自定义词典名称（可选）
    */
   async function uploadUserDictionary(file, onProgress, customName) {
     let data
 
-    // 判断是否已经是解析后的数据
     if (typeof file === 'object' && Array.isArray(file)) {
       data = file
     } else {
@@ -178,20 +293,19 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
       data = JSON.parse(text)
     }
 
-    // 验证数据格式
     if (!Array.isArray(data)) {
       throw new Error('词典数据必须是数组格式')
     }
 
-    // 生成唯一 ID
     const id = `user-${Date.now()}`
     const name = customName || file.name.replace(/\.(json|mdx)$/i, '')
 
-    // 保存到 IndexedDB
     await saveUserDictionary(id, name, data)
-
-    // 更新状态
     await loadUserDictionaries()
+
+    // 默认启用新上传的词典
+    enabledDictIds.value.add(`user-${id}`)
+    persistSettings()
 
     return { id, name, entryCount: data.length }
   }
@@ -201,7 +315,9 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
    */
   async function removeUserDictionary(id) {
     await deleteUserDictionary(id)
+    enabledDictIds.value.delete(`user-${id}`)
     await loadUserDictionaries()
+    persistSettings()
   }
 
   /**
@@ -211,6 +327,66 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     await clearAllUserDictionaries()
     userDictList.value = []
     userDictEntriesCache = []
+    // 清除所有 user- 前缀的启用 ID
+    for (const id of enabledDictIds.value) {
+      if (id.startsWith('user-')) {
+        enabledDictIds.value.delete(id)
+      }
+    }
+    persistSettings()
+  }
+
+  /**
+   * 切换词典启用状态
+   */
+  function toggleDict(dictId, enabled) {
+    if (enabled) {
+      enabledDictIds.value.add(dictId)
+    } else {
+      enabledDictIds.value.delete(dictId)
+    }
+    persistSettings()
+  }
+
+  /**
+   * 启用所有词典
+   */
+  function enableAllDicts() {
+    enabledDictIds.value.add('builtin')
+    for (const source of externalSources.value) {
+      enabledDictIds.value.add(`source-${source.id}`)
+    }
+    for (const dict of userDictList.value) {
+      enabledDictIds.value.add(`user-${dict.id}`)
+    }
+    persistSettings()
+  }
+
+  /**
+   * 禁用所有词典
+   */
+  function disableAllDicts() {
+    enabledDictIds.value.clear()
+    persistSettings()
+  }
+
+  /**
+   * 持久化设置到 localStorage
+   */
+  function persistSettings() {
+    saveDictSettings({
+      enabledDictIds: [...enabledDictIds.value]
+    })
+  }
+
+  /**
+   * 恢复设置
+   */
+  function restoreSettings() {
+    const settings = loadDictSettings()
+    if (settings && settings.enabledDictIds) {
+      enabledDictIds.value = new Set(settings.enabledDictIds)
+    }
   }
 
   /**
@@ -220,36 +396,39 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     return allEntries.value
   }
 
-  /**
-   * 切换外部词典启用状态
-   */
-  function toggleExternalDict(enabled) {
-    externalDictEnabled.value = enabled
-  }
-
   // 兼容旧接口
   const presetDicts = ref([])
-  const enabledDictIds = ref(new Set())
   const isInitialized = ref(false)
+  const externalDictEnabled = computed(() => [...enabledDictIds.value].some(id => id.startsWith('source-') || id === 'external-mdx'))
+
+  function toggleExternalDict(enabled) {
+    if (enabled) {
+      enableAllDicts()
+    } else {
+      disableAllDicts()
+    }
+  }
   
   function toggleDict() {}
   function lookupTerm() { return [] }
 
   return {
     // State
-    externalDictEnabled,
     externalDictLoaded,
     loadProgress,
     loadError,
     userDictList,
-    presetDicts,
+    externalSources,
     enabledDictIds,
+    presetDicts,
     isInitialized,
 
     // Getters
     builtinEntries,
     allEntries,
+    dictList,
     isLoading,
+    externalDictEnabled,
 
     // Actions
     initPresetDicts,
@@ -257,6 +436,11 @@ export const useDictionariesStore = defineStore('dictionaries', () => {
     uploadUserDictionary,
     removeUserDictionary,
     clearUserDictionaries,
+    toggleDict,
+    enableAllDicts,
+    disableAllDicts,
+    persistSettings,
+    restoreSettings,
     getAllEnabledDictEntries,
     toggleExternalDict,
     toggleDict,
