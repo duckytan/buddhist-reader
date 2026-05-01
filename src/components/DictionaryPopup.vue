@@ -305,6 +305,15 @@ onBeforeUnmount(() => {
     font-size: var(--font-size-sm);
   }
 
+  :deep(.dict-source) {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    margin-top: 0.5em;
+    text-indent: 0;
+    text-align: right;
+    font-style: italic;
+  }
+
   :deep(img) {
     max-width: 100%;
     height: auto;
