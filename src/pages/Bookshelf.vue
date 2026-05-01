@@ -83,7 +83,7 @@
     <div v-if="recentReadings.length > 0" class="recent-section">
       <div class="section-header">
         <h3 class="section-title">最近阅读</h3>
-        <router-link to="/history" class="view-all-link">查看全部</router-link>
+        <span class="section-hint">最近阅读</span>
       </div>
       <div class="recent-horizontal">
         <div
