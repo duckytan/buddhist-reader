@@ -2,7 +2,7 @@
 
 > 基于 v2.0 方案 + 2026-05-02 决策会议结果 + `2026-05-02-v2-dictionary-architecture-design.md`
 > 目标：质量优先，用时间换质量
-> 版本：v4（结构化升级版，增加任务元数据、安全/合规/开发体验分析、关键路径标注、统一产出模板）
+> 版本：v6（第一批关键路径任务完成：T-01, T-04, T-05, T-06, T-07, T-12, T-14）
 
 ---
 
@@ -19,22 +19,13 @@
 
 ## 第一阶段：技术功能调研（15 个任务）
 
-### T-01 | Vue 3 架构 + Pinia 状态管理（合并原 T-01 + T-04）
+### T-01 | Vue 3 架构 + Pinia 状态管理（合并原 T-01 + T-04） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：3h ｜ **关键路径**：阻塞 T-13、T-46
-**任务**：调研 Vue 3 + Composition API + Pinia 在阅读器类项目中的最佳实践
-- 调研同类 Web 阅读器/电子书平台的 Vue 3 架构模式
-- Composition API vs Options API 选择依据
-- 组件拆分粒度：大组件 vs 微组件
-- provide/inject 在深层组件通信中的使用边界
-- Pinia 单 store vs 多 store 的划分原则
-- state 数据量控制：哪些放 store 哪些放局部 state
-- 跨页面数据同步：阅读进度、词典开关状态的持久化
-- store 的懒加载：按需注册
-- 对比：微信读书 Web 版、Kindle Cloud Reader 等项目的技术架构
+**产出**：`docs/plans/research/T-01-vue3-pinia-architecture.md`
 **验收标准**：
-- [ ] 明确项目目录结构和组件层级
-- [ ] 确定 Pinia store 划分方案（5个store是否合理）
-- [ ] 产出文档包含至少3个同类项目的架构对比
+- [x] 明确项目目录结构和组件层级
+- [x] 确定 Pinia store 划分方案（5个store是否合理）
+- [x] 产出文档包含至少3个同类项目的架构对比
 
 ### T-02 | Vite 5 构建配置优化
 **优先级**：P1 ｜ **预估工时**：2h ｜ **关键路径**：无
@@ -61,74 +52,37 @@
 - [ ] 确认 Vant 4 覆盖所有页面组件需求
 - [ ] 确定禅意风格覆盖方案（CSS 变量 or ConfigProvider）
 
-### T-04 | IndexedDB 存储方案（细化原 T-05）
+### T-04 | IndexedDB 存储方案（细化原 T-05） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：4h ｜ **关键路径**：阻塞 T-27~T-34、T-45
-**任务**：对比 idb、Dexie.js、localForage、原生 IndexedDB，确定最优方案
-- 性能对比：大数据量（10万+词条）的读写速度
-- 事务处理能力与回滚机制
-- 版本迁移机制：13 张表的结构设计验证
-- 内存占用分析：10万+词条索引 vs 全量数据的内存模型
-- 浏览器兼容性：iOS Safari、Android WebView 的差异
-- 错误恢复和降级策略：IndexedDB 不可用时 fallback 到 localStorage
-- 边界情况：存储空间满、并发读写冲突、数据损坏恢复
-- 是否需要引入离线优先框架（如 RxDB）
+**产出**：`docs/plans/research/T-04-indexeddb-storage.md`
 **验收标准**：
-- [ ] 13张表结构验证通过，无索引冲突
-- [ ] 10万条 dict_entries 批量写入耗时 < 2s
-- [ ] 明确降级方案（localStorage fallback 的边界）
+- [x] 13张表结构验证通过，无索引冲突
+- [x] 10万条 dict_entries 批量写入耗时 < 2s
+- [x] 明确降级方案（localStorage fallback 的边界）
 
-### T-05 | 高亮引擎完整方案（合并原 T-06 + T-10）
+### T-05 | 高亮引擎完整方案（合并原 T-06 + T-10） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：4h ｜ **关键路径**：阻塞 T-17、T-27、T-31
-**任务**：研究 Trie 树 + 高亮渲染在经文阅读场景的最优实现
-- 前端 Trie 实现对比：自定义实现 vs 开源库（trie-search、fast-levenshtein 等）
-- 中文分词与 Trie 匹配的结合
-- 长词优先策略的算法优化
-- Trie 内存占用评估：10万词条 × 轻量索引（含 dictId/pinyin/category）的内存模型
-- 对比 AC 自动机（Aho-Corasick）：多模式匹配的算法选择
-- Web Worker 中运行 Trie 的可行性
-- 虚拟滚动中的高亮性能优化
-- 高亮颜色方案：多词典区分（4色映射）
-- 点击高亮词条的事件处理与定位
-- 高亮与文本选择（selection）的冲突处理
-- 大段落经文（千字+）的高亮渲染性能
+**产出**：`docs/plans/research/T-05-highlight-engine.md`
 **验收标准**：
-- [ ] 确定 Trie vs AC 自动机的最终选择
-- [ ] 10万词条构建耗时 < 100ms
-- [ ] 高亮响应时间 < 50ms
+- [x] 确定 Trie vs AC 自动机的最终选择
+- [x] 10万词条构建耗时 < 100ms
+- [x] 高亮响应时间 < 50ms
 
-### T-06 | MDX 词典解析方案（细化原 T-07）
+### T-06 | MDX 词典解析方案（细化原 T-07） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：3h ｜ **关键路径**：阻塞 T-28、T-32、T-34
-**任务**：研究 MDX 词典格式的解析方案，覆盖兼容性和性能
-- mdict-js 的解析能力边界和已知问题
-- lzo-wasm 的解压性能和兼容性
-- MDX 格式规范研究：header 结构、词条索引、释义 HTML
-- 对比其他 MDX 解析方案：python-mdict、readmdict
-- 预解析性能测试：10万词条的解析时间和结果大小
-- MDX 转 Markdown 的准确性和格式保留
-- 兼容性陷阱：特殊编码、嵌套标签、内嵌资源的处理
-- 大文件（>5MB / >10MB）解析的内存峰值控制
+**产出**：`docs/plans/research/T-06-mdx-parsing.md`
 **验收标准**：
-- [ ] 明确 mdict-js 支持的 MDX 编码范围
-- [ ] 10万词条预解析耗时 < 10s（Web Worker 中）
-- [ ] 确定内存峰值控制方案
+- [x] 明确 mdict-js 支持的 MDX 编码范围
+- [x] 10万词条预解析耗时 < 10s（Web Worker 中）
+- [x] 确定内存峰值控制方案
 
-### T-07 | Markdown 格式方案（合并原 T-08 + T-28）
+### T-07 | Markdown 格式方案（合并原 T-08 + T-28） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：3h ｜ **关键路径**：阻塞 T-09、T-18
-**任务**：对比 Markdown 渲染引擎并验证统一 Markdown 方案的可行性
-- 渲染引擎对比：markdown-it、marked、remark、micromark
-- 渲染性能对比（移动端）
-- HTML 直通支持质量
-- 插件生态（梵文/藏文特殊标注支持）
-- XSS 防护能力（markdown-it `html: true` 时的注入风险）
-- SSR 兼容性（为未来预留）
-- HTML → Markdown 转换的准确性测试（针对佛教词典的复杂 HTML）
-- 梵文/藏文特殊格式保留测试
-- 对比：直接存 HTML 的方案
-- 结论：维持原方案 or 调整
+**产出**：`docs/plans/research/T-07-markdown-format.md`
 **验收标准**：
-- [ ] 确定 Markdown 渲染引擎
-- [ ] XSS 防护方案明确（sanitize or CSP）
-- [ ] 梵文/藏文特殊格式保留测试通过
+- [x] 确定 Markdown 渲染引擎
+- [x] XSS 防护方案明确（sanitize or CSP）
+- [x] 梵文/藏文特殊格式保留测试通过
 
 ### T-08 | Web Speech API TTS 引擎优化
 **优先级**：P2 ｜ **预估工时**：2h ｜ **关键路径**：无
@@ -186,21 +140,13 @@
 - [ ] 移动端 Worker 兼容性验证通过
 - [ ] 进度反馈方案确定
 
-### T-12 | v1.0 代码与数据逆向分析（新增）
+### T-12 | v1.0 代码与数据逆向分析（新增） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：2h ｜ **关键路径**：阻塞 T-48（方案整合）
-**任务**：分析 v1.0 存档代码，提取可迁移的数据和逻辑
-- 从 `archive/v1.0/src/data/dictionary.js` 提取 50+ 内置词典数据
-- 从 `archive/v1.0/src/data/sutras.js` 提取 5 部经书元数据和章节内容
-- 从 `archive/v1.0/src/data/pronunciation-map.js` 提取读音映射
-- 从 `archive/v1.0/src/utils/trie.js` 分析 Trie 实现逻辑
-- 从 `archive/v1.0/src/utils/storage.js` 分析 localStorage 数据结构
-- 从 `archive/v1.0/src/utils/tts.js` 分析 TTS 封装逻辑
-- 提取禅意 UI 配色方案、CSS 变量、字体栈
-- 对比 v1.0 与 v2.0 的差异，列出需要重构的代码块
+**产出**：`docs/plans/research/T-12-v1-analysis.md`
 **验收标准**：
-- [ ] 内置词典数据完整提取
-- [ ] 5部经书元数据和章节内容完整提取
-- [ ] 迁移清单明确（哪些直接复用，哪些需要重构）
+- [x] 内置词典数据完整提取
+- [x] 5部经书元数据和章节内容完整提取
+- [x] 迁移清单明确（哪些直接复用，哪些需要重构）
 
 ### T-13 | EventBus 跨组件通信方案（新增）
 **优先级**：P1 ｜ **预估工时**：2h ｜ **关键路径**：阻塞 T-16（开关部分）
@@ -215,20 +161,13 @@
 - [ ] 事件时序图明确
 - [ ] 防抖策略确定
 
-### T-14 | 前端安全分析（新增）
+### T-14 | 前端安全分析（新增） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：2h ｜ **关键路径**：阻塞 T-7、T-41
-**任务**：系统性分析项目前端安全风险和防护策略
-- XSS 防护：markdown-it `html: true` 的注入风险，DOMPurify 集成方案
-- MDX 文件安全：用户上传的 MDX 可能包含恶意脚本（script 标签、onerror 事件、javascript: 协议）
-- CSP 策略：Vercel 部署时的 Content-Security-Policy 配置
-- localStorage/IndexedDB 数据加密：用户笔记是否需加密存储
-- 文件上传安全：文件类型验证、大小限制、内容检测
-- 第三方依赖安全审计：mdict-js、lzo-wasm、markdown-it 等 npm 包的安全性
-- 对比：同类 Web App 的安全策略
+**产出**：`docs/plans/research/T-14-frontend-security.md`
 **验收标准**：
-- [ ] XSS 防护方案明确（sanitize + CSP）
-- [ ] MDX 文件安全检测流程确定
-- [ ] CSP 策略草案
+- [x] XSS 防护方案明确（sanitize + CSP）
+- [x] MDX 文件安全检测流程确定
+- [x] CSP 策略草案
 
 ### T-15 | 版权与合规分析（新增）
 **优先级**：P2 ｜ **预估工时**：1h ｜ **关键路径**：无
@@ -879,6 +818,19 @@
 | v3 | 49 | 补全 15 个遗漏项 |
 | v4 | 51 | 结构化升级：增加任务元数据、2个新任务（安全+合规）、关键路径标注、验收标准、统一产出模板 |
 | v5 | 52 | 新增 T-50：GitHub + Vercel 部署环境与限制分析 |
+| v6 | 52 | 完成第一批关键路径任务：T-01, T-04, T-05, T-06, T-07, T-12, T-14（7/52） |
+
+### v6 完成内容
+
+| 任务 | 产出文档 | 核心结论 |
+|------|----------|----------|
+| T-01 | `research/T-01-vue3-pinia-architecture.md` | Composition API + 5个Domain Store + 动态import懒加载 |
+| T-04 | `research/T-04-indexeddb-storage.md` | idb (~3KB gzip) + 分批写入(500/批) + 三级降级 |
+| T-05 | `research/T-05-highlight-engine.md` | 自定义 Trie（非AC自动机）+ 分层 + Worker构建 + 主线程匹配 |
+| T-06 | `research/T-06-mdx-parsing.md` | 分级策略（<5MB预解析/5-10MB索引懒加载/>10MB实时查询）+ mdict-js MIT分支 |
+| T-07 | `research/T-07-markdown-format.md` | markdown-it + DOMPurify + turndown 转换 |
+| T-12 | `research/T-12-v1-analysis.md` | 可复用：TTS/CSS Token/读音映射/MDX解析；需重构：Trie/存储/词典Store |
+| T-14 | `research/T-14-frontend-security.md` | 8层防御纵深 + DOMPurify + CSP + 文件验证 |
 
 ### v5 新增内容
 
