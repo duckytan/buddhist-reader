@@ -3,7 +3,7 @@
 ## Project State
 
 - **v1.0**: Archived under `archive/v1.0/`. Do not modify archived files.
-- **v2.0**: Planned (see `docs/PROJECT_V2_PLAN.md` and `docs/DICTIONARY_OPTIMIZATION_DISCUSSION.md`). Source code not yet created.
+- **v2.0**: Design finalized (see `docs/v2.0-detailed-design.md`). Ready for implementation.
 - **Current branch**: `main` — on first file write, create a feature branch per `auto-create-branch-on-master.md` rule (format: `YYMMDD-{feat|fix|chore|refactor}-<summary>`).
 
 ## Quick Commands
@@ -24,7 +24,7 @@ npm run lint      # ESLint with auto-fix (.vue/.js/.ts)
 | UI | Vant 4 (mobile-first) |
 | State | Pinia |
 | Router | Vue Router 4 |
-| Storage | IndexedDB via `idb` (v2.0), localStorage (v1.0 archived) |
+| Storage | IndexedDB via `idb` (v2.0) |
 | MDX | `mdict-js` + `lzo-wasm` |
 | Deploy | Vercel (SPA rewrites to index.html) |
 
@@ -32,8 +32,8 @@ npm run lint      # ESLint with auto-fix (.vue/.js/.ts)
 
 - Path alias: `@` → `src/`
 - `allowedHosts: ['.monkeycode-ai.online']` required for preview
-- `optimizeDeps.include: ['mdict-ts']` — mdict-ts must be pre-bundled
-- `define: { global: 'globalThis' }` — needed for mdict-ts browser compatibility
+- `optimizeDeps.include: ['mdict-js']` — mdict-js must be pre-bundled
+- `define: { global: 'globalThis' }` — needed for mdict-js browser compatibility
 - `commonjsOptions.transformMixedEsModules: true` — required for mdict-js
 - Build outputs to `dist/` with sourcemaps
 
@@ -65,8 +65,9 @@ src/
 
 ## Project Docs
 
-- `docs/PROJECT_V2_PLAN.md` — Full v2.0 architecture, database schema, phase plan, decisions
-- `docs/DICTIONARY_OPTIMIZATION_DISCUSSION.md` — Dictionary performance optimization discussion with 22 decisions (D1-D22) and 10 unresolved items
+- `docs/v2.0-detailed-design.md` — Master design document: architecture, data models, modules, core flows, Zen design system, CI/CD
+- `docs/plans/PROJECT_V2_PLAN.md` — Original v2.0 architecture and phase plan (reference)
+- `docs/plans/archive/DICTIONARY_OPTIMIZATION_DISCUSSION.md` — Dictionary optimization decisions D1-D22 (historical reference)
 - `.monkeycode/MEMORY.md` — User preferences and project knowledge
 
 ## Testing
