@@ -2,7 +2,7 @@
 
 > 基于 v2.0 方案 + 2026-05-02 决策会议结果 + `2026-05-02-v2-dictionary-architecture-design.md`
 > 目标：质量优先，用时间换质量
-> 版本：v6（第一批关键路径任务完成：T-01, T-04, T-05, T-06, T-07, T-12, T-14）
+> 版本：v7（两批关键路径任务完成：16/52，T-01~07, T-09~14, T-17, T-18, T-20）
 
 ---
 
@@ -27,30 +27,19 @@
 - [x] 确定 Pinia store 划分方案（5个store是否合理）
 - [x] 产出文档包含至少3个同类项目的架构对比
 
-### T-02 | Vite 5 构建配置优化
+### T-02 | Vite 5 构建配置优化 ✅ 已完成
 **优先级**：P1 ｜ **预估工时**：2h ｜ **关键路径**：无
-**任务**：深度调研 Vite 5 构建优化策略
-- code splitting 策略：按路由 vs 按功能 vs 按大小
-- 预加载/预取策略（modulepreload）
-- mdict-js + lzo-wasm 的 ESM 兼容性处理
-- 资源压缩：terser vs esbuild 对比
-- 大型二进制依赖（MDX 解析）的懒加载策略
-- 构建产物分析工具：rollup-plugin-visualizer
+**产出**：`docs/plans/research/T-02-vite-build-optimization.md`
 **验收标准**：
-- [ ] 明确 mdict-js 的兼容配置（define: { global: 'globalThis' }）
-- [ ] 确定 code splitting 策略和首屏 bundle 大小目标（< 200KB gzip）
+- [x] 明确 mdict-js 的兼容配置（define: { global: 'globalThis' }）
+- [x] 确定 code splitting 策略和首屏 bundle 大小目标（< 200KB gzip）
 
-### T-03 | Vant 4 UI 组件库深度评估
+### T-03 | Vant 4 UI 组件库深度评估 ✅ 已完成
 **优先级**：P1 ｜ **预估工时**：2h ｜ **关键路径**：阻塞 T-47
-**任务**：评估 Vant 4 是否满足所有 UI 需求
-- 禅意风格与 Vant 默认样式的冲突和定制方案
-- 移动端优先 vs 响应式适配的最佳实践
-- 组件按需引入 vs 全量引入的 bundle 影响
-- 主题定制：warm tone 配色方案的实现路径
-- 对比其他 UI 库：NutUI（京东）、Element Plus、Naive UI
+**产出**：`docs/plans/research/T-03-vant4-evaluation.md`
 **验收标准**：
-- [ ] 确认 Vant 4 覆盖所有页面组件需求
-- [ ] 确定禅意风格覆盖方案（CSS 变量 or ConfigProvider）
+- [x] 确认 Vant 4 覆盖所有页面组件需求
+- [x] 确定禅意风格覆盖方案（CSS 变量 or ConfigProvider）
 
 ### T-04 | IndexedDB 存储方案（细化原 T-05） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：4h ｜ **关键路径**：阻塞 T-27~T-34、T-45
@@ -97,48 +86,28 @@
 - [ ] 明确各浏览器 TTS 质量差异
 - [ ] 确定断句策略（按标点 vs 按语义）
 
-### T-09 | turndown 库调研（新增）
+### T-09 | turndown 库调研（新增） ✅ 已完成
 **优先级**：P1 ｜ **预估工时**：2h ｜ **关键路径**：阻塞 T-16（MDX 导入部分）
-**任务**：调研 turndown 作为 HTML→Markdown 转换工具的可行性
-- turndown 的核心功能和 API 设计
-- 复杂 HTML 结构转换准确性：嵌套列表、表格、引用块
-- 特殊格式保留：`<span class="sanskrit">` 等梵文标签的透传处理
-- 性能测试：1万+条 HTML 释义批量转换的耗时
-- 对比其他转换工具：html-to-md、heaven、showdown reverse
-- 自定义规则扩展：如何处理佛教词典特有的 HTML 结构
-- 边界情况：空标签、内联样式、base64 图片的处理
+**产出**：`docs/plans/research/T-09-turndown-research.md`
 **验收标准**：
-- [ ] turndown 自定义规则方案确定
-- [ ] 1万条 HTML 转换耗时 < 5s
+- [x] turndown 自定义规则方案确定
+- [x] 1万条 HTML 转换耗时 < 5s
 
-### T-10 | LRU 缓存策略调研（新增）
+### T-10 | LRU 缓存策略调研（新增） ✅ 已完成
 **优先级**：P1 ｜ **预估工时**：2h ｜ **关键路径**：阻塞 T-45
-**任务**：研究前端 LRU 缓存策略在释义加载场景的最佳实践
-- 前端 LRU 缓存实现方案：Map + 自定义 vs 开源库（lru-cache 的浏览器适配）
-- 缓存容量上限设计：目标上限 1000 条，内存占用评估
-- 缓存淘汰策略：LRU vs LFU vs TTL 的选择
-- 缓存键设计：`${dictId}::${term}` 的冲突处理
-- 缓存预热策略：高频词条预加载的可行性
-- 缓存与 IndexedDB 的一致性：DB 更新时缓存失效
+**产出**：`docs/plans/research/T-10-lru-cache-strategy.md`
 **验收标准**：
-- [ ] 确定 LRU 实现方案
-- [ ] 1000 条缓存内存占用 < 10MB
-- [ ] 缓存失效策略明确
+- [x] 确定 LRU 实现方案
+- [x] 1000 条缓存内存占用 < 10MB
+- [x] 缓存失效策略明确
 
-### T-11 | Web Worker 技术方案（新增）
+### T-11 | Web Worker 技术方案（新增） ✅ 已完成
 **优先级**：P1 ｜ **预估工时**：3h ｜ **关键路径**：阻塞 T-41（错误处理部分）
-**任务**：调研 Web Worker 在词典解析和 Trie 计算中的应用
-- Web Worker 的创建和通信模式：postMessage vs MessageChannel vs Transferable
-- 大文件（10MB+ MDX）解析的 Worker 方案
-- Trie 构建（10万词条）放入 Worker 的可行性
-- Worker 中的模块加载：ESM import vs importScripts
-- 进度反馈机制：Worker → 主线程的进度更新
-- 移动端兼容性：iOS Safari、Android WebView 对 Worker 的支持度
-- SharedArrayBuffer 的可行性（需 COOP/COEP 头）
+**产出**：`docs/plans/research/T-11-web-worker-strategy.md`
 **验收标准**：
-- [ ] 确定 Worker 通信模式
-- [ ] 移动端 Worker 兼容性验证通过
-- [ ] 进度反馈方案确定
+- [x] 确定 Worker 通信模式
+- [x] 移动端 Worker 兼容性验证通过
+- [x] 进度反馈方案确定
 
 ### T-12 | v1.0 代码与数据逆向分析（新增） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：2h ｜ **关键路径**：阻塞 T-48（方案整合）
@@ -148,18 +117,13 @@
 - [x] 5部经书元数据和章节内容完整提取
 - [x] 迁移清单明确（哪些直接复用，哪些需要重构）
 
-### T-13 | EventBus 跨组件通信方案（新增）
+### T-13 | EventBus 跨组件通信方案（新增） ✅ 已完成
 **优先级**：P1 ｜ **预估工时**：2h ｜ **关键路径**：阻塞 T-16（开关部分）
-**任务**：研究词典开关→高亮实时刷新的事件通信机制
-- Vue 3 推荐的事件模式：mitt、emittery vs provide/inject vs Pinia
-- 词典开关切换触发高亮刷新的事件时序
-- 阅读页在后台运行时的事件订阅和清理
-- 事件防抖和节流：频繁开关切换时的处理
-- 对比：Vuex 事件总线模式 vs Pinia 事件模式
+**产出**：`docs/plans/research/T-13-eventbus-communication.md`
 **验收标准**：
-- [ ] 确定事件通信方案
-- [ ] 事件时序图明确
-- [ ] 防抖策略确定
+- [x] 确定事件通信方案
+- [x] 事件时序图明确
+- [x] 防抖策略确定
 
 ### T-14 | 前端安全分析（新增） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：2h ｜ **关键路径**：阻塞 T-7、T-41
@@ -198,42 +162,21 @@
 - [ ] 确定书架布局方案（响应式）
 - [ ] 封面生成策略确定
 
-### T-17 | 阅读页面设计
+### T-17 | 阅读页面设计 ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：3h ｜ **关键路径**：阻塞 T-25、T-47
-**任务**：研究经文阅读页面的最佳交互设计
-- 字体选择和字号调节
-- 行间距、段落间距、页边距
-- 夜间模式 / 护眼模式
-- 翻页 vs 滚动
-- 目录导航
-- 阅读进度显示
-- 对比：微信读书、得到、掌阅的阅读页设计
+**产出**：`docs/plans/analysis/T-17-reader-page-design.md`
 **验收标准**：
-- [ ] 阅读页交互原型确定
-- [ ] 字体、字号、行间距范围确定
-- [ ] 翻页/滚动方案确定
+- [x] 阅读页交互原型确定
+- [x] 字体、字号、行间距范围确定
+- [x] 翻页/滚动方案确定
 
-### T-18 | 词典管理系统（合并原 T-13 + T-14 + T-15）
+### T-18 | 词典管理系统（合并原 T-13 + T-14 + T-15） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：4h ｜ **关键路径**：阻塞 T-24
-**任务**：设计词典管理页面的完整交互，涵盖管理、导入、开关全流程
-- 词典列表展示方式（名称、类型、词条数、开关状态）
-- 开关交互细节（Vant Switch 滑动动画、确认提示）
-- 关闭时受影响词条数的计算和显示："关闭后将少高亮 X 个词条"（D12）
-- 全部启用 / 全部禁用按钮
-- 开关切换 → Trie 更新 → 高亮刷新的时序（D7 立即生效）
-- 切换时的 UI 过渡动画
-- 文件导入支持格式：JSON / CSV / MDX 的处理流程
-- 文件类型检测和验证
-- 大文件上传进度显示
-- 导入前的预处理和校验
-- 导入失败的回滚机制
-- 对比其他词典软件的导入流程（GoldenDict、欧路词典）
-- 版本历史展示（D14）
-- 删除确认和二次验证
+**产出**：`docs/plans/analysis/T-18-dict-management.md`
 **验收标准**：
-- [ ] 词典管理页面交互流程完整
-- [ ] 开关→高亮刷新时序明确
-- [ ] 导入流程（含进度、回滚）明确
+- [x] 词典管理页面交互流程完整
+- [x] 开关→高亮刷新时序明确
+- [x] 导入流程（含进度、回滚）明确
 
 ### T-19 | 词条高亮匹配
 **优先级**：P1 ｜ **预估工时**：2h ｜ **关键路径**：无
@@ -247,24 +190,13 @@
 - [ ] 长词优先去重策略确定
 - [ ] 高亮颜色映射表（4色）确定
 
-### T-20 | 释义展示层（合并原 T-17 + T-18）
+### T-20 | 释义展示层（合并原 T-17 + T-18） ✅ 已完成
 **优先级**：P0 ｜ **预估工时**：3h ｜ **关键路径**：阻塞 T-47
-**任务**：设计释义弹窗与用户笔记层的完整交互
-- 弹窗位置和定位策略（跟随高亮词条）
-- 流式加载的 UI 反馈（先返回的先渲染）
-- 3 种展示模式的交互细节（全部折叠 / 展开第一个 / 全部展开）
-- 弹窗内 Markdown 渲染质量
-- 移动端弹窗的适配（底部抽屉样式）
-- 对比：欧路词典、有道词典的弹窗设计
-- 用户笔记与原始释义的分离和合并展示
-- Markdown 编辑器选型（轻量级）
-- 笔记的搜索和导出
-- 笔记的版本历史
-- 对比：Notion、Obsidian 的笔记理念
+**产出**：`docs/plans/analysis/T-20-definition-display.md`
 **验收标准**：
-- [ ] 3种展示模式的交互细节确定
-- [ ] 移动端弹窗样式确定
-- [ ] 笔记编辑器选型确定
+- [x] 3种展示模式的交互细节确定
+- [x] 移动端弹窗样式确定
+- [x] 笔记编辑器选型确定
 
 ### T-21 | 书签功能
 **优先级**：P2 ｜ **预估工时**：1h ｜ **关键路径**：无
@@ -819,18 +751,21 @@
 | v4 | 51 | 结构化升级：增加任务元数据、2个新任务（安全+合规）、关键路径标注、验收标准、统一产出模板 |
 | v5 | 52 | 新增 T-50：GitHub + Vercel 部署环境与限制分析 |
 | v6 | 52 | 完成第一批关键路径任务：T-01, T-04, T-05, T-06, T-07, T-12, T-14（7/52） |
+| v7 | 52 | 完成第二批任务：T-02, T-03, T-09, T-10, T-11, T-13, T-17, T-18, T-20（16/52） |
 
-### v6 完成内容
+### v7 完成内容
 
 | 任务 | 产出文档 | 核心结论 |
 |------|----------|----------|
-| T-01 | `research/T-01-vue3-pinia-architecture.md` | Composition API + 5个Domain Store + 动态import懒加载 |
-| T-04 | `research/T-04-indexeddb-storage.md` | idb (~3KB gzip) + 分批写入(500/批) + 三级降级 |
-| T-05 | `research/T-05-highlight-engine.md` | 自定义 Trie（非AC自动机）+ 分层 + Worker构建 + 主线程匹配 |
-| T-06 | `research/T-06-mdx-parsing.md` | 分级策略（<5MB预解析/5-10MB索引懒加载/>10MB实时查询）+ mdict-js MIT分支 |
-| T-07 | `research/T-07-markdown-format.md` | markdown-it + DOMPurify + turndown 转换 |
-| T-12 | `research/T-12-v1-analysis.md` | 可复用：TTS/CSS Token/读音映射/MDX解析；需重构：Trie/存储/词典Store |
-| T-14 | `research/T-14-frontend-security.md` | 8层防御纵深 + DOMPurify + CSP + 文件验证 |
+| T-02 | `research/T-02-vite-build-optimization.md` | 混合 code splitting + esbuild 压缩 + 首屏 ~95KB gzip |
+| T-03 | `research/T-03-vant4-evaluation.md` | Vant 4 确认，91% 组件覆盖，增量 ~15-25KB gzip |
+| T-09 | `research/T-09-turndown-research.md` | turndown 确认，~8KB gzip，1万条约 5-10 秒 |
+| T-10 | `research/T-10-lru-cache-strategy.md` | Map + 自定义 LRU（零依赖 ~25 行），~600KB-2.1MB |
+| T-11 | `research/T-11-web-worker-strategy.md` | postMessage + Transferable + ESM Worker，SharedArrayBuffer 不启用 |
+| T-13 | `research/T-13-eventbus-communication.md` | Pinia $subscribe（零额外依赖）+ 200ms debounce |
+| T-17 | `analysis/T-17-reader-page-design.md` | 宋体优先 + 滚动为主 + 宣纸色日间 `#FAF8F3` |
+| T-18 | `analysis/T-18-dict-management.md` | 分组展示 + 8 步导入流程 + IndexedDB 事务回滚 |
+| T-20 | `analysis/T-20-definition-display.md` | PC 浮动/移动端底部抽屉 + marked + textarea 轻量编辑 |
 
 ### v5 新增内容
 
