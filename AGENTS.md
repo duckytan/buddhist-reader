@@ -2,7 +2,7 @@
 
 ## Project State
 
-- **v1.0**: Archived under `archive/v1.0/`. Do not modify archived files.
+- **v1.0**: Archived under `archive/v1.0/`. Do not modify archived files. **Low credibility** — v1.0 was abandoned due to poor design decisions. Reference only for historical context, do not follow v1.0 patterns or implementations.
 - **v2.0**: Design finalized (see `docs/v2.0-detailed-design.md`). Ready for implementation.
 - **Current branch**: `main` — on first file write, create a feature branch per `auto-create-branch-on-master.md` rule (format: `YYMMDD-{feat|fix|chore|refactor}-<summary>`).
 

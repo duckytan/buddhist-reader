@@ -1,0 +1,131 @@
+/* ============================================================
+   Base Reset — 般若佛经阅读器 v2.0
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  background-color: var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* 标题排版 */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: var(--weight-semibold);
+  color: var(--color-ink);
+}
+
+h1 {
+  font-size: var(--text-h1);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-slight-tight);
+}
+
+h2 {
+  font-size: var(--text-h2);
+  line-height: var(--leading-normal);
+}
+
+h3 {
+  font-size: var(--text-h3);
+  line-height: var(--leading-relaxed);
+}
+
+/* 段落与文字 */
+p {
+  margin-bottom: var(--spacing-md);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-accent-light);
+}
+
+/* 列表 */
+ul, ol {
+  list-style: none;
+}
+
+/* 图片 */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 按钮重置 */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* 输入框重置 */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* 代码 */
+code, pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm);
+}
+
+/* 表格 */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* 选择高亮 */
+::selection {
+  background-color: var(--color-accent-light);
+  color: var(--color-canvas);
+}
+
+/* 滚动条样式（非移动端） */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-surface);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-hairline-strong);
+    border-radius: var(--radius-pill);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-subtle);
+  }
+}

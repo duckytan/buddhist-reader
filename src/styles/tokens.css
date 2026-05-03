@@ -1,0 +1,224 @@
+/* ============================================================
+   Zen Design Token System — 般若佛经阅读器 v2.0
+   ============================================================
+   禅意极简设计系统
+   灵感：Ollama 零阴影哲学 / Apple 阅读节奏 / Notion 粉彩分类
+   ============================================================ */
+
+/* ============================================================
+   1. 颜色系统
+   ============================================================ */
+
+:root {
+  /* 品牌与强调 — 檀木色单强调 */
+  --color-accent: #8b7355;
+  --color-accent-deep: #6b5540;
+  --color-accent-light: #a89279;
+
+  /* 表面 — 亮色模式 */
+  --color-canvas: #ffffff;
+  --color-surface: #f8f7f4;
+  --color-surface-soft: #fafaf8;
+
+  /* 文字 — 亮色模式 */
+  --color-ink: #2c2c2c;
+  --color-ink-muted: #6b6b6b;
+  --color-ink-subtle: #999999;
+
+  /* 分隔 */
+  --color-hairline: #e8e6e1;
+  --color-hairline-strong: #d0cdc6;
+
+  /* 语义色 */
+  --color-success: #4a7c59;
+  --color-warning: #c49a6c;
+  --color-error: #a85656;
+
+  /* 暗色模式 — 表面阶梯 */
+  --color-canvas-dark: #1a1a1a;
+  --color-surface-dark-1: #242424;
+  --color-surface-dark-2: #2e2e2e;
+  --color-surface-dark-3: #383838;
+
+  /* 暗色模式 — 文字 */
+  --color-ink-dark: #e0e0e0;
+  --color-ink-muted-dark: #888888;
+  --color-ink-subtle-dark: #666666;
+
+  /* 暗色模式 — 分隔 */
+  --color-hairline-dark: #333333;
+}
+
+/* ============================================================
+   2. 排版系统
+   ============================================================ */
+
+:root {
+  /* 字体家族 */
+  --font-serif: 'Noto Serif SC', 'Source Han Serif SC', Georgia, serif;
+  --font-sans: 'Noto Sans SC', 'Source Han Sans SC', system-ui, sans-serif;
+  --font-mono: 'Noto Sans Mono', ui-monospace, monospace;
+
+  /* 字体大小 */
+  --text-display: 40px;
+  --text-h1: 32px;
+  --text-h2: 24px;
+  --text-h3: 20px;
+  --text-body-lg: 18px;
+  --text-body: 17px;
+  --text-body-sm: 14px;
+  --text-caption: 12px;
+
+  /* 字重 */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* 行高 */
+  --leading-tight: 1.15;
+  --leading-snug: 1.25;
+  --leading-normal: 1.30;
+  --leading-relaxed: 1.35;
+  --leading-body: 1.65;
+  --leading-sm: 1.50;
+  --leading-caption: 1.40;
+
+  /* 字间距 */
+  --tracking-tight: -1px;
+  --tracking-slight-tight: -0.5px;
+  --tracking-normal: 0;
+}
+
+/* ============================================================
+   3. 间距系统
+   ============================================================ */
+
+:root {
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  --spacing-section: 64px;
+}
+
+/* ============================================================
+   4. 圆角系统
+   ============================================================ */
+
+:root {
+  --radius-container: 8px;
+  --radius-pill: 9999px;
+}
+
+/* ============================================================
+   5. 布局系统
+   ============================================================ */
+
+:root {
+  --max-content-width: 1280px;
+  --max-reading-width: 680px;
+  --reading-padding: 40px;
+}
+
+/* ============================================================
+   6. 响应式断点
+   ============================================================ */
+
+:root {
+  --breakpoint-phone: 480px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-wide: 1280px;
+}
+
+/* ============================================================
+   7. 触摸目标
+   ============================================================ */
+
+:root {
+  --touch-target: 44px;
+  --button-height: 40px;
+  --input-height: 44px;
+}
+
+/* ============================================================
+   8. 语义化 Token（方便组件使用）
+   ============================================================ */
+
+/* 按钮 */
+:root {
+  --btn-primary-bg: var(--color-accent);
+  --btn-primary-text: var(--color-canvas);
+  --btn-primary-hover: var(--color-accent-light);
+  --btn-primary-active: var(--color-accent-deep);
+
+  --btn-secondary-bg: transparent;
+  --btn-secondary-text: var(--color-accent);
+  --btn-secondary-border: var(--color-accent);
+
+  --btn-ghost-bg: transparent;
+  --btn-ghost-text: var(--color-ink-muted);
+}
+
+/* 卡片 */
+:root {
+  --card-bg: var(--color-canvas);
+  --card-radius: var(--radius-container);
+  --card-padding: var(--spacing-lg);
+  --card-border: 1px solid var(--color-hairline);
+
+  --card-sutra-padding: var(--spacing-xl);
+
+  --card-hover-bg: var(--color-surface);
+  --card-hover-border: 1px solid var(--color-hairline-strong);
+}
+
+/* 输入框 */
+:root {
+  --input-bg: var(--color-canvas);
+  --input-text: var(--color-ink);
+  --input-border: 1px solid var(--color-hairline);
+  --input-focus-border: 2px solid var(--color-accent);
+  --input-radius: var(--radius-pill);
+  --input-height: var(--input-height);
+}
+
+/* 标签 */
+:root {
+  --tag-bg: var(--color-surface);
+  --tag-text: var(--color-ink-muted);
+  --tag-radius: var(--radius-pill);
+  --tag-padding: 4px 12px;
+}
+
+/* 分类标签 — 粉彩系统 */
+:root {
+  --tag-mind-bg: #e8f5e9;
+  --tag-mind-text: #2e7d32;
+  --tag-sutra-bg: #fff3e0;
+  --tag-sutra-text: #e65100;
+  --tag-commentary-bg: #e3f2fd;
+  --tag-commentary-text: #1565c0;
+  --tag-mantra-bg: #f3e5f5;
+  --tag-mantra-text: #7b1fa2;
+}
+
+/* ============================================================
+   9. 暗色模式覆盖
+   ============================================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-canvas: var(--color-canvas-dark);
+    --color-surface: var(--color-surface-dark-1);
+    --color-surface-soft: var(--color-surface-dark-2);
+    --color-ink: var(--color-ink-dark);
+    --color-ink-muted: var(--color-ink-muted-dark);
+    --color-ink-subtle: var(--color-ink-subtle-dark);
+    --color-hairline: var(--color-hairline-dark);
+    --color-hairline-strong: #444444;
+  }
+}
