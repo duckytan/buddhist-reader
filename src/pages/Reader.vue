@@ -19,6 +19,7 @@
     </main>
 
     <ReaderTOC v-if="readerStore.showToc" />
+    <ReaderPagination />
     <DictPopup v-if="readerStore.selectedTerm" />
   </div>
 </template>
@@ -31,6 +32,7 @@ import { useStatsStore } from '@/stores/stats'
 import ReaderHeader from '@/components/reader/ReaderHeader.vue'
 import ReaderContent from '@/components/reader/ReaderContent.vue'
 import ReaderProgress from '@/components/reader/ReaderProgress.vue'
+import ReaderPagination from '@/components/reader/ReaderPagination.vue'
 import ReaderTOC from '@/components/reader/ReaderTOC.vue'
 import DictPopup from '@/components/dict/DictPopup.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'

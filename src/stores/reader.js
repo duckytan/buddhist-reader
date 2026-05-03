@@ -15,7 +15,9 @@ export const useReaderStore = defineStore('reader', {
     showToc: false,
     showSettings: false,
     selectedTerm: null,
-    dictResults: []
+    dictResults: [],
+    currentPage: 1,
+    itemsPerPage: 2000
   }),
 
   getters: {
@@ -27,6 +29,22 @@ export const useReaderStore = defineStore('reader', {
 
     hasProgress: (state) => {
       return state.scrollPosition > 0 || state.readPercentage > 0
+    },
+
+    totalPages: (state) => {
+      if (!state.content) return 1
+      return Math.ceil(state.content.length / state.itemsPerPage)
+    },
+
+    paginatedContent: (state) => {
+      if (!state.content) return ''
+      const start = (state.currentPage - 1) * state.itemsPerPage
+      const end = start + state.itemsPerPage
+      return state.content.slice(start, end)
+    },
+
+    pageIndicator: (state) => {
+      return `${state.currentPage} / ${Math.ceil(state.content.length / state.itemsPerPage) || 1}`
     }
   },
 
@@ -53,6 +71,7 @@ export const useReaderStore = defineStore('reader', {
 
     async loadChapter(chapterIndex) {
       this.currentChapter = chapterIndex
+      this.currentPage = 1
       this.loading = true
       try {
         const services = getServices()
@@ -63,20 +82,61 @@ export const useReaderStore = defineStore('reader', {
           this.currentChapter = progressResult.data.chapterIndex || chapterIndex
         }
 
-        this.content = this._getMockContent()
+        const contentResult = await services.sutra.getSutraContent(this.currentSutra.id)
+        if (contentResult.success) {
+          const data = contentResult.data
+          if (data.chapters && data.chapters.length > 0) {
+            const chapter = data.chapters[chapterIndex - 1] || data.chapters[0]
+            this.content = chapter.content || ''
+            this.totalChapters = data.chapters.length
+          } else {
+            this.content = data.content || this._getMockContent()
+          }
+        } else {
+          this.content = this._getMockContent()
+        }
+        
         this.highlightedHtml = this.content
       } catch (error) {
         this.error = error.message
+        this.content = this._getMockContent()
       } finally {
         this.loading = false
+      }
+    },
+
+    nextPage() {
+      const total = Math.ceil(this.content.length / this.itemsPerPage)
+      if (this.currentPage < total) {
+        this.currentPage++
+        this.scrollPosition = 0
+      }
+    },
+
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--
+        this.scrollPosition = 0
+      }
+    },
+
+    goToPage(page) {
+      const total = Math.ceil(this.content.length / this.itemsPerPage)
+      if (page >= 1 && page <= total) {
+        this.currentPage = page
+        this.scrollPosition = 0
       }
     },
 
     async lookupTerm(term) {
       this.selectedTerm = term
       const services = getServices()
-      const results = await services.dict.lookupTerms(term)
-      this.dictResults = results
+      const result = await services.dict.lookupTerms(term, [0])
+      if (result.success) {
+        this.dictResults = result.data
+      } else {
+        this.dictResults = []
+      }
     },
 
     clearSelectedTerm() {

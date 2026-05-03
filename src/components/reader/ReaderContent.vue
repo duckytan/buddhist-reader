@@ -33,6 +33,10 @@ watch(() => readerStore.content, () => {
   applyHighlight()
 })
 
+watch(() => readerStore.currentPage, () => {
+  applyHighlight()
+})
+
 onMounted(async () => {
   await rebuildHighlighter()
   applyHighlight()
@@ -51,9 +55,9 @@ async function rebuildHighlighter() {
 }
 
 function applyHighlight() {
-  if (!highlighter.value || !readerStore.content) return
+  if (!highlighter.value || !readerStore.paginatedContent) return
   readerStore.highlightedHtml = highlighter.value.highlight(
-    readerStore.content,
+    readerStore.paginatedContent,
     dictStore.activeDictIds
   )
 

@@ -59,9 +59,11 @@ const selectedCategory = computed(() => sutraStore.selectedCategory)
 
 const categoryLabels = {
   prajna: '般若部',
-  'pure-land': '净土部',
+  yogacara: '唯识部',
   chan: '禅宗部',
-  mantra: '咒语部',
+  mantra: '密咒部',
+  general: '佛学通论',
+  biography: '传记',
   custom: '自定义'
 }
 
