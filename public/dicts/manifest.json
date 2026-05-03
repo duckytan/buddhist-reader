@@ -1,0 +1,26 @@
+[
+  {
+    "id": "dict-1",
+    "name": "中国当代佛教网辞典",
+    "filename": "中国当代佛教网辞典.json",
+    "author": "中国当代佛教网",
+    "entryCount": 24552,
+    "description": "收录佛教基本词汇、人物、寺院、典籍等"
+  },
+  {
+    "id": "dict-2",
+    "name": "新编佛教辞典",
+    "filename": "新编佛教辞典___陈兵.json",
+    "author": "陈兵",
+    "entryCount": 4830,
+    "description": "陈兵教授编撰的综合性佛教辞典"
+  },
+  {
+    "id": "dict-3",
+    "name": "中华佛教百科全书",
+    "filename": "中華佛教百科全書2020_1_8_mdx.json",
+    "author": "中华佛教百科全书编委会",
+    "entryCount": 6399,
+    "description": "综合性佛教百科全书"
+  }
+]
