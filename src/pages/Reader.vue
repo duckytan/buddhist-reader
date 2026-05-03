@@ -1,5 +1,5 @@
 <template>
-  <div class="reader">
+  <div class="reader" @scroll="handleScroll">
     <ReaderHeader />
 
     <main class="reader-main">
@@ -14,6 +14,7 @@
 
       <div v-else class="reader-content">
         <ReaderContent />
+        <ReaderProgress />
       </div>
     </main>
 
@@ -23,11 +24,13 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useReaderStore } from '@/stores/reader'
+import { useStatsStore } from '@/stores/stats'
 import ReaderHeader from '@/components/reader/ReaderHeader.vue'
 import ReaderContent from '@/components/reader/ReaderContent.vue'
+import ReaderProgress from '@/components/reader/ReaderProgress.vue'
 import ReaderTOC from '@/components/reader/ReaderTOC.vue'
 import DictPopup from '@/components/dict/DictPopup.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
@@ -35,8 +38,26 @@ import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 const route = useRoute()
 const router = useRouter()
 const readerStore = useReaderStore()
+const statsStore = useStatsStore()
+
+let readingStartTime = Date.now()
+let saveTimer = null
+
+function handleScroll() {
+  readerStore.scrollPosition = document.documentElement.scrollTop
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight
+  if (docHeight > 0) {
+    readerStore.readPercentage = Math.min(100, (document.documentElement.scrollTop / docHeight) * 100)
+  }
+
+  clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => {
+    readerStore.saveProgress()
+  }, 1000)
+}
 
 onMounted(async () => {
+  readingStartTime = Date.now()
   const sutraId = parseInt(route.params.sutraId)
   if (sutraId) {
     await readerStore.loadSutra(sutraId)
@@ -44,7 +65,13 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  clearTimeout(saveTimer)
   readerStore.saveProgress()
+
+  const readingTime = Math.round((Date.now() - readingStartTime) / 1000)
+  if (readingTime > 10 && readerStore.currentSutra) {
+    statsStore.recordRead(readerStore.content.length, readingTime)
+  }
 })
 </script>
 
@@ -58,12 +85,13 @@ onUnmounted(() => {
 .reader-main {
   flex: 1;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
 }
 
 .reader-content {
   width: 100%;
   max-width: var(--max-reading-width);
+  margin: 0 auto;
   padding: var(--spacing-lg);
 }
 

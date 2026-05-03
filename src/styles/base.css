@@ -129,3 +129,40 @@ table {
     background: var(--color-ink-subtle);
   }
 }
+
+/* 移动端适配 */
+@media (max-width: 767px) {
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input, textarea, button {
+    font-size: 16px !important;
+  }
+}
+
+/* 暗色模式适配 */
+@media (prefers-color-scheme: dark) {
+  :root:not(.theme-day):not(.theme-eye-care) {
+    --color-canvas: var(--color-canvas-dark);
+    --color-surface: var(--color-surface-dark-1);
+    --color-surface-soft: var(--color-surface-dark-2);
+    --color-ink: var(--color-ink-dark);
+    --color-ink-muted: var(--color-ink-muted-dark);
+    --color-ink-subtle: var(--color-ink-subtle-dark);
+    --color-hairline: var(--color-hairline-dark);
+    --color-hairline-strong: #444444;
+  }
+}
+
+/* 护眼模式 */
+.theme-eye-care {
+  --color-canvas: #f5f0e8;
+  --color-surface: #eae5d9;
+  --color-surface-soft: #ede8dc;
+  --color-hairline: #d4cfbf;
+}

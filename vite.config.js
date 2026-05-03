@@ -20,12 +20,37 @@ export default defineConfig(({ mode }) => ({
     global: 'globalThis'
   },
   optimizeDeps: {
-    include: ['mdict-js']
+    include: ['mdict-js', 'lzo-wasm']
   },
   build: {
     sourcemap: true,
     commonjsOptions: {
       transformMixedEsModules: true
+    },
+    minify: 'esbuild',
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router')) {
+              return 'vue'
+            }
+            if (id.includes('vant')) {
+              return 'vant'
+            }
+            if (id.includes('markdown-it') || id.includes('turndown')) {
+              return 'markdown'
+            }
+          }
+        }
+      }
     }
+  },
+  ssr: {
+    noExternal: ['lzo-wasm']
+  },
+  worker: {
+    format: 'es'
   }
 }))
