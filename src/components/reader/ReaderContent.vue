@@ -49,6 +49,19 @@ async function rebuildHighlighter() {
     dictId: 0
   }))
   builder.insertBatch(terms)
+
+  const externalDicts = dictStore.externalDictionaries
+  for (const dict of externalDicts) {
+    if (dict.entries) {
+      for (const entry of dict.entries) {
+        builder.insertBatch([{
+          term: entry.term,
+          dictId: dict.id
+        }])
+      }
+    }
+  }
+
   const serialized = builder.serialize()
   const matcher = new TrieMatcher(serialized)
   highlighter.value = new Highlighter(matcher)

@@ -5,6 +5,7 @@ import { getBuiltinTermCount } from '@/data/builtinDictionary.js'
 export const useDictStore = defineStore('dict', {
   state: () => ({
     dictionaries: [],
+    externalDictionaries: [],
     activeDictIds: [0],
     loading: false,
     error: null,
@@ -49,6 +50,31 @@ export const useDictStore = defineStore('dict', {
         this.error = error.message
       } finally {
         this.loading = false
+      }
+    },
+
+    async loadExternalDictionaries() {
+      try {
+        const response = await fetch('/dicts/manifest.json')
+        if (!response.ok) throw new Error('Failed to load dict manifest')
+        const manifest = await response.json()
+
+        const externalDicts = []
+        for (const item of manifest) {
+          const dictResponse = await fetch(`/dicts/${item.filename}`)
+          if (dictResponse.ok) {
+            const dictData = await dictResponse.json()
+            externalDicts.push({
+              id: item.id,
+              name: item.name,
+              entries: dictData.entries || [],
+              filename: item.filename
+            })
+          }
+        }
+        this.externalDictionaries = externalDicts
+      } catch (error) {
+        console.warn('[DictStore] Failed to load external dictionaries:', error)
       }
     },
 

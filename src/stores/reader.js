@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { getServices } from '@/services/factory.js'
+import { useDictStore } from './dict.js'
 
 export const useReaderStore = defineStore('reader', {
   state: () => ({
@@ -136,11 +137,27 @@ scrollToTop() {
     async lookupTerm(term) {
       this.selectedTerm = term
       const services = getServices()
+      const dictStore = useDictStore()
       const result = await services.dict.lookupTerms(term, [0])
       if (result.success) {
         this.dictResults = result.data
       } else {
         this.dictResults = []
+      }
+
+      for (const dict of dictStore.externalDictionaries) {
+        const entry = dict.entries?.find(e => e.term === term)
+        if (entry) {
+          this.dictResults.push({
+            dictId: dict.id,
+            dictName: dict.name,
+            term: entry.term,
+            definition: entry.definition,
+            format: 'markdown',
+            pinyin: entry.pinyin || '',
+            category: entry.category || 'term'
+          })
+        }
       }
     },
 
