@@ -4,42 +4,7 @@
 > **状态**: 进行中
 > **预计总工时**: 80-120 小时
 > **优先级**: 按阶段顺序执行，不可跳过
-> **当前阶段**: Phase 2 已完成，Phase 3 待开始
-
----
-
-## Phase 1: 基础设施搭建（预计 8 小时）
-
-| ID | 任务 | 优先级 | 预估 | 状态 | 依赖 |
-|----|------|--------|------|------|------|
-| P1-01 | 创建 `src/main.js` 入口文件，初始化 Vue + Pinia + Router | P0 | 1h | ✅ 完成 | - |
-| P1-02 | 创建 `src/App.vue` 根组件 | P0 | 1h | ✅ 完成 | P1-01 |
-| P1-03 | 创建 `src/router/index.js` 路由配置（5 个页面路由） | P0 | 1h | ✅ 完成 | P1-01 |
-| P1-04 | 创建 `src/styles/tokens.css` 禅意 Token 系统 | P0 | 2h | ✅ 完成 | - |
-| P1-05 | 创建 `src/styles/base.css` 基础样式重置 | P0 | 1h | ✅ 完成 | P1-04 |
-| P1-06 | 创建 `src/styles/vant-override.css` Vant 主题覆盖 | P0 | 2h | ✅ 完成 | P1-04 |
-| P1-07 | 验证项目可启动，页面渲染正常 | P0 | 1h | ✅ 完成 | P1-01~P1-06 |
-
-**验收标准**: `npm run dev` 启动无报错，访问 localhost 显示空白应用框架。
-
----
-
-## Phase 2: 存储层 + 数据层（预计 12 小时）
-
-| ID | 任务 | 优先级 | 预估 | 状态 | 依赖 |
-|----|------|--------|------|------|------|
-| P2-01 | 创建 `src/storage/db.js` IndexedDB 初始化（13 张表结构） | P0 | 3h | ✅ 完成 | - |
-| P2-02 | 创建 `src/storage/sutraStore.js` 经书表操作 | P0 | 2h | ✅ 完成 | P2-01 |
-| P2-03 | 创建 `src/storage/dictStore.js` 词典表操作 | P0 | 2h | ✅ 完成 | P2-01 |
-| P2-04 | 创建 `src/storage/progressStore.js` 进度表操作 | P1 | 1h | ✅ 完成 | P2-01 |
-| P2-05 | 创建 `src/storage/noteStore.js` 笔记表操作 | P1 | 1h | ✅ 完成 | P2-01 |
-| P2-06 | 创建 `src/storage/statsStore.js` 统计表操作 | P1 | 1h | ✅ 完成 | P2-01 |
-| P2-07 | 创建 `src/storage/settingStore.js` 设置表操作 | P1 | 1h | ✅ 完成 | P2-01 |
-| P2-08 | 创建 `src/data/sutraManifest.js` 经书清单静态数据 | P0 | 1h | ✅ 完成 | - |
-| P2-09 | 创建 `src/data/builtinDictionary.js` 内置词典（50+ 词条） | P0 | 2h | ✅ 完成 | - |
-| P2-10 | 创建 `src/data/pronunciationMap.js` 读音映射（16 条） | P1 | 1h | ✅ 完成 | - |
-
-**验收标准**: IndexedDB 初始化成功，13 张表可读写，静态数据加载正常。
+> **当前阶段**: Phase 3 已完成，Phase 4 待开始
 
 ---
 
@@ -47,14 +12,14 @@
 
 | ID | 任务 | 优先级 | 预估 | 状态 | 依赖 |
 |----|------|--------|------|------|------|
-| P3-01 | 创建 `src/engine/trie/TrieNode.js` Trie 节点类 | P0 | 2h | 待开始 | - |
-| P3-02 | 创建 `src/engine/trie/TrieBuilder.js` Trie 构建器 | P0 | 4h | 待开始 | P3-01 |
-| P3-03 | 创建 `src/engine/trie/TrieMatcher.js` Trie 匹配器 | P0 | 3h | 待开始 | P3-01 |
-| P3-04 | 创建 `src/engine/highlighter.js` 高亮渲染引擎 | P0 | 4h | 待开始 | P3-03 |
-| P3-05 | 创建 `src/engine/mdxParser.js` MDX 解析器（对接 mdict-js） | P0 | 5h | 待开始 | - |
-| P3-06 | 创建 `src/engine/markdownRenderer.js` Markdown 渲染器（markdown-it） | P0 | 3h | 待开始 | - |
-| P3-07 | 创建 `src/engine/pinyin.js` 拼音处理工具 | P1 | 2h | 待开始 | P2-10 |
-| P3-08 | 创建 `src/engine/formatter.js` 释义格式化工具 | P1 | 2h | 待开始 | P3-06 |
+| P3-01 | 创建 `src/engine/trie/TrieNode.js` Trie 节点类 | P0 | 2h | ✅ 完成 | - |
+| P3-02 | 创建 `src/engine/trie/TrieBuilder.js` Trie 构建器 | P0 | 4h | ✅ 完成 | P3-01 |
+| P3-03 | 创建 `src/engine/trie/TrieMatcher.js` Trie 匹配器 | P0 | 3h | ✅ 完成 | P3-01 |
+| P3-04 | 创建 `src/engine/highlighter.js` 高亮渲染引擎 | P0 | 4h | ✅ 完成 | P3-03 |
+| P3-05 | 创建 `src/engine/mdxParser.js` MDX 解析器（对接 mdict-js） | P0 | 5h | ✅ 完成 | - |
+| P3-06 | 创建 `src/engine/markdownRenderer.js` Markdown 渲染器（markdown-it） | P0 | 3h | ✅ 完成 | - |
+| P3-07 | 创建 `src/engine/pinyin.js` 拼音处理工具 | P1 | 2h | ✅ 完成 | P2-10 |
+| P3-08 | 创建 `src/engine/formatter.js` 释义格式化工具 | P1 | 2h | ✅ 完成 | P3-06 |
 
 **验收标准**: Trie 引擎可构建和匹配 1000+ 词条，高亮渲染正确，MDX 解析正常。
 
