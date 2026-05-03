@@ -55,6 +55,7 @@ export const useReaderStore = defineStore('reader', {
       this.currentChapter = chapterIndex
       this.loading = true
       try {
+        const services = getServices()
         const progressResult = await services.progress.getProgress(this.currentSutra.id)
         if (progressResult.success && progressResult.data) {
           this.scrollPosition = progressResult.data.scrollPosition || 0
