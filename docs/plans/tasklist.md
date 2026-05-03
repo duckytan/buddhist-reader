@@ -4,7 +4,7 @@
 > **状态**: 进行中
 > **预计总工时**: 80-120 小时
 > **优先级**: 按阶段顺序执行，不可跳过
-> **当前阶段**: Phase 3 已完成，Phase 4 待开始
+> **当前阶段**: Phase 6-7 已完成，Phase 8 待开始
 
 ---
 
@@ -65,22 +65,22 @@
 
 | ID | 任务 | 优先级 | 预估 | 状态 | 依赖 |
 |----|------|--------|------|------|------|
-| P6-01 | 创建 `src/pages/Bookshelf.vue` 书架页 | P0 | 4h | 待开始 | P5-01 |
-| P6-02 | 创建 `src/components/bookshelf/SutraCard.vue` 经书卡片 | P0 | 2h | 待开始 | P6-01 |
-| P6-03 | 创建 `src/pages/Reader.vue` 阅读器页框架 | P0 | 2h | 待开始 | P5-03 |
-| P6-04 | 创建 `src/components/reader/ReaderHeader.vue` 阅读器头部 | P0 | 2h | 待开始 | P6-03 |
-| P6-05 | 创建 `src/components/reader/ReaderContent.vue` 阅读器内容区 | P0 | 4h | 待开始 | P3-04, P6-03 |
-| P6-06 | 创建 `src/components/reader/ReaderTOC.vue` 目录导航 | P1 | 3h | 待开始 | P6-03 |
-| P6-07 | 创建 `src/components/reader/ReaderProgress.vue` 进度指示 | P1 | 2h | 待开始 | P6-03 |
-| P6-08 | 创建 `src/pages/DictManager.vue` 词典管理页 | P0 | 4h | 待开始 | P5-02 |
-| P6-09 | 创建 `src/components/dict/DictPopup.vue` 词典弹出框 | P0 | 4h | 待开始 | P3-06, P3-08 |
-| P6-10 | 创建 `src/pages/Settings.vue` 设置页 | P1 | 3h | 待开始 | P5-04 |
-| P6-11 | 创建 `src/pages/Stats.vue` 功德统计页 | P2 | 3h | 待开始 | P5-05 |
-| P6-12 | 创建 `src/components/common/MarkdownRenderer.vue` Markdown 渲染组件 | P0 | 3h | 待开始 | P3-06 |
-| P6-13 | 创建 `src/components/common/NoteEditor.vue` 笔记编辑器 | P1 | 3h | 待开始 | P5-03 |
-| P6-14 | 创建 `src/components/common/SearchBar.vue` 搜索栏 | P1 | 2h | 待开始 | - |
-| P6-15 | 创建 `src/components/common/ThemeSwitcher.vue` 主题切换器 | P1 | 2h | 待开始 | P1-06 |
-| P6-16 | 创建 `src/components/common/LoadingSpinner.vue` 加载动画 | P1 | 1h | 待开始 | P1-04 |
+| P6-01 | 创建 `src/pages/Bookshelf.vue` 书架页 | P0 | 4h | ✅ 完成 | P5-01 |
+| P6-02 | 创建 `src/components/bookshelf/SutraCard.vue` 经书卡片 | P0 | 2h | ✅ 完成 | P6-01 |
+| P6-03 | 创建 `src/pages/Reader.vue` 阅读器页框架 | P0 | 2h | ✅ 完成 | P5-03 |
+| P6-04 | 创建 `src/components/reader/ReaderHeader.vue` 阅读器头部 | P0 | 2h | ✅ 完成 | P6-03 |
+| P6-05 | 创建 `src/components/reader/ReaderContent.vue` 阅读器内容区 | P0 | 4h | ✅ 完成 | P3-04, P6-03 |
+| P6-06 | 创建 `src/components/reader/ReaderTOC.vue` 目录导航 | P1 | 3h | ✅ 完成 | P6-03 |
+| P6-07 | 创建 `src/components/reader/ReaderProgress.vue` 进度指示 | P1 | 2h | ✅ 完成 | P6-03 |
+| P6-08 | 创建 `src/pages/DictManager.vue` 词典管理页 | P0 | 4h | ✅ 完成 | P5-02 |
+| P6-09 | 创建 `src/components/dict/DictPopup.vue` 词典弹出框 | P0 | 4h | ✅ 完成 | P3-06, P3-08 |
+| P6-10 | 创建 `src/pages/Settings.vue` 设置页 | P1 | 3h | ✅ 完成 | P5-04 |
+| P6-11 | 创建 `src/pages/Stats.vue` 功德统计页 | P2 | 3h | ✅ 完成 | P5-05 |
+| P6-12 | 创建 `src/components/common/MarkdownRenderer.vue` Markdown 渲染组件 | P0 | 3h | ✅ 完成 | P3-06 |
+| P6-13 | 创建 `src/components/common/NoteEditor.vue` 笔记编辑器 | P1 | 3h | ✅ 完成 | P5-03 |
+| P6-14 | 创建 `src/components/common/SearchBar.vue` 搜索栏 | P1 | 2h | ✅ 完成 | - |
+| P6-15 | 创建 `src/components/common/ThemeSwitcher.vue` 主题切换器 | P1 | 2h | ✅ 完成 | P1-06 |
+| P6-16 | 创建 `src/components/common/LoadingSpinner.vue` 加载动画 | P1 | 1h | ✅ 完成 | P1-04 |
 
 **验收标准**: 5 个页面可正常访问，核心交互流程完整。
 
@@ -90,11 +90,11 @@
 
 | ID | 任务 | 优先级 | 预估 | 状态 | 依赖 |
 |----|------|--------|------|------|------|
-| P7-01 | 创建 `src/utils/validateFile.js` 文件验证工具 | P0 | 2h | 待开始 | - |
-| P7-02 | 创建 `src/utils/mdxScanner.js` MDX 恶意内容扫描 | P0 | 2h | 待开始 | - |
-| P7-03 | 创建 `src/utils/logger.js` 轻量日志模块 | P1 | 1h | 待开始 | - |
-| P7-04 | 创建 `src/utils/errorHandler.js` 错误分类处理 | P1 | 2h | 待开始 | - |
-| P7-05 | 创建 `src/utils/idbErrorHandler.js` IndexedDB 错误处理 | P1 | 1h | 待开始 | P2-01 |
+| P7-01 | 创建 `src/utils/validateFile.js` 文件验证工具 | P0 | 2h | ✅ 完成 | - |
+| P7-02 | 创建 `src/utils/mdxScanner.js` MDX 恶意内容扫描 | P0 | 2h | ✅ 完成 | - |
+| P7-03 | 创建 `src/utils/logger.js` 轻量日志模块 | P1 | 1h | ✅ 完成 | - |
+| P7-04 | 创建 `src/utils/errorHandler.js` 错误分类处理 | P1 | 2h | ✅ 完成 | - |
+| P7-05 | 创建 `src/utils/idbErrorHandler.js` IndexedDB 错误处理 | P1 | 1h | ✅ 完成 | P2-01 |
 
 **验收标准**: 文件导入验证正常，错误捕获和提示友好。
 
@@ -125,9 +125,9 @@ Phase 8 (联调优化) ← Phase 7 (工具层) ← Phase 6 (页面组件) ← Ph
 
 ## 里程碑
 
-| 里程碑 | 包含阶段 | 预计完成 | 交付物 |
-|--------|----------|----------|--------|
-| **M1: 骨架搭建** | Phase 1-2 | Week 1 | 项目可启动，存储层就绪 |
-| **M2: 引擎就绪** | Phase 3-4 | Week 2-3 | Trie 引擎、高亮、MDX 解析可用 |
-| **M3: 页面可用** | Phase 5-6 | Week 3-5 | 5 个核心页面可交互 |
-| **M4: 产品发布** | Phase 7-8 | Week 5-6 | 完整产品上线 Vercel |
+| 里程碑 | 状态 |
+|--------|------|
+| **M1: 骨架搭建** | ✅ 完成 |
+| **M2: 引擎就绪** | ✅ 完成 |
+| **M3: 页面可用** | ✅ 完成 |
+| **M4: 产品发布** | Phase 8 进行中 |
