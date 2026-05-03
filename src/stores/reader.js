@@ -105,18 +105,23 @@ export const useReaderStore = defineStore('reader', {
       }
     },
 
+scrollToTop() {
+      this.scrollPosition = 0
+      window.scrollTo(0, 0)
+    },
+
     nextPage() {
       const total = Math.ceil(this.content.length / this.itemsPerPage)
       if (this.currentPage < total) {
         this.currentPage++
-        this.scrollPosition = 0
+        this.scrollToTop()
       }
     },
 
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--
-        this.scrollPosition = 0
+        this.scrollToTop()
       }
     },
 
@@ -124,7 +129,7 @@ export const useReaderStore = defineStore('reader', {
       const total = Math.ceil(this.content.length / this.itemsPerPage)
       if (page >= 1 && page <= total) {
         this.currentPage = page
-        this.scrollPosition = 0
+        this.scrollToTop()
       }
     },
 
