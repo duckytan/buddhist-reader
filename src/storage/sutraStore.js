@@ -38,9 +38,9 @@ export async function deleteSutra(id) {
   await db.delete(TABLES.SUTRAS, id)
   const tx = db.transaction(TABLES.SUTRA_CHAPTERS, 'readwrite')
   const index = await tx.store.index('sutraId')
-  const cursor = await index.openCursor(IDBKeyRange.only(id))
-  while (cursor) {
-    await cursor.delete()
-    cursor = await cursor.continue()
+  let c = await index.openCursor(IDBKeyRange.only(id))
+  while (c) {
+    await c.delete()
+    c = await c.continue()
   }
 }
