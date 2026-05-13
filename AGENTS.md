@@ -2,55 +2,17 @@
 
 ## Project State
 
-- **v1.0**: Archived under `archive/v1.0/`. Do not modify archived files. **Low credibility** — v1.0 was abandoned due to poor design decisions. Reference only for historical context, do not follow v1.0 patterns or implementations.
-- **v2.0**: Design finalized (see `docs/v2.0-detailed-design.md`). Ready for implementation.
+- **v1.0**: Archived under `archive/v1.0/`. Low credibility — abandoned due to poor design. Reference only for historical context.
+- **v2.0**: Archived under `archive/v2.0/`. Had working UI but poor module boundaries and fragile data layer. Design style (Zen CSS tokens) and data assets (sutras/dicts JSON) are reusable.
+- **v3.0**: Ready for development. Starting fresh with clearer module boundaries, keeping v2.0's design style and data.
 - **Current branch**: `main` — on first file write, create a feature branch per `auto-create-branch-on-master.md` rule (format: `YYMMDD-{feat|fix|chore|refactor}-<summary>`).
 
-## Quick Commands
+## Reusable Assets from v2.0
 
-```bash
-npm run dev       # Start Vite dev server (port 5173)
-npm run build     # Production build → dist/
-npm run preview   # Preview production build
-npm run lint      # ESLint with auto-fix (.vue/.js/.ts)
-```
-
-## Tech Stack (v2.0 Target)
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | Vue 3 (Composition API) |
-| Build | Vite 5 |
-| UI | Vant 4 (mobile-first) |
-| State | Pinia |
-| Router | Vue Router 4 |
-| Storage | IndexedDB via `idb` (v2.0) |
-| MDX | `mdict-js` + `lzo-wasm` |
-| Deploy | Vercel (SPA rewrites to index.html) |
-
-## Key Vite Config Notes (from v1.0, carry forward to v2.0)
-
-- Path alias: `@` → `src/`
-- `allowedHosts: ['.monkeycode-ai.online']` required for preview
-- `optimizeDeps.include: ['mdict-js']` — mdict-js must be pre-bundled
-- `define: { global: 'globalThis' }` — needed for mdict-js browser compatibility
-- `commonjsOptions.transformMixedEsModules: true` — required for mdict-js
-- Build outputs to `dist/` with sourcemaps
-
-## Architecture (v2.0 Plan)
-
-```
-src/
-├── services/       # Data access abstraction (Sutra/Dict/TTS/Settings/Stats)
-├── storage/        # IndexedDB layer (db.js, *Store.js, fileCache.js)
-├── engine/         # Core: dynamic Trie, highlighter, pinyin, mdxParser
-├── stores/         # Pinia stores (sutra, dict, reader, setting, stats)
-├── components/     # bookshelf/, reader/, dict/, common/
-├── pages/          # Bookshelf, Reader, DictManager, Settings, Stats
-└── data/           # Static data only (builtin dict, sutra manifest, pronunciation)
-```
-
-**Design principles**: Pure frontend first, service layer abstracted for future backend API switch, lazy-load all data, IndexedDB for structured storage.
+- **Design system**: `archive/v2.0/src/styles/tokens.css`, `base.css`, `vant-override.css` — Zen design tokens
+- **Sutra data**: `public/sutras/*.json` + `public/sutras/manifest.json` — 30 sutras
+- **Dict data**: `public/dicts/*.json` + `public/dicts/manifest.json` — 3 dictionaries, 35781 entries
+- **Conversion scripts**: `scripts/convert-sutras.cjs`, `scripts/convert-dictionary.cjs`
 
 ## Iron Rules
 
@@ -65,18 +27,6 @@ src/
 
 ## Project Docs
 
-- `docs/v2.0-detailed-design.md` — Master design document: architecture, data models, modules, core flows, Zen design system, CI/CD
-- `docs/plans/PROJECT_V2_PLAN.md` — Original v2.0 architecture and phase plan (reference)
-- `docs/plans/archive/DICTIONARY_OPTIMIZATION_DISCUSSION.md` — Dictionary optimization decisions D1-D22 (historical reference)
+- `docs/v2.0-detailed-design.md` — v2.0 design document (reference only, v3.0 will have new design)
+- `archive/v2.0/` — Full v2.0 source code, for reference
 - `.monkeycode/MEMORY.md` — User preferences and project knowledge
-
-## Testing
-
-- No test framework configured yet in v1.0 or v2.0 plan.
-- When adding tests, follow Vue 3 conventions (Vitest recommended for Vite projects).
-
-## Gotchas
-
-- **mdict-js / mdict-ts compatibility**: These are the trickiest dependencies. Require `global` → `globalThis` polyfill, CommonJS transform, and explicit optimizeDeps inclusion.
-- **IndexedDB `idb` package**: Chosen over Dexie.js for smaller bundle (~1KB gzip). Simple table structures, no ORM.
-- **MDX dictionaries**: .mdx files are binary format. Small files (<5MB) should be pre-parsed to JSON in IndexedDB; large files kept as-is and queried via mdict-js.
