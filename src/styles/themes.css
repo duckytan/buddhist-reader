@@ -1,0 +1,50 @@
+[data-theme="night"] {
+  --color-canvas: #1a1a1a;
+  --color-surface: #242424;
+  --color-surface-soft: #2e2e2e;
+
+  --color-ink: #e0e0e0;
+  --color-ink-muted: #888888;
+  --color-ink-subtle: #666666;
+
+  --color-hairline: #333333;
+  --color-hairline-strong: #444444;
+
+  --color-accent: #a08060;
+  --color-accent-deep: #8b7355;
+  --color-accent-light: #c4a882;
+}
+
+[data-theme="eye-care"] {
+  --color-canvas: #f5f0e8;
+  --color-surface: #eae5d9;
+  --color-surface-soft: #ede8dc;
+
+  --color-ink: #5c4b3a;
+  --color-ink-muted: #7a6a58;
+  --color-ink-subtle: #9a8a78;
+
+  --color-hairline: #d4cfbf;
+  --color-hairline-strong: #bdb8a8;
+
+  --color-accent: #8b7355;
+  --color-accent-deep: #6b5540;
+  --color-accent-light: #a89279;
+}
+
+[data-theme="paper"] {
+  --color-canvas: #f8f7f4;
+  --color-surface: #f0efe6;
+  --color-surface-soft: #f5f4ee;
+
+  --color-ink: #2c2c2c;
+  --color-ink-muted: #6b6b6b;
+  --color-ink-subtle: #999999;
+
+  --color-hairline: #e0ddd4;
+  --color-hairline-strong: #c8c4b8;
+
+  --color-accent: #8b7355;
+  --color-accent-deep: #6b5540;
+  --color-accent-light: #a89279;
+}

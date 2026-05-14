@@ -11,7 +11,7 @@
   - 创建 `src/router/index.js`，配置 `/`（书架）和 `/reader/:id`（阅读）路由，阅读页使用懒加载（参考 §3.2、§8.1）
   - 安装依赖并验证 `npm run dev` 正常启动
 
-- [ ] 2. 样式系统与主题基础
+- [x] 2. 样式系统与主题基础
   - 创建 `src/styles/tokens.css`，从 `archive/v2.0/src/styles/tokens.css` 复用颜色、间距、排版、圆角 tokens（参考 §6.1、Reusable Assets）
   - 创建 `src/styles/base.css`，定义基础 HTML 样式、链接、列表、零阴影禅意风格（参考 §3.2）
   - 创建 `src/styles/themes.css`，定义 `[data-theme="night"]`、`[data-theme="eye-care"]`、`[data-theme="paper"]` 主题变量（参考 §6.1、§6.2）
