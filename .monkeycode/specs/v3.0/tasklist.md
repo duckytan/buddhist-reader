@@ -2,7 +2,7 @@
 
 > 基于设计文档：docs/plans/2026-05-03-v3.0-architecture-design.md
 
-- [ ] 1. 项目搭建与基础配置
+- [x] 1. 项目搭建与基础配置
   - 创建 `package.json`，声明 Vue 3 + Vite + Pinia + Vue Router 依赖（参考 §3.1 技术栈）
   - 创建 `vite.config.js`，配置 `host: true`、`allowedHosts: ['.monkeycode-ai.online']`、路由懒加载代码分割（参考 §8.1、AGENTS.md Vite Gotchas）
   - 创建 `index.html`，引入 `src/main.js`，设置 viewport meta（参考 §10.1）
