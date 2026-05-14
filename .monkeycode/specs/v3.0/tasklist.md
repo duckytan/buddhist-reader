@@ -31,7 +31,7 @@
   - 实现加载骨架屏：经书列表加载时显示 skeleton 占位（参考 §9.2）
   - 实现加载失败状态：显示错误信息 + 重试按钮（参考 §9.1、§9.2）
 
-- [ ] 5. 阅读页面基础
+- [x] 5. 阅读页面基础
   - 创建 `src/stores/reader.js`，定义 readerStore：滚动位置、书签列表、阅读时长、当前章节，换经书时重置（参考 §3.3 Store 边界）
   - 创建 `src/stores/settings.js`，定义 settingsStore：字体大小、行间距、主题偏好，持久化到 localStorage（参考 §3.3、§4.3）
   - 创建 `src/composables/useSutraLoader.js`，封装 fetch 经书 manifest + 内容的异步逻辑（参考 §4.1）
