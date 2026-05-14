@@ -7,10 +7,11 @@
 - [ ] **1.1** 创建 package.json（Vue 3 + Vite + Pinia + Vue Router）
 - [ ] **1.2** 创建 vite.config.js（host/allowedHosts/globalThis 等配置）
 - [ ] **1.3** 创建 index.html（HTML 入口）
-- [ ] **1.4** 创建 src/main.js（Vue 实例、路由、Pinia 注册）
+- [ ] **1.4** 创建 src/main.js（Vue 实例、路由、Pinia 注册、错误边界）
 - [ ] **1.5** 创建 src/App.vue（根组件）
 - [ ] **1.6** 创建 src/router/index.js（路由配置：/ 和 /reader/:id）
-- [ ] **1.7** 安装依赖并验证开发服务器运行
+- [ ] **1.7** 创建 src/data/dictIndex.js 构建脚本（扫描 public/dicts 生成索引）
+- [ ] **1.8** 安装依赖并验证开发服务器运行
 
 ## Phase 2: 书架页面
 
@@ -50,7 +51,7 @@
 
 ## Phase 5: 阅读增强
 
-- [ ] **5.1** 创建 src/stores/setting.js（设置 Store）
+- [ ] **5.1** 创建 src/stores/settings.js（全局设置 Store）
 - [ ] **5.2** 创建 src/composables/useTheme.js（主题管理）
 - [ ] **5.3** 创建 src/styles/tokens.css（设计 tokens）
 - [ ] **5.4** 创建 src/styles/themes.css（主题变量）
@@ -67,10 +68,14 @@
 - [ ] **6.2** 实现笔记/批注功能
 - [ ] **6.3** 实现阅读时长统计
 
-## Phase 7: 联调优化
+## Phase 7: 测试与联调
 
-- [ ] **7.1** 移动端适配
-- [ ] **7.2** 性能优化（滚动节流、懒加载）
-- [ ] **7.3** 错误处理（加载失败、网络断开）
-- [ ] **7.4** 代码规范检查（ESLint）
-- [ ] **7.5** 构建验证
+- [ ] **7.1** 配置 Vitest + Vue Test Utils
+- [ ] **7.2** 编写词典索引单元测试
+- [ ] **7.3** 编写高亮引擎单元测试
+- [ ] **7.4** 编写阅读进度管理单元测试
+- [ ] **7.5** 移动端适配
+- [ ] **7.6** 性能优化（滚动节流、懒加载）
+- [ ] **7.7** 错误处理（加载失败、网络断开）
+- [ ] **7.8** 代码规范检查（ESLint）
+- [ ] **7.9** 构建验证

@@ -32,11 +32,10 @@
 
 - `host: true` required for preview; without it the dev server refuses external connections
 - `allowedHosts: ['.monkeycode-ai.online']` required for preview platform
-- `define: { global: 'globalThis' }` — needed for mdict-js/lzo-wasm
-- `optimizeDeps.include: ['mdict-js', 'lzo-wasm']` — these must be pre-bundled
-- `commonjsOptions.transformMixedEsModules: true` — mdict-js is CommonJS
-- `ssr.noExternal: ['lzo-wasm']` — WASM module must not be externalized
+- `define: { global: 'globalThis' }` — only needed if mdict-js/lzo-wasm are used
 - `lzo-wasm.wasm` must live in `public/` (Vite cannot import .wasm as a module)
+
+**Note**: v3.0 uses JSON dicts directly, so `mdict-js`, `lzo-wasm`, and `optimizeDeps.include` are NOT needed unless MDX support is added later.
 
 ## ESLint
 

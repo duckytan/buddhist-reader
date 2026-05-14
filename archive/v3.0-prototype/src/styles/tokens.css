@@ -1,0 +1,139 @@
+/* Zen Design System Tokens */
+:root {
+  /* ===== 色彩系统 — 日间主题 ===== */
+  --zen-accent: #8b7355;
+  --zen-accent-deep: #6b5540;
+  --zen-accent-light: #a89279;
+  --zen-on-accent: #ffffff;
+
+  --zen-canvas: #ffffff;
+  --zen-surface: #f8f7f4;
+  --zen-surface-soft: #fafaf8;
+
+  --zen-ink: #2c2c2c;
+  --zen-ink-muted: #6b6b6b;
+  --zen-ink-subtle: #999999;
+
+  --zen-hairline: #e8e6e1;
+  --zen-hairline-strong: #d0cdc6;
+
+  --zen-success: #4a7c59;
+  --zen-warning: #c49a6c;
+  --zen-error: #a85656;
+
+  --zen-highlight-mind: #e8f5e9;
+  --zen-highlight-sutra: #fff3e0;
+  --zen-highlight-commentary: #e3f2fd;
+  --zen-highlight-mantra: #f3e5f5;
+  --zen-highlight-text-mind: #2e7d32;
+  --zen-highlight-text-sutra: #e65100;
+  --zen-highlight-text-commentary: #1565c0;
+  --zen-highlight-text-mantra: #7b1fa2;
+
+  /* ===== 字体栈 ===== */
+  --zen-font-serif: "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
+  --zen-font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --zen-font-mono: "Noto Sans Mono", "SF Mono", monospace;
+
+  /* ===== 圆角 ===== */
+  --zen-radius-container: 8px;
+  --zen-radius-interactive: 9999px;
+
+  /* ===== 间距 ===== */
+  --zen-space-xxs: 4px;
+  --zen-space-xs: 8px;
+  --zen-space-sm: 12px;
+  --zen-space-md: 16px;
+  --zen-space-lg: 24px;
+  --zen-space-xl: 32px;
+  --zen-space-2xl: 48px;
+  --zen-space-section: 64px;
+}
+
+[data-theme="dark"] {
+  --zen-accent: #a89279;
+  --zen-accent-deep: #8b7355;
+  --zen-accent-light: #c4a88a;
+
+  --zen-canvas: #1a1a1a;
+  --zen-surface: #242424;
+  --zen-surface-soft: #2e2e2e;
+
+  --zen-ink: #e0e0e0;
+  --zen-ink-muted: #888888;
+  --zen-ink-subtle: #666666;
+
+  --zen-hairline: #333333;
+  --zen-hairline-strong: #444444;
+}
+
+[data-theme="eye-care"] {
+  --zen-canvas: #f5e6c8;
+  --zen-surface: #eddbb0;
+  --zen-surface-soft: #f0e0b8;
+  --zen-ink: #3c2e1e;
+  --zen-ink-muted: #5c4e3e;
+  --zen-ink-subtle: #7c6e5e;
+  --zen-hairline: #d4c4a8;
+  --zen-hairline-strong: #c4b498;
+  --zen-accent: #6b5540;
+}
+
+/* ===== 全局样式 ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: var(--zen-font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--zen-ink);
+  background-color: var(--zen-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* ===== 响应式断点 ===== */
+/* Mobile: < 768px */
+/* Tablet: 768px - 1023px */
+/* Desktop: >= 1024px */
+
+.device-indicator {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--zen-surface);
+  border: 1px solid var(--zen-hairline);
+  border-radius: var(--zen-radius-interactive);
+  font-size: 12px;
+  color: var(--zen-ink-muted);
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 767px) {
+  .device-indicator::before {
+    content: "📱 手机";
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .device-indicator::before {
+    content: "📱 平板";
+  }
+}
+
+@media (min-width: 1024px) {
+  .device-indicator::before {
+    content: "💻 桌面";
+  }
+}
