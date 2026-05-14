@@ -17,12 +17,12 @@
   - 创建 `src/styles/themes.css`，定义 `[data-theme="night"]`、`[data-theme="eye-care"]`、`[data-theme="paper"]` 主题变量（参考 §6.1、§6.2）
   - 在 `src/main.js` 中 import tokens.css → base.css → themes.css（参考 §3.2）
 
-- [ ] 3. 检查点 - 确保项目能启动且样式基础生效
+- [x] 3. 检查点 - 确保项目能启动且样式基础生效
   - 确保 `npm run dev` 正常运行
   - 确保 CSS 变量在浏览器中正确渲染
   - 如有疑问请询问用户
 
-- [ ] 4. 书架页面
+- [x] 4. 书架页面
   - 创建 `src/stores/sutra.js`，定义 sutraStore：经书列表、当前经书、章节数据，fetch manifest.json 和经书 JSON（参考 §3.3 Store 边界、§4.1 数据流）
   - 创建 `src/components/bookshelf/SutraCard.vue`，卡片式展示标题、作者、分类标签（粉彩）、字数（参考 §2.1、§7.2）
   - 创建 `src/pages/Bookshelf.vue`，组合 SutraCard 列表 + 分类筛选栏（全部/般若/唯识/禅宗/密咒/通论/传记）（参考 §2.1）
