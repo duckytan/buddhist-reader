@@ -10,6 +10,11 @@ const routes = [
     path: '/reader/:id',
     name: 'reader',
     component: () => import('../pages/Reader.vue')
+  },
+  {
+    path: '/dicts',
+    name: 'dicts',
+    component: () => import('../pages/DictManager.vue')
   }
 ]
 
