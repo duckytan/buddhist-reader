@@ -112,7 +112,7 @@
   - 运行 `npm run lint` 修复所有 ESLint 问题（参考 AGENTS.md ESLint）
   - 运行 `npm run build` 验证构建成功（参考 §10.1）
 
-- [ ] 14. 检查点 - 最终验证
+- [x] 14. 检查点 - 最终验证
   - 确保 `npm run lint` 无错误
   - 确保 `npm run build` 成功
   - 确保 `npm run test` 所有测试通过
