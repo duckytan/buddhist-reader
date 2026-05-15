@@ -14,7 +14,7 @@ export function useHighlighter(content, termIndex) {
   }
 
   function highlight(text) {
-    if (!text) return text
+    if (!text) return null
     const re = buildRegex()
     if (!re) return text
 

@@ -17,5 +17,9 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: ['.monkeycode-ai.online']
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true
   }
 })
