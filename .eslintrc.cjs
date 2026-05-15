@@ -1,5 +1,6 @@
 module.exports = {
   root: true,
+  ignorePatterns: ['archive/', 'dist/', 'scripts/', 'prototype/', 'public/', 'temp-sutras/', 'node_modules/'],
   env: {
     browser: true,
     es2021: true,
@@ -11,7 +12,7 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 'latest',
-    parser: '@babel/eslint-parser'
+    sourceType: 'module'
   },
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
