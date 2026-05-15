@@ -1,3 +1,16 @@
+export function extractDefinition(def) {
+  if (typeof def === 'string') return def
+  if (Array.isArray(def)) {
+    return def.map(item => {
+      if (typeof item === 'string') return item
+      if (item && typeof item === 'object' && item.c) return item.c
+      return ''
+    }).join('\n')
+  }
+  if (def && typeof def === 'object' && def.c) return def.c
+  return ''
+}
+
 export function cleanDefinition(raw) {
   if (!raw || typeof raw !== 'string') return ''
   let text = raw
@@ -19,7 +32,8 @@ export function cleanDefinition(raw) {
 }
 
 export function formatDefinition(raw) {
-  const cleaned = cleanDefinition(raw)
+  const extracted = extractDefinition(raw)
+  const cleaned = cleanDefinition(extracted)
   const lines = cleaned.split('\n').filter(l => l.trim())
   return lines.join('\n')
 }
