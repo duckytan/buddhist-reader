@@ -144,9 +144,7 @@ async function onTermClick(term) {
   showDictPopup.value = true
   const dictIds = dictStore.getDictIdsForTerm(term)
   try {
-    const resp = await fetch('/dicts/manifest.json')
-    const manifest = await resp.json()
-    lookupResults.value = await dictLoader.lookupTerm(term, dictIds, manifest)
+    lookupResults.value = dictLoader.lookupTerm(term, dictIds)
   } catch {
     lookupResults.value = []
   } finally {
