@@ -1,8 +1,7 @@
 <template>
   <div
+    ref="pageRef"
     class="reader-page"
-    @touchstart="onTouchStart"
-    @touchend="onTouchEnd"
   >
     <div
       v-if="loader.loading.value"
@@ -92,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSutraStore } from '../stores/sutra'
 import { useReaderStore } from '../stores/reader'
@@ -118,6 +117,7 @@ const loader = useSutraLoader()
 const dictLoader = useDictLoader()
 const contentRef = ref(null)
 const notesRef = ref(null)
+const pageRef = ref(null)
 const progressPercent = ref(0)
 const showSearch = ref(false)
 const showNotes = ref(false)
@@ -229,6 +229,12 @@ onMounted(() => {
   progress.restore()
   loader.load(filename.value)
   startReadingTimer()
+  nextTick(() => {
+    if (pageRef.value) {
+      pageRef.value.addEventListener('touchstart', onTouchStart, { passive: true })
+      pageRef.value.addEventListener('touchend', onTouchEnd, { passive: true })
+    }
+  })
 })
 
 onUnmounted(() => {
@@ -236,6 +242,10 @@ onUnmounted(() => {
   progress.save(readerStore.scrollPosition, progressPercent.value)
   dictStore.clearCache()
   dictLoader.clearCache()
+  if (pageRef.value) {
+    pageRef.value.removeEventListener('touchstart', onTouchStart)
+    pageRef.value.removeEventListener('touchend', onTouchEnd)
+  }
 })
 </script>
 
