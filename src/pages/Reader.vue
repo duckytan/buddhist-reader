@@ -33,6 +33,7 @@
         @toggle-search="showSearch = true"
         @toggle-t-o-c="readerStore.showTOC = true"
         @add-bookmark="addBookmark"
+        @add-note="startNote"
       />
       <ReaderContent
         ref="contentRef"
@@ -56,6 +57,12 @@
         @close="showSearch = false"
         @jump="onSearchJump"
       />
+      <ReaderNotes
+        ref="notesRef"
+        :visible="showNotes"
+        :sutra-id="filename"
+        @close="showNotes = false"
+      />
       <DictPopup
         :visible="showDictPopup"
         :term="lookupTerm"
@@ -65,10 +72,20 @@
       />
       <div
         v-if="showSelectionBtn"
-        class="reader-page__selection-btn"
-        @click="lookupSelection"
+        class="reader-page__selection-btns"
       >
-        查释义
+        <button
+          class="reader-page__action-btn"
+          @click="lookupSelection"
+        >
+          查释义
+        </button>
+        <button
+          class="reader-page__action-btn"
+          @click="noteSelection"
+        >
+          笔记
+        </button>
       </div>
     </template>
   </div>
@@ -83,12 +100,14 @@ import { useDictStore } from '../stores/dict'
 import { useSutraLoader } from '../composables/useSutraLoader'
 import { useReadingProgress } from '../composables/useReadingProgress'
 import { useDictLoader } from '../composables/useDictLoader'
+import { storage } from '../utils/storage'
 import ReaderHeader from '../components/reader/ReaderHeader.vue'
 import ReaderContent from '../components/reader/ReaderContent.vue'
 import ReaderProgress from '../components/reader/ReaderProgress.vue'
 import ReaderTOC from '../components/reader/ReaderTOC.vue'
 import ReaderSettings from '../components/reader/ReaderSettings.vue'
 import ReaderSearch from '../components/reader/ReaderSearch.vue'
+import ReaderNotes from '../components/reader/ReaderNotes.vue'
 import DictPopup from '../components/dict/DictPopup.vue'
 
 const route = useRoute()
@@ -98,8 +117,10 @@ const dictStore = useDictStore()
 const loader = useSutraLoader()
 const dictLoader = useDictLoader()
 const contentRef = ref(null)
+const notesRef = ref(null)
 const progressPercent = ref(0)
 const showSearch = ref(false)
+const showNotes = ref(false)
 
 const filename = computed(() => decodeURIComponent(route.params.id))
 const progress = useReadingProgress(filename.value)
@@ -115,6 +136,7 @@ const lookupResults = ref([])
 const lookupLoading = ref(false)
 const showSelectionBtn = ref(false)
 let touchTimer = null
+let readingTimer = null
 
 async function onTermClick(term) {
   lookupTerm.value = term
@@ -154,18 +176,34 @@ function lookupSelection() {
   window.getSelection().removeAllRanges()
 }
 
+function noteSelection() {
+  const text = window.getSelection().toString().trim()
+  if (text && notesRef.value) {
+    showNotes.value = true
+    notesRef.value.startAddNote(text)
+  }
+  showSelectionBtn.value = false
+  window.getSelection().removeAllRanges()
+}
+
+function startNote() {
+  const selection = window.getSelection()
+  const text = selection ? selection.toString().trim() : ''
+  if (text && notesRef.value) {
+    showNotes.value = true
+    notesRef.value.startAddNote(text)
+  } else {
+    showNotes.value = true
+  }
+}
+
 function onProgress(percent) {
   progressPercent.value = percent
   progress.save(readerStore.scrollPosition, percent)
 }
 
-function onJumpChapter(idx) {
-  if (contentRef.value) contentRef.value.scrollToChapter(idx)
-}
-
-function onSearchJump(position) {
-  if (contentRef.value) contentRef.value.scrollTo(position)
-}
+function onJumpChapter(idx) { if (contentRef.value) contentRef.value.scrollToChapter(idx) }
+function onSearchJump(position) { if (contentRef.value) contentRef.value.scrollTo(position) }
 
 function addBookmark() {
   const ch = readerStore.currentChapter
@@ -174,13 +212,27 @@ function addBookmark() {
   readerStore.addBookmark(ch, pos, label)
 }
 
+function startReadingTimer() {
+  readingTimer = setInterval(() => {
+    readerStore.readingTime += 1
+  }, 1000)
+}
+
+function saveReadingTime() {
+  clearInterval(readingTimer)
+  const total = storage.getNumber(`reading-time-${filename.value}`, 0) + readerStore.readingTime
+  storage.setNumber(`reading-time-${filename.value}`, total)
+}
+
 onMounted(() => {
   readerStore.reset()
   progress.restore()
   loader.load(filename.value)
+  startReadingTimer()
 })
 
 onUnmounted(() => {
+  saveReadingTime()
   progress.save(readerStore.scrollPosition, progressPercent.value)
   dictStore.clearCache()
   dictLoader.clearCache()
@@ -205,11 +257,14 @@ onUnmounted(() => {
   background: var(--color-accent);
   color: var(--color-canvas); border-radius: var(--radius-pill);
 }
-.reader-page__selection-btn {
+.reader-page__selection-btns {
   position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: var(--spacing-sm); z-index: 25;
+}
+.reader-page__action-btn {
   padding: var(--spacing-sm) var(--spacing-lg);
   background: var(--color-accent);
   color: var(--color-canvas); border-radius: var(--radius-pill);
-  font-size: var(--text-body-sm); z-index: 25;
+  font-size: var(--text-body-sm);
 }
 </style>

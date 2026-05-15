@@ -17,6 +17,12 @@
     </button>
     <button
       class="reader-header__btn"
+      @click="$emit('addNote')"
+    >
+      <span class="reader-header__icon">&#9998;</span>
+    </button>
+    <button
+      class="reader-header__btn"
       @click="$emit('addBookmark')"
     >
       <span class="reader-header__icon">&#9734;</span>
@@ -38,7 +44,7 @@
 
 <script setup>
 defineProps({ title: { type: String, default: '' } })
-defineEmits(['toggleSearch', 'addBookmark', 'toggleTOC', 'toggleSettings'])
+defineEmits(['toggleSearch', 'addBookmark', 'addNote', 'toggleTOC', 'toggleSettings'])
 </script>
 
 <style scoped>
