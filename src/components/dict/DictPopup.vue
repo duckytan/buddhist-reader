@@ -43,7 +43,7 @@
           >
             <span class="dict-popup__dict-name">{{ dictName(r.dictId) }}</span>
             <p class="dict-popup__definition">
-              {{ r.definition }}
+              {{ formatDef(r.definition) }}
             </p>
           </div>
         </div>
@@ -53,6 +53,8 @@
 </template>
 
 <script setup>
+import { formatDefinition } from '../../utils/text'
+
 defineProps({
   visible: { type: Boolean, default: false },
   term: { type: String, default: '' },
@@ -61,6 +63,8 @@ defineProps({
 })
 
 defineEmits(['close'])
+
+function formatDef(raw) { return formatDefinition(raw) }
 
 const dictNames = {
   'dict-1': '中国当代佛教网辞典',
