@@ -87,7 +87,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { storage } from '../../utils/storage'
 
 const props = defineProps({
@@ -100,10 +100,13 @@ defineEmits(['close'])
 const addingNote = ref(false)
 const noteInput = ref('')
 const selectedText = ref('')
+const notes = ref([])
 
-const notes = computed(() => {
-  return storage.getObject(`notes-${props.sutraId}`) || []
-})
+function loadNotes() {
+  notes.value = storage.getObject(`notes-${props.sutraId}`) || []
+}
+
+watch(() => props.sutraId, loadNotes, { immediate: true })
 
 function startAddNote(text) {
   selectedText.value = text
@@ -119,6 +122,7 @@ function saveNote() {
     time: Date.now()
   }]
   storage.setObject(`notes-${props.sutraId}`, all)
+  notes.value = all
   addingNote.value = false
   noteInput.value = ''
 }
@@ -127,6 +131,7 @@ function removeNote(index) {
   const all = [...notes.value]
   all.splice(index, 1)
   storage.setObject(`notes-${props.sutraId}`, all)
+  notes.value = all
 }
 
 function formatTime(ts) {

@@ -207,7 +207,7 @@ function addBookmark() {
   const ch = readerStore.currentChapter
   const pos = readerStore.scrollPosition
   const label = `${ch > 0 ? `第${ch + 1}章` : '开头'} - ${progressPercent.value}%`
-  readerStore.addBookmark(ch, pos, label)
+  readerStore.addBookmark(filename.value, ch, pos, label)
 }
 
 function startReadingTimer() {
@@ -223,7 +223,7 @@ function saveReadingTime() {
 }
 
 onMounted(() => {
-  readerStore.reset()
+  readerStore.reset(filename.value)
   progress.restore()
   loader.load(filename.value)
   startReadingTimer()
