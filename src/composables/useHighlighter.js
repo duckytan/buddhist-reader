@@ -14,7 +14,7 @@ export function useHighlighter(content, termIndex) {
   }
 
   function highlight(text) {
-    if (!text) return null
+    if (!text || typeof text !== 'string') return null
     const re = buildRegex()
     if (!re) return text
 
@@ -38,6 +38,7 @@ export function useHighlighter(content, termIndex) {
   }
 
   function escapeRegex(str) {
+    if (typeof str !== 'string') return ''
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   }
 

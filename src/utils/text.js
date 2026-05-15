@@ -1,5 +1,5 @@
 export function cleanDefinition(raw) {
-  if (!raw) return ''
+  if (!raw || typeof raw !== 'string') return ''
   let text = raw
   text = text.replace(/\\r\\n/g, '\n')
   text = text.replace(/\\r/g, '\n')
