@@ -10,6 +10,10 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 
+import { useSettingsStore } from './stores/settings'
+const settingsStore = useSettingsStore()
+settingsStore.initFromStorage()
+
 app.config.errorHandler = (err, instance, info) => {
   console.error(`[Vue Error] ${info}:`, err)
 }

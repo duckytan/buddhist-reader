@@ -11,13 +11,25 @@
     </h2>
     <button
       class="reader-header__btn"
-      @click="readerStore.showTOC = !readerStore.showTOC"
+      @click="$emit('toggleSearch')"
+    >
+      <span class="reader-header__icon">&#128269;</span>
+    </button>
+    <button
+      class="reader-header__btn"
+      @click="$emit('addBookmark')"
+    >
+      <span class="reader-header__icon">&#9734;</span>
+    </button>
+    <button
+      class="reader-header__btn"
+      @click="$emit('toggleTOC')"
     >
       <span class="reader-header__icon">&#9776;</span>
     </button>
     <button
       class="reader-header__btn"
-      @click="readerStore.showSettings = !readerStore.showSettings"
+      @click="$emit('toggleSettings')"
     >
       <span class="reader-header__icon">&#9881;</span>
     </button>
@@ -25,48 +37,29 @@
 </template>
 
 <script setup>
-import { useReaderStore } from '../../stores/reader'
-
 defineProps({ title: { type: String, default: '' } })
-const readerStore = useReaderStore()
+defineEmits(['toggleSearch', 'addBookmark', 'toggleTOC', 'toggleSettings'])
 </script>
 
 <style scoped>
 .reader-header {
-  display: flex;
-  align-items: center;
+  display: flex; align-items: center;
   padding: var(--spacing-sm) var(--spacing-md);
   background: var(--color-canvas);
   border-bottom: 1px solid var(--color-hairline);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  position: sticky; top: 0; z-index: 10;
 }
 .reader-header__back {
-  min-width: var(--touch-target);
-  min-height: var(--touch-target);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-width: var(--touch-target); min-height: var(--touch-target);
+  display: flex; align-items: center; justify-content: center;
 }
 .reader-header__title {
-  flex: 1;
-  font-family: var(--font-serif);
-  font-size: var(--text-h3);
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  flex: 1; font-family: var(--font-serif); font-size: var(--text-h3);
+  text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .reader-header__btn {
-  min-width: var(--touch-target);
-  min-height: var(--touch-target);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-width: var(--touch-target); min-height: var(--touch-target);
+  display: flex; align-items: center; justify-content: center;
 }
-.reader-header__icon {
-  font-size: var(--text-body-lg);
-  color: var(--color-ink-muted);
-}
+.reader-header__icon { font-size: var(--text-body-lg); color: var(--color-ink-muted); }
 </style>

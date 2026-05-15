@@ -27,7 +27,13 @@
     </div>
 
     <template v-else-if="sutraStore.currentSutra">
-      <ReaderHeader :title="sutraStore.currentSutra.title" />
+      <ReaderHeader
+        :title="sutraStore.currentSutra.title"
+        @toggle-settings="readerStore.showSettings = true"
+        @toggle-search="showSearch = true"
+        @toggle-t-o-c="readerStore.showTOC = true"
+        @add-bookmark="addBookmark"
+      />
       <ReaderContent
         ref="contentRef"
         :chapters="sutraStore.currentSutra.chapters"
@@ -39,6 +45,16 @@
       <ReaderTOC
         :chapters="sutraStore.currentSutra.chapters"
         @jump="onJumpChapter"
+      />
+      <ReaderSettings
+        :visible="readerStore.showSettings"
+        @close="readerStore.showSettings = false"
+      />
+      <ReaderSearch
+        :visible="showSearch"
+        :content="fullContent"
+        @close="showSearch = false"
+        @jump="onSearchJump"
       />
       <DictPopup
         :visible="showDictPopup"
@@ -71,6 +87,8 @@ import ReaderHeader from '../components/reader/ReaderHeader.vue'
 import ReaderContent from '../components/reader/ReaderContent.vue'
 import ReaderProgress from '../components/reader/ReaderProgress.vue'
 import ReaderTOC from '../components/reader/ReaderTOC.vue'
+import ReaderSettings from '../components/reader/ReaderSettings.vue'
+import ReaderSearch from '../components/reader/ReaderSearch.vue'
 import DictPopup from '../components/dict/DictPopup.vue'
 
 const route = useRoute()
@@ -81,15 +99,20 @@ const loader = useSutraLoader()
 const dictLoader = useDictLoader()
 const contentRef = ref(null)
 const progressPercent = ref(0)
+const showSearch = ref(false)
 
 const filename = computed(() => decodeURIComponent(route.params.id))
 const progress = useReadingProgress(filename.value)
+
+const fullContent = computed(() => {
+  if (!sutraStore.currentSutra) return ''
+  return sutraStore.currentSutra.chapters.map(c => c.content).join('\n')
+})
 
 const showDictPopup = ref(false)
 const lookupTerm = ref('')
 const lookupResults = ref([])
 const lookupLoading = ref(false)
-
 const showSelectionBtn = ref(false)
 let touchTimer = null
 
@@ -97,7 +120,6 @@ async function onTermClick(term) {
   lookupTerm.value = term
   lookupLoading.value = true
   showDictPopup.value = true
-
   const dictIds = dictStore.getDictIdsForTerm(term)
   try {
     const resp = await fetch('/dicts/manifest.json')
@@ -113,9 +135,7 @@ async function onTermClick(term) {
 function onTouchStart() {
   touchTimer = setTimeout(() => {
     const selection = window.getSelection()
-    if (selection && selection.toString().trim().length > 0) {
-      showSelectionBtn.value = true
-    }
+    if (selection && selection.toString().trim().length > 0) showSelectionBtn.value = true
   }, 500)
 }
 
@@ -123,11 +143,7 @@ function onTouchEnd() {
   clearTimeout(touchTimer)
   setTimeout(() => {
     const selection = window.getSelection()
-    if (selection && selection.toString().trim().length > 0) {
-      showSelectionBtn.value = true
-    } else {
-      showSelectionBtn.value = false
-    }
+    showSelectionBtn.value = selection && selection.toString().trim().length > 0
   }, 300)
 }
 
@@ -145,6 +161,17 @@ function onProgress(percent) {
 
 function onJumpChapter(idx) {
   if (contentRef.value) contentRef.value.scrollToChapter(idx)
+}
+
+function onSearchJump(position) {
+  if (contentRef.value) contentRef.value.scrollTo(position)
+}
+
+function addBookmark() {
+  const ch = readerStore.currentChapter
+  const pos = readerStore.scrollPosition
+  const label = `${ch > 0 ? `第${ch + 1}章` : '开头'} - ${progressPercent.value}%`
+  readerStore.addBookmark(ch, pos, label)
 }
 
 onMounted(() => {
@@ -166,8 +193,7 @@ onUnmounted(() => {
   height: 100vh; height: 100dvh;
   background: var(--color-canvas);
 }
-.reader-page__loading,
-.reader-page__error {
+.reader-page__loading, .reader-page__error {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   flex: 1; color: var(--color-ink-muted);
@@ -177,16 +203,13 @@ onUnmounted(() => {
   margin-top: var(--spacing-md);
   padding: var(--spacing-xs) var(--spacing-lg);
   background: var(--color-accent);
-  color: var(--color-canvas);
-  border-radius: var(--radius-pill);
+  color: var(--color-canvas); border-radius: var(--radius-pill);
 }
 .reader-page__selection-btn {
   position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
   padding: var(--spacing-sm) var(--spacing-lg);
   background: var(--color-accent);
-  color: var(--color-canvas);
-  border-radius: var(--radius-pill);
-  font-size: var(--text-body-sm);
-  z-index: 25;
+  color: var(--color-canvas); border-radius: var(--radius-pill);
+  font-size: var(--text-body-sm); z-index: 25;
 }
 </style>
