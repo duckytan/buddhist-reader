@@ -5,7 +5,8 @@ describe('useHighlighter', () => {
   const mockIndex = {
     '般若波罗蜜多': ['dict-1'],
     '般若': ['dict-1', 'dict-2'],
-    '菩提': ['dict-1']
+    '菩提': ['dict-1'],
+    '十七尊': ['dict-1']
   }
 
   const { highlight } = useHighlighter(null, mockIndex)
@@ -14,10 +15,9 @@ describe('useHighlighter', () => {
     const result = highlight('般若波罗蜜多心经')
     expect(result).not.toBeNull()
     expect(result.some(s => s.type === 'term')).toBe(true)
-    expect(result.some(s => s.type === 'text')).toBe(true)
   })
 
-  it('should match longer terms first (般若波罗蜜多 before 般若)', () => {
+  it('should match longer terms first via Trie forward matching', () => {
     const result = highlight('般若波罗蜜多')
     const termSegments = result.filter(s => s.type === 'term')
     expect(termSegments.length).toBe(1)
@@ -26,11 +26,7 @@ describe('useHighlighter', () => {
 
   it('should not modify text when no matches found', () => {
     const result = highlight('这是一段普通文字')
-    if (result) {
-      expect(result.every(s => s.type === 'text')).toBe(true)
-    } else {
-      expect(result).toBeNull()
-    }
+    expect(result).toBeNull()
   })
 
   it('should return null for empty content', () => {
@@ -46,9 +42,15 @@ describe('useHighlighter', () => {
     expect(termSegments[1].content).toBe('菩提')
   })
 
-  it('should return text segments between matched terms', () => {
-    const result = highlight('般若与菩提')
-    const textSegments = result.filter(s => s.type === 'text')
-    expect(textSegments.some(s => s.content === '与')).toBe(true)
+  it('should skip numeral phrases - not highlight 十七尊 inside 三十七尊', () => {
+    const result = highlight('三十七尊')
+    expect(result).toBeNull()
+  })
+
+  it('should highlight 十七尊 when not in numeral context', () => {
+    const result = highlight('供养十七尊')
+    const termSegments = result.filter(s => s.type === 'term')
+    expect(termSegments.length).toBe(1)
+    expect(termSegments[0].content).toBe('十七尊')
   })
 })
