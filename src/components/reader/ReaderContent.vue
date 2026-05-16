@@ -53,12 +53,14 @@ const { highlight } = useHighlighter(dictStore.enabledTerms)
 
 let throttleTimer = null
 const segmentCache = new Map()
+const refreshKey = ref(0)
 
 function getSegments(content) {
   if (!content) return []
-  if (segmentCache.has(content)) return segmentCache.get(content)
+  const cacheKey = content + '|' + refreshKey.value
+  if (segmentCache.has(cacheKey)) return segmentCache.get(cacheKey)
   const result = highlight(content) || [{ type: 'text', content }]
-  segmentCache.set(content, result)
+  segmentCache.set(cacheKey, result)
   return result
 }
 
@@ -99,6 +101,7 @@ watch(() => props.chapters, () => {
 })
 watch(() => dictStore.enabledDicts, () => {
   segmentCache.clear()
+  refreshKey.value++
 }, { deep: true })
 
 defineExpose({ scrollTo, scrollToChapter })
