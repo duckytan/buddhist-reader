@@ -16,20 +16,26 @@
       >
         {{ chapter.title }}
       </h3>
-      <p class="reader-content__text">
-        <template
-          v-for="(seg, si) in getSegments(chapter.content)"
-          :key="si"
-        >
-          <span
-            v-if="seg.type === 'term'"
-            class="dict-highlight"
-            data-term="{{ seg.content }}"
-            @click.stop="onTermClick(seg.content)"
-          >{{ seg.content }}</span>
-          <span v-else>{{ seg.content }}</span>
-        </template>
-      </p>
+      <div
+        v-for="(para, pi) in chapter.paragraphs"
+        :key="para.id"
+        class="reader-content__paragraph"
+      >
+        <p class="reader-content__text">
+          <template
+            v-for="(seg, si) in getSegments(para.text)"
+            :key="si"
+          >
+            <span
+              v-if="seg.type === 'term'"
+              class="dict-highlight"
+              data-term="{{ seg.content }}"
+              @click.stop="onTermClick(seg.content)"
+            >{{ seg.content }}</span>
+            <span v-else>{{ seg.content }}</span>
+          </template>
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -118,6 +124,10 @@ defineExpose({ scrollTo, scrollToChapter })
   margin-bottom: var(--spacing-lg);
   padding-bottom: var(--spacing-sm);
   border-bottom: 1px solid var(--color-hairline);
+}
+.reader-content__paragraph {
+  margin-bottom: var(--spacing-md);
+  text-indent: 2em;
 }
 .reader-content__text {
   font-family: var(--font-serif);

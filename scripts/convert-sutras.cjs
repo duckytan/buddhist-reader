@@ -19,53 +19,75 @@ function detectCategory(title) {
   return 'general'
 }
 
-function splitChapters(content) {
+function splitChaptersAndParagraphs(content) {
   const lines = content.split('\n')
   const chapters = []
-  let currentChapter = { title: '全文', content: [] }
+  let currentChapter = { title: '全文', paragraphs: [], paraIndex: 1 }
   
-  const chapterPattern = /^第[一二三四五六七八九十\d]+章/
-  const sectionPattern = /^(释题|开经|结经|目录|序|附说|第[一二三四五六七八九十\d]+部分)/
+  const chapterPattern = /^第 [一二三四五六七八九十\d]+章/
+  const sectionPattern = /^(释题 | 开经 | 结经 | 目录 | 序 | 附说 | 第 [一二三四五六七八九十\d]+部分)/
+  
+  function finalizeChapter() {
+    if (currentChapter.paragraphs.length > 0) {
+      chapters.push({
+        title: currentChapter.title,
+        paragraphs: currentChapter.paragraphs
+      })
+    }
+  }
+  
+  function addParagraph(text) {
+    const trimmed = text.trim()
+    if (trimmed) {
+      currentChapter.paragraphs.push({
+        id: `p${currentChapter.paraIndex++}`,
+        text: trimmed
+      })
+    }
+  }
+  
+  let currentParaLines = []
   
   for (const line of lines) {
     const trimmed = line.trim()
     
+    // 检查是否是章节标题
     if (chapterPattern.test(trimmed) || sectionPattern.test(trimmed)) {
-      if (currentChapter.content.length > 5) {
-        chapters.push({
-          title: currentChapter.title,
-          content: currentChapter.content.join('\n').trim()
-        })
+      // 保存当前段落到当前章节
+      if (currentParaLines.length > 0) {
+        addParagraph(currentParaLines.join(' '))
+        currentParaLines = []
       }
-      currentChapter = { title: trimmed, content: [] }
-    } else if (trimmed) {
-      currentChapter.content.push(line)
+      // 保存当前章节
+      finalizeChapter()
+      // 开始新章节
+      currentChapter = { title: trimmed, paragraphs: [], paraIndex: 1 }
+    } else if (!trimmed) {
+      // 空行，表示段落结束
+      if (currentParaLines.length > 0) {
+        addParagraph(currentParaLines.join(' '))
+        currentParaLines = []
+      }
+    } else {
+      // 普通文本行，添加到当前段落
+      currentParaLines.push(trimmed)
     }
   }
   
-  if (currentChapter.content.length > 5) {
-    chapters.push({
-      title: currentChapter.title,
-      content: currentChapter.content.join('\n').trim()
-    })
+  // 处理最后的段落和章节
+  if (currentParaLines.length > 0) {
+    addParagraph(currentParaLines.join(' '))
   }
+  finalizeChapter()
   
   if (chapters.length === 0) {
     chapters.push({
       title: '全文',
-      content: content.trim()
+      paragraphs: []
     })
   }
   
   return chapters
-}
-
-function countChars(chapters) {
-  let total = 0
-  for (const ch of chapters) {
-    total += ch.content.replace(/\s/g, '').length
-  }
-  return total
 }
 
 function processFile(filepath) {
@@ -73,8 +95,13 @@ function processFile(filepath) {
   const title = extractTitle(filename)
   const content = fs.readFileSync(filepath, 'utf-8')
   
-  const chapters = splitChapters(content)
-  const totalChars = countChars(chapters)
+  const chapters = splitChaptersAndParagraphs(content)
+  
+  // 计算总段落数和总字数
+  const totalParagraphs = chapters.reduce((sum, ch) => sum + ch.paragraphs.length, 0)
+  const totalChars = chapters.reduce((sum, ch) => {
+    return sum + ch.paragraphs.reduce((s, p) => s + p.text.replace(/\s/g, '').length, 0)
+  }, 0)
   
   return {
     title,
@@ -82,6 +109,7 @@ function processFile(filepath) {
     category: detectCategory(title),
     chapters,
     chapterCount: chapters.length,
+    totalParagraphs,
     totalChars,
     description: content.substring(0, 200).trim()
   }
@@ -99,7 +127,7 @@ function main() {
   
   for (const filename of files) {
     const filepath = path.join(SUTRAS_DIR, filename)
-    console.log(`处理: ${filename}`)
+    console.log(`处理：${filename}`)
     
     const sutraData = processFile(filepath)
     sutras.push(sutraData)
@@ -110,6 +138,7 @@ function main() {
       author: sutraData.author,
       category: sutraData.category,
       chapterCount: sutraData.chapterCount,
+      totalParagraphs: sutraData.totalParagraphs,
       totalChars: sutraData.totalChars,
       description: sutraData.description.substring(0, 100) + '...'
     })
@@ -125,7 +154,14 @@ function main() {
   )
   
   console.log(`\n完成！共处理 ${sutras.length} 部经论`)
-  console.log(`输出目录: ${OUTPUT_DIR}`)
+  console.log(`输出目录：${OUTPUT_DIR}`)
+  
+  // 统计
+  const totalParas = sutras.reduce((sum, s) => sum + s.totalParagraphs, 0)
+  const totalChars = sutras.reduce((sum, s) => sum + s.totalChars, 0)
+  console.log(`\n总计:`)
+  console.log(`  段落数：${totalParas.toLocaleString()}`)
+  console.log(`  字数：${totalChars.toLocaleString()}`)
 }
 
 main()
