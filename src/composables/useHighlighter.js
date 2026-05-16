@@ -44,10 +44,11 @@ function isNumeralPhrase(text, start, matchLen) {
   return false
 }
 
-export function useHighlighter(enabledTerms) {
+export function useHighlighter(enabledTermsRef) {
   const trie = computed(() => {
-    if (!enabledTerms || enabledTerms.length === 0) return null
-    return buildTrie(enabledTerms)
+    const terms = enabledTermsRef?.value || enabledTermsRef
+    if (!terms || terms.length === 0) return null
+    return buildTrie(terms)
   })
 
   function highlight(text) {
