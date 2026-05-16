@@ -16,13 +16,10 @@
       >
         {{ chapter.title }}
       </h3>
-      <p
-        :key="refreshKey"
-        class="reader-content__text"
-      >
+      <p class="reader-content__text">
         <template
           v-for="(seg, si) in getSegments(chapter.content)"
-          :key="si + '-' + refreshKey"
+          :key="si"
         >
           <span
             v-if="seg.type === 'term'"
@@ -55,15 +52,10 @@ const dictStore = useDictStore()
 const { highlight } = useHighlighter(dictStore.enabledTerms)
 
 let throttleTimer = null
-const segmentCache = new Map()
-const refreshKey = ref(0)
 
 function getSegments(content) {
   if (!content) return []
-  const cacheKey = content + '|' + refreshKey.value
-  if (segmentCache.has(cacheKey)) return segmentCache.get(cacheKey)
   const result = highlight(content) || [{ type: 'text', content }]
-  segmentCache.set(cacheKey, result)
   return result
 }
 
@@ -99,11 +91,11 @@ function scrollToChapter(idx) {
 
 onMounted(() => { if (props.initialPosition > 0) scrollTo(props.initialPosition) })
 watch(() => props.chapters, () => {
-  segmentCache.clear()
   if (props.initialPosition > 0) scrollTo(props.initialPosition)
 })
+
+const refreshKey = ref(0)
 watch(() => dictStore.enabledDicts, () => {
-  segmentCache.clear()
   refreshKey.value++
 }, { deep: true })
 
