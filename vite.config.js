@@ -12,23 +12,27 @@ function buildDictIndexPlugin() {
   }
 }
 
-export default defineConfig({
-  plugins: [vue(), buildDictIndexPlugin()],
-  server: {
-    host: true,
-    allowedHosts: ['.monkeycode-ai.online']
-  },
-  test: {
-    environment: 'jsdom',
-    globals: true
-  },
-  build: {
-    assetsDir: 'assets',
-    rollupOptions: {
-      output: {
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash][extname]'
+export default defineConfig(({ mode }) => {
+  const base = mode === 'ghpages' ? '/buddhist-reader/' : '/'
+  return {
+    base,
+    plugins: [vue(), buildDictIndexPlugin()],
+    server: {
+      host: true,
+      allowedHosts: ['.monkeycode-ai.online']
+    },
+    test: {
+      environment: 'jsdom',
+      globals: true
+    },
+    build: {
+      assetsDir: 'assets',
+      rollupOptions: {
+        output: {
+          entryFileNames: 'assets/[name]-[hash].js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash][extname]'
+        }
       }
     }
   }
