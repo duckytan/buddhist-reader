@@ -44,6 +44,12 @@
             </label>
           </li>
         </ul>
+        <button
+          class="reader-dict-selector__refresh"
+          @click="dictStore.triggerRefresh()"
+        >
+          🔄 强制刷新
+        </button>
         <div class="reader-dict-selector__stats">
           已启用 {{ enabledCount }} 部词典，{{ enabledTermCount }} 个词条
         </div>
@@ -119,6 +125,11 @@ const enabledTermCount = computed(() => dictStore.enabledTerms.length)
 }
 .reader-dict-selector__toggle input:checked + .reader-dict-selector__switch::after {
   transform: translateX(22px);
+}
+.reader-dict-selector__refresh {
+  display: block; width: 100%; padding: var(--spacing-md);
+  background: var(--color-accent); color: var(--color-canvas);
+  border: none; font-size: var(--text-body); cursor: pointer;
 }
 .reader-dict-selector__stats {
   padding: var(--spacing-md); text-align: center;

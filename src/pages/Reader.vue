@@ -36,6 +36,7 @@
         @toggle-dict-selector="showDictSelector = true"
       />
       <ReaderContent
+        :key="dictStore.refreshKey"
         ref="contentRef"
         :chapters="sutraStore.currentSutra.chapters"
         :initial-position="progress.savedPosition.value"

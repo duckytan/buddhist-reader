@@ -11,6 +11,7 @@ export const useDictStore = defineStore('dict', () => {
   })
   const lookupResult = ref(null)
   const lookupLoading = ref(false)
+  const refreshKey = ref(0)
 
   const allDictIds = computed(() => Object.keys(enabledDicts.value))
 
@@ -33,11 +34,13 @@ export const useDictStore = defineStore('dict', () => {
     return ids.filter(id => isDictEnabled(id))
   }
 
+  function triggerRefresh() { refreshKey.value++ }
+
   function clearCache() { definitionCache.value = {} }
 
   return {
     termIndex, definitionCache, enabledDicts,
-    lookupResult, lookupLoading, allDictIds, enabledTerms,
-    isDictEnabled, toggleDict, getDictIdsForTerm, clearCache
+    lookupResult, lookupLoading, allDictIds, enabledTerms, refreshKey,
+    isDictEnabled, toggleDict, getDictIdsForTerm, triggerRefresh, clearCache
   }
 })
