@@ -35,6 +35,10 @@
         @add-note="startNote"
         @toggle-dict-selector="showDictSelector = true"
       />
+      <!-- 调试信息：显示段落数 -->
+      <div style="background:#fff3cd;padding:8px;text-align:center;font-size:12px;color:#856404">
+        章节：{{ sutraStore.currentSutra.chapterCount }} | 段落：{{ totalParagraphs }}
+      </div>
       <ReaderContent
         :key="dictStore.refreshKey"
         ref="contentRef"
@@ -135,6 +139,10 @@ const dictManifest = ref([])
 
 const filename = computed(() => decodeURIComponent(route.params.id))
 const progress = useReadingProgress(filename.value)
+const totalParagraphs = computed(() => {
+  if (!sutraStore.currentSutra) return 0
+  return sutraStore.currentSutra.chapters.reduce((sum, c) => sum + (c.paragraphs?.length || 0), 0)
+})
 
 const fullContent = computed(() => {
   if (!sutraStore.currentSutra) return ''
