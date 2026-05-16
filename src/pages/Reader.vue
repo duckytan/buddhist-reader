@@ -217,6 +217,7 @@ function addBookmark() {
   const pos = readerStore.scrollPosition
   const label = `${ch > 0 ? `第${ch + 1}章` : '开头'} - ${progressPercent.value}%`
   readerStore.addBookmark(filename.value, ch, pos, label)
+  alert(`书签已添加: ${label}`)
 }
 
 function startReadingTimer() {

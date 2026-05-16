@@ -97,9 +97,9 @@ watch(() => props.chapters, () => {
   segmentCache.clear()
   if (props.initialPosition > 0) scrollTo(props.initialPosition)
 })
-watch(() => dictStore.enabledTerms, () => {
+watch(() => dictStore.enabledDicts, () => {
   segmentCache.clear()
-})
+}, { deep: true })
 
 defineExpose({ scrollTo, scrollToChapter })
 </script>
