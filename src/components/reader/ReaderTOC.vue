@@ -22,12 +22,27 @@
         </header>
         <ul class="reader-toc__list">
           <li
-            v-for="(chapter, idx) in chapters"
-            :key="idx"
-            class="reader-toc__item"
-            @click="jumpTo(idx)"
+            v-for="(chapter, cidx) in chapters"
+            :key="cidx"
+            class="reader-toc__chapter-group"
           >
-            {{ chapter.title }}
+            <h4
+              v-if="chapters.length > 1"
+              class="reader-toc__chapter-title"
+            >
+              {{ chapter.title }}
+            </h4>
+            <ul class="reader-toc__paragraph-list">
+              <li
+                v-for="para in chapter.paragraphs"
+                :key="para.id"
+                class="reader-toc__item"
+                @click="jumpToPara(cidx, para.id)"
+              >
+                <span class="reader-toc__para-num">{{ para.id }}</span>
+                <span class="reader-toc__para-preview">{{ para.text.substring(0, 30) }}...</span>
+              </li>
+            </ul>
           </li>
         </ul>
       </div>
@@ -42,11 +57,11 @@ defineProps({
   chapters: { type: Array, default: () => [] }
 })
 
-const emit = defineEmits(['jump'])
+const emit = defineEmits(['jump', 'jumpPara'])
 const readerStore = useReaderStore()
 
-function jumpTo(idx) {
-  emit('jump', idx)
+function jumpToPara(chapterIdx, paraId) {
+  emit('jumpPara', chapterIdx, paraId)
   readerStore.showTOC = false
 }
 </script>
@@ -101,16 +116,48 @@ function jumpTo(idx) {
 .reader-toc__list {
   padding: var(--spacing-md);
 }
-.reader-toc__item {
-  padding: var(--spacing-sm) var(--spacing-md);
+.reader-toc__chapter-group {
+  margin-bottom: var(--spacing-lg);
+}
+.reader-toc__chapter-title {
   font-family: var(--font-serif);
-  font-size: var(--text-body);
+  font-size: var(--text-h4);
+  color: var(--color-ink-muted);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-hairline);
+}
+.reader-toc__paragraph-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.reader-toc__item {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-family: var(--font-serif);
+  font-size: var(--text-body-sm);
   cursor: pointer;
   border-radius: var(--radius-container);
   transition: background 0.2s;
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: baseline;
 }
 .reader-toc__item:hover {
   background: var(--color-surface);
+}
+.reader-toc__para-num {
+  color: var(--color-accent);
+  font-weight: 600;
+  flex-shrink: 0;
+  width: 32px;
+}
+.reader-toc__para-preview {
+  color: var(--color-ink);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .slide-enter-active, .slide-leave-active { transition: opacity 0.3s; }
 .slide-enter-from, .slide-leave-to { opacity: 0; }

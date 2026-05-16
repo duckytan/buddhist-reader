@@ -17,7 +17,8 @@
         {{ chapter.title }}
       </h3>
       <div
-        v-for="(para, pi) in chapter.paragraphs"
+        v-for="para in chapter.paragraphs"
+        :id="`para-${para.id}`"
         :key="para.id"
         class="reader-content__paragraph"
       >
@@ -41,15 +42,10 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useReaderStore } from '../../stores/reader'
 import { useHighlighter } from '../../composables/useHighlighter'
 import { useDictStore } from '../../stores/dict'
-
-const props = defineProps({
-  chapters: { type: Array, default: () => [] },
-  initialPosition: { type: Number, default: 0 }
-})
 
 const emit = defineEmits(['scroll', 'progress', 'termClick'])
 const contentRef = ref(null)
@@ -95,17 +91,16 @@ function scrollToChapter(idx) {
   })
 }
 
-onMounted(() => { if (props.initialPosition > 0) scrollTo(props.initialPosition) })
-watch(() => props.chapters, () => {
-  if (props.initialPosition > 0) scrollTo(props.initialPosition)
-})
+function scrollToPara(chapterIdx, paraId) {
+  nextTick(() => {
+    const el = document.getElementById(`para-${paraId}`)
+    if (el && contentRef.value) {
+      contentRef.value.scrollTop = el.offsetTop - contentRef.value.offsetTop - 20
+    }
+  })
+}
 
-const refreshKey = ref(0)
-watch(() => dictStore.enabledDicts, () => {
-  refreshKey.value++
-}, { deep: true })
-
-defineExpose({ scrollTo, scrollToChapter })
+defineExpose({ scrollTo, scrollToChapter, scrollToPara })
 </script>
 
 <style scoped>

@@ -47,6 +47,7 @@
       <ReaderTOC
         :chapters="sutraStore.currentSutra.chapters"
         @jump="onJumpChapter"
+        @jump-para="onJumpPara"
       />
       <ReaderSettings
         :visible="readerStore.showSettings"
@@ -137,7 +138,9 @@ const progress = useReadingProgress(filename.value)
 
 const fullContent = computed(() => {
   if (!sutraStore.currentSutra) return ''
-  return sutraStore.currentSutra.chapters.map(c => c.content).join('\n')
+  return sutraStore.currentSutra.chapters
+    .map(c => c.paragraphs.map(p => p.text).join(' '))
+    .join('\n')
 })
 
 const showDictPopup = ref(false)
@@ -211,6 +214,11 @@ function onProgress(percent) {
 }
 
 function onJumpChapter(idx) { if (contentRef.value) contentRef.value.scrollToChapter(idx) }
+function onJumpPara(chapterIdx, paraId) {
+  if (contentRef.value) {
+    contentRef.value.scrollToPara(chapterIdx, paraId)
+  }
+}
 function onSearchJump(position) { if (contentRef.value) contentRef.value.scrollTo(position) }
 
 function addBookmark() {
