@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { dictIndex } from '../data/dictIndex'
+import { dictIndex, dictTerms } from '../data/dictIndex'
 import { storage } from '../utils/storage'
 
 export const useDictStore = defineStore('dict', () => {
@@ -13,6 +13,13 @@ export const useDictStore = defineStore('dict', () => {
   const lookupLoading = ref(false)
 
   const allDictIds = computed(() => Object.keys(enabledDicts.value))
+
+  const enabledTerms = computed(() => {
+    return dictTerms.filter(term => {
+      const ids = termIndex.value[term] || []
+      return ids.some(id => isDictEnabled(id))
+    })
+  })
 
   function isDictEnabled(dictId) { return enabledDicts.value[dictId] !== false }
 
@@ -30,7 +37,7 @@ export const useDictStore = defineStore('dict', () => {
 
   return {
     termIndex, definitionCache, enabledDicts,
-    lookupResult, lookupLoading, allDictIds,
+    lookupResult, lookupLoading, allDictIds, enabledTerms,
     isDictEnabled, toggleDict, getDictIdsForTerm, clearCache
   }
 })

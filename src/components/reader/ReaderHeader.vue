@@ -35,6 +35,12 @@
     </button>
     <button
       class="reader-header__btn"
+      @click="$emit('toggleDictSelector')"
+    >
+      <span class="reader-header__icon">&#128214;</span>
+    </button>
+    <button
+      class="reader-header__btn"
       @click="$emit('toggleSettings')"
     >
       <span class="reader-header__icon">&#9881;</span>
@@ -44,7 +50,7 @@
 
 <script setup>
 defineProps({ title: { type: String, default: '' } })
-defineEmits(['toggleSearch', 'addBookmark', 'addNote', 'toggleTOC', 'toggleSettings'])
+defineEmits(['toggleSearch', 'addBookmark', 'addNote', 'toggleTOC', 'toggleSettings', 'toggleDictSelector'])
 </script>
 
 <style scoped>

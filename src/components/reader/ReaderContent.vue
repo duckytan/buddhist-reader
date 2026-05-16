@@ -49,7 +49,7 @@ const emit = defineEmits(['scroll', 'progress', 'termClick'])
 const contentRef = ref(null)
 const readerStore = useReaderStore()
 const dictStore = useDictStore()
-const { highlight } = useHighlighter(null, dictStore.termIndex)
+const { highlight } = useHighlighter(dictStore.enabledTerms)
 
 let throttleTimer = null
 const segmentCache = new Map()
@@ -96,6 +96,9 @@ onMounted(() => { if (props.initialPosition > 0) scrollTo(props.initialPosition)
 watch(() => props.chapters, () => {
   segmentCache.clear()
   if (props.initialPosition > 0) scrollTo(props.initialPosition)
+})
+watch(() => dictStore.enabledTerms, () => {
+  segmentCache.clear()
 })
 
 defineExpose({ scrollTo, scrollToChapter })

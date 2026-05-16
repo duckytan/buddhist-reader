@@ -33,6 +33,7 @@
         @toggle-t-o-c="readerStore.showTOC = true"
         @add-bookmark="addBookmark"
         @add-note="startNote"
+        @toggle-dict-selector="showDictSelector = true"
       />
       <ReaderContent
         ref="contentRef"
@@ -68,6 +69,11 @@
         :results="lookupResults"
         :loading="lookupLoading"
         @close="showDictPopup = false"
+      />
+      <ReaderDictSelector
+        :visible="showDictSelector"
+        :manifest="dictManifest"
+        @close="showDictSelector = false"
       />
       <div
         v-if="showSelectionBtn"
@@ -107,6 +113,7 @@ import ReaderTOC from '../components/reader/ReaderTOC.vue'
 import ReaderSettings from '../components/reader/ReaderSettings.vue'
 import ReaderSearch from '../components/reader/ReaderSearch.vue'
 import ReaderNotes from '../components/reader/ReaderNotes.vue'
+import ReaderDictSelector from '../components/reader/ReaderDictSelector.vue'
 import DictPopup from '../components/dict/DictPopup.vue'
 
 const route = useRoute()
@@ -121,6 +128,8 @@ const pageRef = ref(null)
 const progressPercent = ref(0)
 const showSearch = ref(false)
 const showNotes = ref(false)
+const showDictSelector = ref(false)
+const dictManifest = ref([])
 
 const filename = computed(() => decodeURIComponent(route.params.id))
 const progress = useReadingProgress(filename.value)
@@ -233,6 +242,9 @@ onMounted(() => {
       pageRef.value.addEventListener('touchend', onTouchEnd, { passive: true })
     }
   })
+  fetch('/dicts/manifest.json')
+    .then(r => r.json())
+    .then(data => { dictManifest.value = data })
 })
 
 onUnmounted(() => {

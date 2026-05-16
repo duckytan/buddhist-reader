@@ -1,4 +1,3 @@
-import { dictTerms } from '../data/dictIndex'
 import { computed } from 'vue'
 
 class TrieNode {
@@ -45,11 +44,10 @@ function isNumeralPhrase(text, start, matchLen) {
   return false
 }
 
-export function useHighlighter(content, termIndex) {
+export function useHighlighter(enabledTerms) {
   const trie = computed(() => {
-    if (!termIndex) return null
-    const words = dictTerms.filter(t => termIndex[t] && termIndex[t].length > 0)
-    return buildTrie(words)
+    if (!enabledTerms || enabledTerms.length === 0) return null
+    return buildTrie(enabledTerms)
   })
 
   function highlight(text) {

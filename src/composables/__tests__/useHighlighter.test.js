@@ -9,7 +9,7 @@ describe('useHighlighter', () => {
     '十七尊': ['dict-1']
   }
 
-  const { highlight } = useHighlighter(null, mockIndex)
+  const { highlight } = useHighlighter(Object.keys(mockIndex))
 
   it('should highlight known terms in text', () => {
     const result = highlight('般若波罗蜜多心经')
