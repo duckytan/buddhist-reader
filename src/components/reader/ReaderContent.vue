@@ -16,10 +16,13 @@
       >
         {{ chapter.title }}
       </h3>
-      <p class="reader-content__text">
+      <p
+        :key="refreshKey"
+        class="reader-content__text"
+      >
         <template
           v-for="(seg, si) in getSegments(chapter.content)"
-          :key="si"
+          :key="si + '-' + refreshKey"
         >
           <span
             v-if="seg.type === 'term'"
