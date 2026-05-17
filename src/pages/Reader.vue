@@ -252,7 +252,7 @@ onMounted(() => {
       pageRef.value.addEventListener('touchend', onTouchEnd, { passive: true })
     }
   })
-  fetch('/dicts/manifest.json')
+  fetch(`${import.meta.env.BASE_URL}dicts/manifest.json`)
     .then(r => r.json())
     .then(data => { dictManifest.value = data })
 })

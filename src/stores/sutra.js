@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
+const base = import.meta.env.BASE_URL
+
 export const useSutraStore = defineStore('sutra', () => {
   const sutraList = ref([])
   const currentSutra = ref(null)
@@ -28,7 +30,7 @@ export const useSutraStore = defineStore('sutra', () => {
     loading.value = true
     error.value = null
     try {
-      const resp = await fetch('/sutras/manifest.json')
+      const resp = await fetch(`${base}sutras/manifest.json`)
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
       sutraList.value = await resp.json()
     } catch (e) {
@@ -41,7 +43,7 @@ export const useSutraStore = defineStore('sutra', () => {
   async function fetchSutra(filename) {
     error.value = null
     try {
-      const resp = await fetch(`/sutras/${encodeURIComponent(filename)}`)
+      const resp = await fetch(`${base}sutras/${encodeURIComponent(filename)}`)
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
       currentSutra.value = await resp.json()
     } catch (e) {

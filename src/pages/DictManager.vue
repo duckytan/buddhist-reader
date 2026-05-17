@@ -78,7 +78,7 @@ async function loadManifest() {
   loading.value = true
   error.value = null
   try {
-    const resp = await fetch('/dicts/manifest.json')
+    const resp = await fetch(`${import.meta.env.BASE_URL}dicts/manifest.json`)
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     manifest.value = await resp.json()
   } catch (e) {
