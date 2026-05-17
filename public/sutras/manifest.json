@@ -1,7 +1,7 @@
 [
   {
     "title": "八识规矩颂释",
-    "filename": "《八识规矩颂释》.json",
+    "filename": "sutra-01.json",
     "author": "冯达庵",
     "category": "yogacara",
     "chapterCount": 1,
@@ -11,7 +11,7 @@
   },
   {
     "title": "发菩提心论",
-    "filename": "《发菩提心论》.json",
+    "filename": "sutra-02.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -21,7 +21,7 @@
   },
   {
     "title": "大乘起信论",
-    "filename": "《大乘起信论》.json",
+    "filename": "sutra-03.json",
     "author": "冯达庵",
     "category": "yogacara",
     "chapterCount": 1,
@@ -31,7 +31,7 @@
   },
   {
     "title": "传记冯达庵：弘扬唐密的民国居士",
-    "filename": "传记《冯达庵：弘扬唐密的民国居士》.json",
+    "filename": "sutra-04.json",
     "author": "冯达庵",
     "category": "mantra",
     "chapterCount": 1,
@@ -41,7 +41,7 @@
   },
   {
     "title": "传记千年一圣冯达庵",
-    "filename": "传记《千年一圣冯达庵》.json",
+    "filename": "sutra-05.json",
     "author": "冯达庵",
     "category": "biography",
     "chapterCount": 1,
@@ -51,7 +51,7 @@
   },
   {
     "title": "冯达庵佛学起源",
-    "filename": "冯达庵《佛学起源》.json",
+    "filename": "sutra-06.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -61,7 +61,7 @@
   },
   {
     "title": "冯达庵佛教源流",
-    "filename": "冯达庵《佛教源流》.json",
+    "filename": "sutra-07.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -71,7 +71,7 @@
   },
   {
     "title": "冯达庵佛教真面目",
-    "filename": "冯达庵《佛教真面目》.json",
+    "filename": "sutra-08.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -81,7 +81,7 @@
   },
   {
     "title": "冯达庵佛法要论",
-    "filename": "冯达庵《佛法要论》.json",
+    "filename": "sutra-09.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -91,7 +91,7 @@
   },
   {
     "title": "冯达庵天眼通原理",
-    "filename": "冯达庵《天眼通原理》.json",
+    "filename": "sutra-10.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -101,7 +101,7 @@
   },
   {
     "title": "冯达庵学密须知",
-    "filename": "冯达庵《学密须知》.json",
+    "filename": "sutra-11.json",
     "author": "冯达庵",
     "category": "mantra",
     "chapterCount": 1,
@@ -111,7 +111,7 @@
   },
   {
     "title": "冯达庵密宗的持诵与辨境",
-    "filename": "冯达庵《密宗的持诵与辨境》.json",
+    "filename": "sutra-12.json",
     "author": "冯达庵",
     "category": "mantra",
     "chapterCount": 1,
@@ -121,7 +121,7 @@
   },
   {
     "title": "冯达庵心经大义要释",
-    "filename": "冯达庵《心经大义要释》.json",
+    "filename": "sutra-13.json",
     "author": "冯达庵",
     "category": "prajna",
     "chapterCount": 1,
@@ -131,7 +131,7 @@
   },
   {
     "title": "冯达庵心经广义",
-    "filename": "冯达庵《心经广义》.json",
+    "filename": "sutra-14.json",
     "author": "冯达庵",
     "category": "prajna",
     "chapterCount": 1,
@@ -141,7 +141,7 @@
   },
   {
     "title": "冯达庵新时代的佛法",
-    "filename": "冯达庵《新时代的佛法》.json",
+    "filename": "sutra-15.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -151,7 +151,7 @@
   },
   {
     "title": "冯达庵法华特论",
-    "filename": "冯达庵《法华特论》.json",
+    "filename": "sutra-16.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -161,7 +161,7 @@
   },
   {
     "title": "冯达庵禅宗明心见性与密宗即身成佛",
-    "filename": "冯达庵《禅宗明心见性与密宗即身成佛》.json",
+    "filename": "sutra-17.json",
     "author": "冯达庵",
     "category": "chan",
     "chapterCount": 1,
@@ -171,7 +171,7 @@
   },
   {
     "title": "冯达庵禅海塔灯题句",
-    "filename": "冯达庵《禅海塔灯题句》.json",
+    "filename": "sutra-18.json",
     "author": "冯达庵",
     "category": "chan",
     "chapterCount": 1,
@@ -181,7 +181,7 @@
   },
   {
     "title": "冯达庵金刚经",
-    "filename": "冯达庵《金刚经》.json",
+    "filename": "sutra-19.json",
     "author": "冯达庵",
     "category": "prajna",
     "chapterCount": 1,
@@ -191,7 +191,7 @@
   },
   {
     "title": "唐普式七觉支颂",
-    "filename": "唐普式《七觉支颂》.json",
+    "filename": "sutra-20.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -201,7 +201,7 @@
   },
   {
     "title": "唐普式印度密教管窥",
-    "filename": "唐普式《印度密教管窥》.json",
+    "filename": "sutra-21.json",
     "author": "冯达庵",
     "category": "mantra",
     "chapterCount": 1,
@@ -211,7 +211,7 @@
   },
   {
     "title": "唐普式唐密与广东",
-    "filename": "唐普式《唐密与广东》.json",
+    "filename": "sutra-22.json",
     "author": "冯达庵",
     "category": "mantra",
     "chapterCount": 1,
@@ -221,7 +221,7 @@
   },
   {
     "title": "唐普式唐密乃印度正纯密教的唯一传承",
-    "filename": "唐普式《唐密乃印度正纯密教的唯一传承》.json",
+    "filename": "sutra-23.json",
     "author": "冯达庵",
     "category": "mantra",
     "chapterCount": 1,
@@ -231,7 +231,7 @@
   },
   {
     "title": "唐普式唐密曼荼罗，异彩纷呈，彪炳千古——朝拜法门寺地宫出土圣物所得启示",
-    "filename": "唐普式《唐密曼荼罗，异彩纷呈，彪炳千古——朝拜法门寺地宫出土圣物所得启示》.json",
+    "filename": "sutra-24.json",
     "author": "冯达庵",
     "category": "mantra",
     "chapterCount": 1,
@@ -241,7 +241,7 @@
   },
   {
     "title": "唐普式如此歪风应该停止了——读台湾《菩提树杂志.近代佛门人物志之十六，书后》",
-    "filename": "唐普式《如此歪风应该停止了——读台湾《菩提树杂志.近代佛门人物志》之十六，书后》.json",
+    "filename": "sutra-25.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -251,7 +251,7 @@
   },
   {
     "title": "唐普式宗门三关直指",
-    "filename": "唐普式《宗门三关直指》.json",
+    "filename": "sutra-26.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,
@@ -261,7 +261,7 @@
   },
   {
     "title": "唐普式法门寺塔地宫的唐密曼荼罗之我见",
-    "filename": "唐普式《法门寺塔地宫的唐密曼荼罗之我见》.json",
+    "filename": "sutra-27.json",
     "author": "冯达庵",
     "category": "mantra",
     "chapterCount": 1,
@@ -271,7 +271,7 @@
   },
   {
     "title": "唐普式禅宗三关与密宗三妄",
-    "filename": "唐普式《禅宗三关与密宗三妄》.json",
+    "filename": "sutra-28.json",
     "author": "冯达庵",
     "category": "chan",
     "chapterCount": 1,
@@ -281,7 +281,7 @@
   },
   {
     "title": "唐普式般若波罗蜜多心经大义要释",
-    "filename": "唐普式《般若波罗蜜多心经大义要释》.json",
+    "filename": "sutra-29.json",
     "author": "冯达庵",
     "category": "prajna",
     "chapterCount": 1,
@@ -291,7 +291,7 @@
   },
   {
     "title": "唐普式论著六大缘起",
-    "filename": "唐普式《论著六大缘起》.json",
+    "filename": "sutra-30.json",
     "author": "冯达庵",
     "category": "general",
     "chapterCount": 1,

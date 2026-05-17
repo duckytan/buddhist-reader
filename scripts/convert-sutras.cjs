@@ -125,16 +125,20 @@ function main() {
   
   const files = fs.readdirSync(SUTRAS_DIR).filter(f => f.endsWith('.txt')).sort()
   
+  let idx = 1
+  
   for (const filename of files) {
     const filepath = path.join(SUTRAS_DIR, filename)
     console.log(`处理：${filename}`)
     
     const sutraData = processFile(filepath)
+    const asciiName = `sutra-${String(idx).padStart(2, '0')}.json`
+    sutraData.filename = asciiName
     sutras.push(sutraData)
     
     manifest.push({
       title: sutraData.title,
-      filename: filename.replace('.txt', '.json'),
+      filename: asciiName,
       author: sutraData.author,
       category: sutraData.category,
       chapterCount: sutraData.chapterCount,
@@ -143,8 +147,9 @@ function main() {
       description: sutraData.description.substring(0, 100) + '...'
     })
     
-    const outputFile = path.join(OUTPUT_DIR, filename.replace('.txt', '.json'))
+    const outputFile = path.join(OUTPUT_DIR, asciiName)
     fs.writeFileSync(outputFile, JSON.stringify(sutraData, null, 2), 'utf-8')
+    idx++
   }
   
   fs.writeFileSync(

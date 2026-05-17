@@ -43,7 +43,7 @@ export const useSutraStore = defineStore('sutra', () => {
   async function fetchSutra(filename) {
     error.value = null
     try {
-      const resp = await fetch(`${base}sutras/${filename}`)
+      const resp = await fetch(`${base}sutras/${encodeURIComponent(filename)}`)
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
       currentSutra.value = await resp.json()
     } catch (e) {
