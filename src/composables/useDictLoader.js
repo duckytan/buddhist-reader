@@ -24,5 +24,7 @@ export function useDictLoader() {
     return results
   }
 
-  return { errors, lookupTerm }
+  function clearCache() {}
+
+  return { errors, lookupTerm, clearCache }
 }
