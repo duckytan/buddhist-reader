@@ -44,7 +44,9 @@ export const storage = {
   },
   getNumber(keyStr, fallback = 0) {
     const v = this.get(keyStr)
-    return v !== null ? Number(v) : fallback
+    if (v === null) return fallback
+    const num = Number(v)
+    return Number.isNaN(num) ? fallback : num
   },
   setNumber(keyStr, num) {
     return this.set(keyStr, String(num))

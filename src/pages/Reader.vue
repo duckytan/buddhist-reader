@@ -134,12 +134,15 @@ const showDictSelector = ref(false)
 const dictManifest = ref([])
 
 const filename = computed(() => decodeURIComponent(route.params.id))
-const progress = useReadingProgress(filename.value)
+const progress = useReadingProgress(filename)
 
 const fullContent = computed(() => {
   if (!sutraStore.currentSutra) return ''
   return sutraStore.currentSutra.chapters
-    .map(c => c.paragraphs.map(p => p.text).join(' '))
+    .map(c => {
+      if (!c.paragraphs) return c.content || ''
+      return c.paragraphs.map(p => p.text).join(' ')
+    })
     .join('\n')
 })
 
@@ -226,7 +229,6 @@ function addBookmark() {
   const pos = readerStore.scrollPosition
   const label = `${ch > 0 ? `第${ch + 1}章` : '开头'} - ${progressPercent.value}%`
   readerStore.addBookmark(filename.value, ch, pos, label)
-  alert(`书签已添加: ${label}`)
 }
 
 function startReadingTimer() {
@@ -255,6 +257,7 @@ onMounted(() => {
   fetch(`${import.meta.env.BASE_URL}dicts/manifest.json`)
     .then(r => r.json())
     .then(data => { dictManifest.value = data })
+    .catch(e => { console.error('Failed to load dict manifest:', e) })
 })
 
 onUnmounted(() => {

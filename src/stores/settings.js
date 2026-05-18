@@ -49,7 +49,7 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(lineHeightIndex, (v) => storage.setNumber('settings-line-height', v))
   watch(theme, (v) => {
     storage.setString('settings-theme', v)
-    setTheme(v)
+    document.documentElement.setAttribute('data-theme', v)
   })
 
   return {

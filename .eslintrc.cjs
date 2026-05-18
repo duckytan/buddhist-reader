@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  ignorePatterns: ['archive/', 'dist/', 'scripts/', 'prototype/', 'public/', 'temp-sutras/', 'node_modules/'],
+  ignorePatterns: ['archive/', 'dist/', 'scripts/', 'public/', 'temp-sutras/', 'node_modules/', 'src/data/dictIndex.js'],
   env: {
     browser: true,
     es2021: true,

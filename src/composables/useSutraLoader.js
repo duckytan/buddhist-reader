@@ -1,6 +1,8 @@
 import { ref } from 'vue'
 import { useSutraStore } from '../stores/sutra'
 
+let manifestLoaded = false
+
 export function useSutraLoader() {
   const sutraStore = useSutraStore()
   const loading = ref(false)
@@ -14,7 +16,10 @@ export function useSutraLoader() {
 
     while (retryCount.value <= maxRetries) {
       try {
-        await sutraStore.fetchManifest()
+        if (!manifestLoaded) {
+          await sutraStore.fetchManifest()
+          if (!sutraStore.error) manifestLoaded = true
+        }
         await sutraStore.fetchSutra(filename)
         if (sutraStore.error) {
           throw new Error(sutraStore.error)
@@ -34,6 +39,7 @@ export function useSutraLoader() {
 
   function retry(filename) {
     retryCount.value = 0
+    manifestLoaded = false
     load(filename)
   }
 

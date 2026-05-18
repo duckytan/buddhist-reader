@@ -48,7 +48,7 @@
           class="reader-dict-selector__refresh"
           @click="dictStore.triggerRefresh()"
         >
-          🔄 强制刷新
+          &#x21bb; 强制刷新
         </button>
         <div class="reader-dict-selector__stats">
           已启用 {{ enabledCount }} 部词典，{{ enabledTermCount }} 个词条

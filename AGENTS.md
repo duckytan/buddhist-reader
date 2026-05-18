@@ -4,7 +4,7 @@
 
 - **v1.0**: `archive/v1.0/` — low credibility, abandoned. Do not follow its patterns.
 - **v2.0**: `archive/v2.0/` — had working UI but poor module boundaries. Its **Zen CSS tokens** and **data assets** are reusable; its architecture is not.
-- **v3.0**: Ready for development. `src/` is empty; `package.json`, `index.html`, `vite.config.js` need to be created from scratch.
+- **v3.0**: Active. Full reader with paragraph navigation, dict highlighting, notes, bookmarks, and search. Hash-mode routing for dual Vercel/GitHub Pages deploy.
 - **Current branch**: `main`
 
 ## Iron Rules
@@ -32,8 +32,6 @@
 
 - `host: true` required for preview; without it the dev server refuses external connections
 - `allowedHosts: ['.monkeycode-ai.online']` required for preview platform
-- `define: { global: 'globalThis' }` — only needed if mdict-js/lzo-wasm are used
-- `lzo-wasm.wasm` must live in `public/` (Vite cannot import .wasm as a module)
 
 **Note**: v3.0 uses JSON dicts directly, so `mdict-js`, `lzo-wasm`, and `optimizeDeps.include` are NOT needed unless MDX support is added later.
 
@@ -46,8 +44,8 @@ Config at `.eslintrc.cjs` — Vue 3 + eslint:recommended. Run `npm run lint` bef
 **Sutra JSON** (`public/sutras/*.json`):
 ```json
 { "title": "...", "filename": "...", "author": "冯达庵", "category": "yogacara",
-  "chapterCount": 1, "totalChars": 23444, "description": "...",
-  "chapters": [{ "title": "全文", "content": "..." }] }
+  "chapterCount": 1, "totalChars": 23444, "totalParagraphs": 150, "description": "...",
+  "chapters": [{ "title": "全文", "paragraphs": [{ "id": "p1", "text": "..." }] }] }
 ```
 
 **Dict JSON** (`public/dicts/*.json`):

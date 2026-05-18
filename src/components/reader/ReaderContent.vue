@@ -30,7 +30,7 @@
             <span
               v-if="seg.type === 'term'"
               class="dict-highlight"
-              data-term="{{ seg.content }}"
+              :data-term="seg.content"
               @click.stop="onTermClick(seg.content)"
             >{{ seg.content }}</span>
             <span v-else>{{ seg.content }}</span>
@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onUnmounted } from 'vue'
 import { useReaderStore } from '../../stores/reader'
 import { useHighlighter } from '../../composables/useHighlighter'
 import { useDictStore } from '../../stores/dict'
@@ -101,6 +101,8 @@ function scrollToPara(chapterIdx, paraId) {
 }
 
 defineExpose({ scrollTo, scrollToChapter, scrollToPara })
+
+onUnmounted(() => { if (throttleTimer) { clearTimeout(throttleTimer); throttleTimer = null } })
 </script>
 
 <style scoped>
