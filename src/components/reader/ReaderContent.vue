@@ -47,6 +47,11 @@ import { useReaderStore } from '../../stores/reader'
 import { useHighlighter } from '../../composables/useHighlighter'
 import { useDictStore } from '../../stores/dict'
 
+const props = defineProps({
+  chapters: { type: Array, default: () => [] },
+  initialPosition: { type: Number, default: 0 }
+})
+
 const emit = defineEmits(['scroll', 'progress', 'termClick'])
 const contentRef = ref(null)
 const readerStore = useReaderStore()
