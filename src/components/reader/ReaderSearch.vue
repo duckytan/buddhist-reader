@@ -34,7 +34,10 @@
             class="reader-search__result"
             @click="onJump(r)"
           >
-            <span class="reader-search__context">{{ r.context }}</span>
+            <span
+              class="reader-search__context"
+              v-html="highlightKeyword(r.context)"
+            />
           </li>
         </ul>
         <div
@@ -89,6 +92,18 @@ function onJump(r) {
   emit('jump', r.position)
   emit('close')
 }
+
+function escapeHtml(text) {
+  return text.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]))
+}
+
+function highlightKeyword(context) {
+  if (!keyword.value || !context) return escapeHtml(context)
+  const kw = escapeHtml(keyword.value)
+  const escaped = escapeHtml(context)
+  const regex = new RegExp(`(${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+  return escaped.replace(regex, '<mark class="reader-search__highlight">$1</mark>')
+}
 </script>
 
 <style scoped>
@@ -122,6 +137,12 @@ function onJump(r) {
 }
 .reader-search__result:hover { background: var(--color-surface); }
 .reader-search__context { color: var(--color-ink); line-height: var(--leading-sm); }
+.reader-search__context :deep(mark) {
+  background: #fff3cd;
+  color: #2c2c2c;
+  border-radius: 2px;
+  padding: 0 2px;
+}
 .reader-search__empty { text-align: center; padding: var(--spacing-xxl); color: var(--color-ink-muted); }
 .slide-up-enter-active, .slide-up-leave-active { transition: opacity 0.3s, transform 0.3s; }
 .slide-up-enter-from { opacity: 0; transform: translateY(100%); }
