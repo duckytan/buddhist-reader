@@ -56,7 +56,7 @@ import { ref } from 'vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
-  content: { type: String, default: '' }
+  chapters: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits(['close', 'jump'])
@@ -70,18 +70,21 @@ function onSearch() {
     searched.value = false
     return
   }
-  const text = props.content
   const kw = keyword.value
   const found = []
-  let pos = 0
-  /* eslint-disable no-constant-condition */
-  while (true) {
-    const idx = text.indexOf(kw, pos)
-    if (idx === -1) break
-    const start = Math.max(0, idx - 20)
-    const end = Math.min(text.length, idx + kw.length + 20)
-    found.push({ position: idx, context: text.slice(start, end) })
-    pos = idx + 1
+  for (let cidx = 0; cidx < props.chapters.length; cidx++) {
+    const chapter = props.chapters[cidx]
+    const paragraphs = chapter.paragraphs || []
+    for (const para of paragraphs) {
+      const text = para.text
+      if (!text) continue
+      const idx = text.indexOf(kw)
+      if (idx === -1) continue
+      const start = Math.max(0, idx - 20)
+      const end = Math.min(text.length, idx + kw.length + 20)
+      found.push({ chapterIdx: cidx, paraId: para.id, context: text.slice(start, end) })
+      if (found.length >= 50) break
+    }
     if (found.length >= 50) break
   }
   results.value = found
@@ -89,7 +92,7 @@ function onSearch() {
 }
 
 function onJump(r) {
-  emit('jump', r.position)
+  emit('jump', r.chapterIdx, r.paraId)
   emit('close')
 }
 

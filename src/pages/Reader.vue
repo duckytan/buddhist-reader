@@ -55,7 +55,7 @@
       />
       <ReaderSearch
         :visible="showSearch"
-        :content="fullContent"
+        :chapters="sutraStore.currentSutra.chapters"
         @close="showSearch = false"
         @jump="onSearchJump"
       />
@@ -136,16 +136,6 @@ const dictManifest = ref([])
 const filename = computed(() => decodeURIComponent(route.params.id))
 const progress = useReadingProgress(filename)
 
-const fullContent = computed(() => {
-  if (!sutraStore.currentSutra) return ''
-  return sutraStore.currentSutra.chapters
-    .map(c => {
-      if (!c.paragraphs) return c.content || ''
-      return c.paragraphs.map(p => p.text).join(' ')
-    })
-    .join('\n')
-})
-
 const showDictPopup = ref(false)
 const lookupTerm = ref('')
 const lookupResults = ref([])
@@ -222,7 +212,9 @@ function onJumpPara(chapterIdx, paraId) {
     contentRef.value.scrollToPara(chapterIdx, paraId)
   }
 }
-function onSearchJump(position) { if (contentRef.value) contentRef.value.scrollTo(position) }
+function onSearchJump(chapterIdx, paraId) {
+  if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId)
+}
 
 function addBookmark() {
   const ch = readerStore.currentChapter

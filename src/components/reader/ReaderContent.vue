@@ -92,7 +92,7 @@ function scrollTo(position) {
 function scrollToChapter(idx) {
   nextTick(() => {
     const el = document.getElementById(`chapter-${idx}`)
-    if (el && contentRef.value) contentRef.value.scrollTop = el.offsetTop - contentRef.value.offsetTop
+    if (el && contentRef.value) contentRef.value.scrollTop = el.offsetTop - 20
   })
 }
 
@@ -100,7 +100,7 @@ function scrollToPara(chapterIdx, paraId) {
   nextTick(() => {
     const el = document.getElementById(`para-${paraId}`)
     if (el && contentRef.value) {
-      contentRef.value.scrollTop = el.offsetTop - contentRef.value.offsetTop - 20
+      contentRef.value.scrollTop = el.offsetTop - 20
     }
   })
 }
