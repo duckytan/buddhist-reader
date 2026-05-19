@@ -84,7 +84,7 @@ function onSearch() {
         if (idx === -1) break
         const start = Math.max(0, idx - 20)
         const end = Math.min(text.length, idx + kw.length + 20)
-        found.push({ chapterIdx: cidx, paraId: para.id, context: text.slice(start, end) })
+        found.push({ chapterIdx: cidx, paraId: para.id, paraOffset: idx, context: text.slice(start, end) })
         pos = idx + 1
         if (found.length >= 50) break
       }
@@ -97,7 +97,7 @@ function onSearch() {
 }
 
 function onJump(r) {
-  emit('jump', r.chapterIdx, r.paraId)
+  emit('jump', r.chapterIdx, r.paraId, r.paraOffset)
   emit('close')
 }
 

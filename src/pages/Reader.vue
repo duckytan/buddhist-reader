@@ -212,8 +212,8 @@ function onJumpPara(chapterIdx, paraId) {
     contentRef.value.scrollToPara(chapterIdx, paraId)
   }
 }
-function onSearchJump(chapterIdx, paraId) {
-  if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId)
+function onSearchJump(chapterIdx, paraId, paraOffset) {
+  if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId, paraOffset)
 }
 
 function addBookmark() {
