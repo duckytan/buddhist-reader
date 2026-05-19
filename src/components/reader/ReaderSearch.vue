@@ -78,11 +78,16 @@ function onSearch() {
     for (const para of paragraphs) {
       const text = para.text
       if (!text) continue
-      const idx = text.indexOf(kw)
-      if (idx === -1) continue
-      const start = Math.max(0, idx - 20)
-      const end = Math.min(text.length, idx + kw.length + 20)
-      found.push({ chapterIdx: cidx, paraId: para.id, context: text.slice(start, end) })
+      let pos = 0
+      while (true) {
+        const idx = text.indexOf(kw, pos)
+        if (idx === -1) break
+        const start = Math.max(0, idx - 20)
+        const end = Math.min(text.length, idx + kw.length + 20)
+        found.push({ chapterIdx: cidx, paraId: para.id, context: text.slice(start, end) })
+        pos = idx + 1
+        if (found.length >= 50) break
+      }
       if (found.length >= 50) break
     }
     if (found.length >= 50) break
