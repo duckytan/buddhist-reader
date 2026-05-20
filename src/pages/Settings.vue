@@ -1,7 +1,9 @@
 <template>
   <div class="settings-page">
     <h1>设置</h1>
-    <p class="settings-page__placeholder">设置功能开发中...</p>
+    <p class="settings-page__placeholder">
+      设置功能开发中...
+    </p>
   </div>
 </template>
 

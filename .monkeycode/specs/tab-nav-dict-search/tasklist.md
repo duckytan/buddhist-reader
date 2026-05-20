@@ -2,12 +2,12 @@
 
 ## Phase 1: 框架搭建
 
-- [ ] 1.1 创建 AppShell 组件（Tab 框架容器，嵌套路由父组件）
-- [ ] 1.2 创建 AppTabBar 组件（响应式 Tab 栏，4 个禅意图标）
-- [ ] 1.3 调整路由配置（嵌套路由，AppShell 作为父组件）
-- [ ] 1.4 Bookshelf 适配 AppShell（移除自建 header）
-- [ ] 1.5 Reader 返回逻辑优化（query.from 智能返回）
-- [ ] 1.6 Reader 滚动位置保存/恢复（localStorage，替代 KeepAlive）
+- [x] 1.1 创建 AppShell 组件（Tab 框架容器，嵌套路由父组件）
+- [x] 1.2 创建 AppTabBar 组件（响应式 Tab 栏，4 个禅意图标）
+- [x] 1.3 调整路由配置（嵌套路由，AppShell 作为父组件）
+- [x] 1.4 Bookshelf 适配 AppShell（移除自建 header）
+- [x] 1.5 Reader 返回逻辑优化（query.from 智能返回）
+- [x] 1.6 Reader 滚动位置保存/恢复（localStorage，替代 KeepAlive）
 
 ## Phase 2: 词典搜索页
 
