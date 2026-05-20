@@ -2,7 +2,7 @@
   <header class="reader-header">
     <button
       class="reader-header__back"
-      @click="$router.push('/')"
+      @click="$emit('goBack')"
     >
       <span class="reader-header__icon">&#8592;</span>
     </button>
@@ -50,7 +50,7 @@
 
 <script setup>
 defineProps({ title: { type: String, default: '' } })
-defineEmits(['toggleSearch', 'addBookmark', 'addNote', 'toggleTOC', 'toggleSettings', 'toggleDictSelector'])
+defineEmits(['toggleSearch', 'addBookmark', 'addNote', 'toggleTOC', 'toggleSettings', 'toggleDictSelector', 'goBack'])
 </script>
 
 <style scoped>

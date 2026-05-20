@@ -28,6 +28,7 @@
     <template v-else-if="sutraStore.currentSutra">
       <ReaderHeader
         :title="sutraStore.currentSutra.title"
+        @go-back="goBack"
         @toggle-settings="readerStore.showSettings = true"
         @toggle-search="showSearch = true"
         @toggle-t-o-c="readerStore.showTOC = true"
@@ -100,7 +101,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useSutraStore } from '../stores/sutra'
 import { useReaderStore } from '../stores/reader'
 import { useDictStore } from '../stores/dict'
@@ -119,6 +120,7 @@ import ReaderDictSelector from '../components/reader/ReaderDictSelector.vue'
 import DictPopup from '../components/dict/DictPopup.vue'
 
 const route = useRoute()
+const router = useRouter()
 const sutraStore = useSutraStore()
 const readerStore = useReaderStore()
 const dictStore = useDictStore()
@@ -221,6 +223,15 @@ function addBookmark() {
   const pos = readerStore.scrollPosition
   const label = `${ch > 0 ? `第${ch + 1}章` : '开头'} - ${progressPercent.value}%`
   readerStore.addBookmark(filename.value, ch, pos, label)
+}
+
+function goBack() {
+  const from = route.query.from
+  if (from && from.startsWith('/#/')) {
+    router.push(from)
+  } else {
+    router.push('/')
+  }
 }
 
 function startReadingTimer() {

@@ -1,11 +1,5 @@
 <template>
   <div class="bookshelf">
-    <header class="bookshelf__header">
-      <h1 class="bookshelf__title">
-        般若佛经阅读器
-      </h1>
-    </header>
-
     <nav class="bookshelf__filter">
       <button
         v-for="cat in sutraStore.categories"
@@ -68,17 +62,23 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useSutraStore } from '../stores/sutra'
 import SutraCard from '../components/bookshelf/SutraCard.vue'
 
+defineOptions({ name: 'Bookshelf' })
+
+const route = useRoute()
 const router = useRouter()
 const sutraStore = useSutraStore()
 
 onMounted(() => sutraStore.fetchManifest())
 
 function goToReader(sutra) {
-  router.push(`/reader/${encodeURIComponent(sutra.filename)}`)
+  router.push({
+    path: `/reader/${encodeURIComponent(sutra.filename)}`,
+    query: { from: route.fullPath }
+  })
 }
 </script>
 
@@ -87,15 +87,6 @@ function goToReader(sutra) {
   max-width: var(--max-content-width);
   margin: 0 auto;
   padding: var(--spacing-lg);
-}
-.bookshelf__header {
-  text-align: center;
-  padding: var(--spacing-xl) 0 var(--spacing-lg);
-}
-.bookshelf__title {
-  font-family: var(--font-serif);
-  font-size: var(--text-display);
-  font-weight: var(--weight-semibold);
 }
 .bookshelf__filter {
   display: flex;
