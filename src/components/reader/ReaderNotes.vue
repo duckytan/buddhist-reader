@@ -88,7 +88,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { storage } from '../../utils/storage'
+import { useNotesStore } from '../../stores/notes'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -97,13 +97,14 @@ const props = defineProps({
 
 defineEmits(['close'])
 
+const notesStore = useNotesStore()
 const addingNote = ref(false)
 const noteInput = ref('')
 const selectedText = ref('')
 const notes = ref([])
 
 function loadNotes() {
-  notes.value = storage.getObject(`notes-${props.sutraId}`) || []
+  notes.value = notesStore.getNotes(props.sutraId)
 }
 
 watch(() => props.sutraId, loadNotes, { immediate: true })
@@ -116,22 +117,16 @@ function startAddNote(text) {
 
 function saveNote() {
   if (!noteInput.value.trim()) return
-  const all = [...notes.value, {
-    quote: selectedText.value,
-    text: noteInput.value.trim(),
-    time: Date.now()
-  }]
-  storage.setObject(`notes-${props.sutraId}`, all)
-  notes.value = all
+  notesStore.addNote(props.sutraId, selectedText.value, noteInput.value)
+  loadNotes()
   addingNote.value = false
   noteInput.value = ''
 }
 
 function removeNote(index) {
-  const all = [...notes.value]
-  all.splice(index, 1)
-  storage.setObject(`notes-${props.sutraId}`, all)
-  notes.value = all
+  const note = notes.value[index]
+  notesStore.deleteNote(props.sutraId, note.id)
+  loadNotes()
 }
 
 function formatTime(ts) {

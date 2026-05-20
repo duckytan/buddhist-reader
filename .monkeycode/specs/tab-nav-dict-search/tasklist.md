@@ -11,10 +11,10 @@
 
 ## Phase 2: 词典搜索页
 
-- [ ] 2.1 创建 dictSearchEngine.js（四级匹配引擎）
-- [ ] 2.2 创建 useDictSearch.js（搜索 composable）
-- [ ] 2.3 创建 DictSearch.vue 页面
-- [ ] 2.4 低端设备性能优化（debounce、释义搜索限制）
+- [x] 2.1 创建 dictSearchEngine.js（四级匹配引擎）
+- [x] 2.2 创建 useDictSearch.js（搜索 composable）
+- [x] 2.3 创建 DictSearch.vue 页面
+- [x] 2.4 低端设备性能优化（debounce、释义搜索限制）
 
 ## Phase 3: 笔记页
 
