@@ -82,7 +82,7 @@
     <section class="settings-page__section">
       <h2 class="settings-page__section-title">关于</h2>
       <div class="settings-page__about">
-        <p>佛经阅读器 v3.1</p>
+        <p>佛经阅读器 v3.1.0</p>
         <p>禅意设计 · 点击即查 · 离线可用</p>
         <a
           href="https://github.com/duckytan/buddhist-reader"

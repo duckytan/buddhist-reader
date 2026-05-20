@@ -26,9 +26,9 @@
 
 ## Phase 4: 设置页
 
-- [ ] 4.1 创建 Settings.vue 页面（整合主题、阅读、词典管理）
-- [ ] 4.2 精简 ReaderSettings（3 项 + 更多设置跳转）
-- [ ] 4.3 导出笔记功能（JSON 格式）
+- [x] 4.1 创建 Settings.vue 页面（整合主题、阅读、词典管理）
+- [x] 4.2 精简 ReaderSettings（3 项 + 更多设置跳转）
+- [x] 4.3 导出笔记功能（JSON 格式）
 
 ## Phase 5: 测试与优化
 
