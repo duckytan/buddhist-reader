@@ -18,11 +18,11 @@
 
 ## Phase 3: 笔记页
 
-- [ ] 3.1 创建 stores/notes.js（从 ReaderNotes 抽离笔记 Store）
-- [ ] 3.2 创建 Notes.vue 页面
-- [ ] 3.3 实现笔记搜索与筛选
-- [ ] 3.4 跳转阅读器定位功能（携带 from 参数）
-- [ ] 3.5 笔记编辑/删除交互
+- [x] 3.1 创建 stores/notes.js（从 ReaderNotes 抽离笔记 Store）
+- [x] 3.2 创建 Notes.vue 页面
+- [x] 3.3 实现笔记搜索与筛选
+- [x] 3.4 跳转阅读器定位功能（携带 from 参数）
+- [x] 3.5 笔记编辑/删除交互
 
 ## Phase 4: 设置页
 

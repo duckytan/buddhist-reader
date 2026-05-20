@@ -68,6 +68,12 @@
             </button>
           </div>
         </section>
+
+        <div class="reader-settings__more">
+          <router-link to="/settings" class="reader-settings__more-link">
+            更多设置 &rarr;
+          </router-link>
+        </div>
       </div>
     </div>
   </Transition>
@@ -122,6 +128,16 @@ function themeLabel(t) { return themeLabels[t] || t }
 }
 .reader-settings__size-btn.active, .reader-settings__theme-btn.active {
   color: var(--color-canvas); background: var(--color-accent);
+}
+.reader-settings__more {
+  text-align: center;
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+  border-top: 1px solid var(--color-hairline);
+}
+.reader-settings__more-link {
+  font-size: var(--text-body-sm);
+  color: var(--color-accent);
+  text-decoration: none;
 }
 .slide-up-enter-active, .slide-up-leave-active { transition: opacity 0.3s, transform 0.3s; }
 .slide-up-enter-from { opacity: 0; transform: translateY(100%); }
