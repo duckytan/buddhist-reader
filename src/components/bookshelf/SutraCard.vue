@@ -1,7 +1,7 @@
 <template>
   <div
     class="sutra-card"
-    @click="$emit('click', sutra)"
+    @click="$emit('select', sutra)"
   >
     <h3 class="sutra-card__title">
       {{ sutra.title }}
@@ -18,7 +18,7 @@
 
 <script setup>
 defineProps({ sutra: { type: Object, required: true } })
-defineEmits(['click'])
+defineEmits(['select'])
 
 const categoryLabels = {
   prajna: '般若', yogacara: '唯识', chan: '禅宗',

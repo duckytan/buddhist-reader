@@ -53,7 +53,7 @@
         v-for="sutra in sutraStore.filteredList"
         :key="sutra.filename"
         :sutra="sutra"
-        @click="goToReader"
+        @select="goToReader"
       />
     </div>
 
