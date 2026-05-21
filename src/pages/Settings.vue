@@ -49,25 +49,6 @@
     </section>
 
     <section class="settings-page__section">
-      <h2 class="settings-page__section-title">词典管理</h2>
-      <div
-        v-for="dict in dictManifest"
-        :key="dict.name"
-        class="settings-page__dict-item"
-      >
-        <label class="settings-page__dict-toggle">
-          <input
-            type="checkbox"
-            :checked="dictStore.isDictEnabled(dict.key)"
-            @change="dictStore.toggleDict(dict.key)"
-          />
-          <span class="settings-page__dict-name">{{ dict.title }}</span>
-        </label>
-        <span class="settings-page__dict-count">{{ dict.entryCount }} 条</span>
-      </div>
-    </section>
-
-    <section class="settings-page__section">
       <h2 class="settings-page__section-title">数据管理</h2>
       <div class="settings-page__data-row">
         <button class="settings-page__data-btn" @click="exportNotes">
@@ -98,18 +79,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useSettingsStore } from '../stores/settings'
-import { useDictStore } from '../stores/dict'
 import { useNotesStore } from '../stores/notes'
 
 defineOptions({ name: 'Settings' })
 console.log('[Settings] script setup executed')
 
 const settingsStore = useSettingsStore()
-const dictStore = useDictStore()
 const notesStore = useNotesStore()
-const dictManifest = ref([])
 
 const fontSizeLabels = ['小', '中', '大', '特大']
 const lineHeightLabels = ['紧凑', '舒适', '宽松']
@@ -138,12 +116,6 @@ function clearCache() {
   }
 }
 
-onMounted(() => {
-  fetch(`${import.meta.env.BASE_URL}dicts/manifest.json`)
-    .then(r => r.json())
-    .then(data => { dictManifest.value = data })
-    .catch(e => { console.error('Failed to load dict manifest:', e) })
-})
 </script>
 
 <style scoped>
@@ -204,23 +176,6 @@ onMounted(() => {
 .settings-page__size-btn.active {
   color: var(--color-canvas);
   background: var(--color-accent);
-}
-.settings-page__dict-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-sm) 0;
-}
-.settings-page__dict-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  cursor: pointer;
-}
-.settings-page__dict-name { font-size: var(--text-body-sm); }
-.settings-page__dict-count {
-  font-size: var(--text-caption);
-  color: var(--color-ink-subtle);
 }
 .settings-page__data-row { display: flex; flex-direction: column; gap: var(--spacing-sm); }
 .settings-page__data-btn {
