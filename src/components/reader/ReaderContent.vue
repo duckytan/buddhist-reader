@@ -33,6 +33,10 @@
               :data-term="seg.content"
               @click.stop="onTermClick(seg.content)"
             >{{ seg.content }}</span>
+            <span
+              v-else-if="seg.type === 'search'"
+              class="search-highlight"
+            >{{ seg.content }}</span>
             <span v-else>{{ seg.content }}</span>
           </template>
         </p>
@@ -49,7 +53,8 @@ import { useDictStore } from '../../stores/dict'
 
 const props = defineProps({
   chapters: { type: Array, default: () => [] },
-  initialPosition: { type: Number, default: 0 }
+  initialPosition: { type: Number, default: 0 },
+  searchKeyword: { type: String, default: '' }
 })
 
 const emit = defineEmits(['scroll', 'progress', 'termClick'])
@@ -62,8 +67,51 @@ let throttleTimer = null
 
 function getSegments(content) {
   if (!content) return []
-  const result = highlight(content) || [{ type: 'text', content }]
+  let result = highlight(content) || [{ type: 'text', content }]
+
+  // Insert search keyword highlights
+  if (props.searchKeyword && props.searchKeyword.length >= 2) {
+    result = insertSearchHighlights(result, props.searchKeyword)
+  }
+
   return result
+}
+
+function insertSearchHighlights(segments, keyword) {
+  const out = []
+  const kwLower = keyword.toLowerCase()
+
+  for (const seg of segments) {
+    if (seg.type === 'term') {
+      out.push(seg)
+      continue
+    }
+
+    const text = seg.content
+    const lower = text.toLowerCase()
+    let lastIdx = 0
+    let pos = lower.indexOf(kwLower, lastIdx)
+
+    if (pos === -1) {
+      out.push(seg)
+      continue
+    }
+
+    while (pos !== -1) {
+      if (pos > lastIdx) {
+        out.push({ type: 'text', content: text.slice(lastIdx, pos) })
+      }
+      out.push({ type: 'search', content: text.slice(pos, pos + keyword.length) })
+      lastIdx = pos + keyword.length
+      pos = lower.indexOf(kwLower, lastIdx)
+    }
+
+    if (lastIdx < text.length) {
+      out.push({ type: 'text', content: text.slice(lastIdx) })
+    }
+  }
+
+  return out
 }
 
 function onTermClick(term) {
@@ -85,13 +133,6 @@ function onScroll() {
   }, 100)
 }
 
-function getScrollTop(el) {
-  if (!el || !contentRef.value) return 0
-  const elRect = el.getBoundingClientRect()
-  const containerRect = contentRef.value.getBoundingClientRect()
-  return contentRef.value.scrollTop + (elRect.top - containerRect.top)
-}
-
 function scrollTo(position) {
   nextTick(() => { if (contentRef.value) contentRef.value.scrollTop = position })
 }
@@ -99,59 +140,64 @@ function scrollTo(position) {
 function scrollToChapter(idx) {
   nextTick(() => {
     const el = document.getElementById(`chapter-${idx}`)
-    if (el && contentRef.value) contentRef.value.scrollTop = getScrollTop(el) - 20
+    if (el && contentRef.value) {
+      const elRect = el.getBoundingClientRect()
+      const containerRect = contentRef.value.getBoundingClientRect()
+      const top = contentRef.value.scrollTop + (elRect.top - containerRect.top) - 20
+      contentRef.value.scrollTop = top
+    }
   })
 }
 
 function scrollToPara(chapterIdx, paraId, matchOffset) {
-  requestAnimationFrame(() => {
-    const el = document.getElementById(`para-${paraId}`)
-    if (!el || !contentRef.value) {
-      console.log('[ReaderContent] scrollToPara FAILED: el=', !!el, 'content=', !!contentRef.value)
-      return
+  const el = document.getElementById(`para-${paraId}`)
+  if (!el || !contentRef.value) {
+    console.log('[ReaderContent] scrollToPara FAILED: el=' + !!el + ' content=' + !!contentRef.value)
+    return
+  }
+
+  // Step 1: scrollIntoView — browser native, always accurate
+  el.scrollIntoView({ block: 'start' })
+
+  console.log('[ReaderContent] scrollToPara step1: para=' + paraId + ' scrollTop=' + contentRef.value.scrollTop + ' matchOffset=' + matchOffset)
+
+  if (matchOffset == null || matchOffset < 0) return
+
+  // Step 2: wait for browser paint, then fine-tune to keyword position
+  setTimeout(() => {
+    const elNow = document.getElementById(`para-${paraId}`)
+    if (!elNow || !contentRef.value) return
+
+    const walker = document.createTreeWalker(elNow, NodeFilter.SHOW_TEXT)
+    let node
+    let charCount = 0
+    let found = false
+
+    while ((node = walker.nextNode())) {
+      const nodeLen = node.textContent.length
+      if (charCount + nodeLen > matchOffset) {
+        const offsetInNode = matchOffset - charCount
+        const range = document.createRange()
+        range.setStart(node, offsetInNode)
+        range.setEnd(node, offsetInNode)
+        range.collapse(true)
+
+        const rangeRect = range.getBoundingClientRect()
+        const containerRect = contentRef.value.getBoundingClientRect()
+        const adjustment = rangeRect.top - containerRect.top - 100
+
+        contentRef.value.scrollTop = contentRef.value.scrollTop + adjustment
+        found = true
+        console.log('[ReaderContent] scrollToPara step2: matchOffset=' + matchOffset + ' charCount=' + charCount + ' offsetInNode=' + offsetInNode + ' adjustment=' + adjustment.toFixed(0) + ' scrollTop=' + contentRef.value.scrollTop.toFixed(0))
+        break
+      }
+      charCount += nodeLen
     }
 
-    // Step 1: Native scrollIntoView for paragraph — most reliable
-    el.scrollIntoView({ block: 'start' })
-
-    if (matchOffset == null) {
-      console.log('[ReaderContent] scrollToPara to para:', paraId, 'scrollTop:', contentRef.value.scrollTop)
-      return
+    if (!found) {
+      console.log('[ReaderContent] scrollToPara step2 NOT FOUND: matchOffset=' + matchOffset + ' totalChars=' + charCount)
     }
-
-    // Step 2: Fine-tune to exact keyword position
-    requestAnimationFrame(() => {
-      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-      let node
-      let charCount = 0
-      let found = false
-
-      while ((node = walker.nextNode())) {
-        const nodeLen = node.textContent.length
-        if (charCount + nodeLen > matchOffset) {
-          const offsetInNode = matchOffset - charCount
-          const range = document.createRange()
-          range.setStart(node, offsetInNode)
-          range.setEnd(node, offsetInNode)
-          range.collapse(true)
-
-          const rangeRect = range.getBoundingClientRect()
-          const containerRect = contentRef.value.getBoundingClientRect()
-          const adjustment = rangeRect.top - containerRect.top - 100
-
-          contentRef.value.scrollTop = contentRef.value.scrollTop + adjustment
-          found = true
-          console.log('[ReaderContent] scrollToPara fine-tuned: matchOffset=', matchOffset, 'adjustment=', adjustment.toFixed(0), 'scrollTop:', contentRef.value.scrollTop.toFixed(0))
-          break
-        }
-        charCount += nodeLen
-      }
-
-      if (!found) {
-        console.log('[ReaderContent] scrollToPara matchOffset NOT FOUND: matchOffset=', matchOffset, 'totalChars=', charCount)
-      }
-    })
-  })
+  }, 150)
 }
 
 defineExpose({ scrollTo, scrollToChapter, scrollToPara })
@@ -213,6 +259,12 @@ onUnmounted(() => { if (throttleTimer) { clearTimeout(throttleTimer); throttleTi
   cursor: pointer;
   border-bottom: 1px solid var(--color-accent-light);
   transition: background 0.2s;
+}
+.search-highlight {
+  background: #fbbf24;
+  color: var(--color-ink);
+  border-radius: 2px;
+  padding: 0 1px;
 }
 .dict-highlight:hover {
   background: var(--color-surface);

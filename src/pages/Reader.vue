@@ -41,6 +41,7 @@
         ref="contentRef"
         :chapters="sutraStore.currentSutra.chapters"
         :initial-position="progress.savedPosition.value"
+        :search-keyword="searchKeyword"
         @progress="onProgress"
         @term-click="onTermClick"
       />
@@ -57,8 +58,9 @@
       <ReaderSearch
         :visible="showSearch"
         :chapters="sutraStore.currentSutra.chapters"
-        @close="showSearch = false"
+        @close="showSearch = false; searchKeyword = ''"
         @jump="onSearchJump"
+        @keyword-change="searchKeyword = $event"
       />
       <ReaderNotes
         ref="notesRef"
@@ -133,6 +135,7 @@ const progressPercent = ref(0)
 const showSearch = ref(false)
 const showNotes = ref(false)
 const showDictSelector = ref(false)
+const searchKeyword = ref('')
 const dictManifest = ref([])
 
 const filename = computed(() => decodeURIComponent(route.params.id))

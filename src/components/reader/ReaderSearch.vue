@@ -59,7 +59,7 @@ const props = defineProps({
   chapters: { type: Array, default: () => [] }
 })
 
-const emit = defineEmits(['close', 'jump'])
+const emit = defineEmits(['close', 'jump', 'keywordChange'])
 const keyword = ref('')
 const results = ref([])
 const searched = ref(false)
@@ -68,8 +68,10 @@ function onSearch() {
   if (!keyword.value || keyword.value.length < 2) {
     results.value = []
     searched.value = false
+    emit('keywordChange', '')
     return
   }
+  emit('keywordChange', keyword.value)
   const kw = keyword.value
   const found = []
   for (let cidx = 0; cidx < props.chapters.length; cidx++) {
