@@ -206,6 +206,7 @@ function startNote() {
 function onProgress(percent) {
   progressPercent.value = percent
   progress.save(readerStore.scrollPosition, percent)
+  console.log('[Reader] progress saved, position:', readerStore.scrollPosition, 'percent:', percent)
 }
 
 function onJumpChapter(idx) { if (contentRef.value) contentRef.value.scrollToChapter(idx) }
@@ -247,8 +248,10 @@ function saveReadingTime() {
 }
 
 onMounted(() => {
+  console.log('[Reader] mounted, filename:', filename.value)
   readerStore.reset(filename.value)
   progress.restore()
+  console.log('[Reader] progress restored, savedPosition:', progress.savedPosition.value)
   loader.load(filename.value)
   startReadingTimer()
   nextTick(() => {

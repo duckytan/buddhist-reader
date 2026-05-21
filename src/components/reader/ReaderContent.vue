@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onUnmounted } from 'vue'
+import { ref, nextTick, onUnmounted, onMounted, watch } from 'vue'
 import { useReaderStore } from '../../stores/reader'
 import { useHighlighter } from '../../composables/useHighlighter'
 import { useDictStore } from '../../stores/dict'
@@ -85,6 +85,13 @@ function onScroll() {
   }, 100)
 }
 
+function getScrollTop(el) {
+  if (!el || !contentRef.value) return 0
+  const elRect = el.getBoundingClientRect()
+  const containerRect = contentRef.value.getBoundingClientRect()
+  return contentRef.value.scrollTop + (elRect.top - containerRect.top)
+}
+
 function scrollTo(position) {
   nextTick(() => { if (contentRef.value) contentRef.value.scrollTop = position })
 }
@@ -92,7 +99,7 @@ function scrollTo(position) {
 function scrollToChapter(idx) {
   nextTick(() => {
     const el = document.getElementById(`chapter-${idx}`)
-    if (el && contentRef.value) contentRef.value.scrollTop = el.offsetTop - 20
+    if (el && contentRef.value) contentRef.value.scrollTop = getScrollTop(el) - 20
   })
 }
 
@@ -100,11 +107,10 @@ function scrollToPara(chapterIdx, paraId, matchOffset) {
   nextTick(() => {
     const el = document.getElementById(`para-${paraId}`)
     if (!el || !contentRef.value) return
-    contentRef.value.scrollTop = el.offsetTop - 20
+    contentRef.value.scrollTop = getScrollTop(el) - 20
 
     if (matchOffset == null) return
 
-    // Collect all text nodes in the paragraph, find the match position
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
     let node
     let charCount = 0
@@ -117,7 +123,7 @@ function scrollToPara(chapterIdx, paraId, matchOffset) {
         range.setEnd(node, Math.min(offsetInNode + 1, nodeLen))
         const rect = range.getBoundingClientRect()
         const containerRect = contentRef.value.getBoundingClientRect()
-        contentRef.value.scrollTop += rect.top - containerRect.top - 100
+        contentRef.value.scrollTop = contentRef.value.scrollTop + (rect.top - containerRect.top) - 100
         break
       }
       charCount += nodeLen
@@ -126,6 +132,26 @@ function scrollToPara(chapterIdx, paraId, matchOffset) {
 }
 
 defineExpose({ scrollTo, scrollToChapter, scrollToPara })
+
+onMounted(() => {
+  console.log('[ReaderContent] mounted, initialPosition:', props.initialPosition, 'chapters:', props.chapters.length)
+})
+
+watch(() => props.chapters.length, () => {
+  if (props.initialPosition > 0 && contentRef.value) {
+    nextTick(() => {
+      console.log('[ReaderContent] chapters loaded, restoring scroll to', props.initialPosition)
+      if (contentRef.value) contentRef.value.scrollTop = props.initialPosition
+    })
+  }
+})
+
+watch(() => props.initialPosition, (newPos) => {
+  if (newPos > 0 && contentRef.value) {
+    console.log('[ReaderContent] initialPosition changed to', newPos)
+    contentRef.value.scrollTop = newPos
+  }
+})
 
 onUnmounted(() => { if (throttleTimer) { clearTimeout(throttleTimer); throttleTimer = null } })
 </script>

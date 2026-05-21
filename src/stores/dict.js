@@ -27,6 +27,7 @@ export const useDictStore = defineStore('dict', () => {
   function toggleDict(dictId) {
     enabledDicts.value[dictId] = !isDictEnabled(dictId)
     storage.setObject('dicts-enabled', enabledDicts.value)
+    triggerRefresh()
   }
 
   function getDictIdsForTerm(term) {
