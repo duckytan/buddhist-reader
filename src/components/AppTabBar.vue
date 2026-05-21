@@ -17,6 +17,7 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -32,6 +33,11 @@ function isActive(path) {
   if (path === '/') return route.path === '/'
   return route.path.startsWith(path)
 }
+
+onMounted(() => {
+  console.log('[AppTabBar] mounted, current route:', route.path)
+  console.log('[AppTabBar] tabs:', tabs.map(t => `${t.label}→${t.path}`).join(', '))
+})
 </script>
 
 <script>

@@ -12,7 +12,10 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import AppTabBar from './AppTabBar.vue'
+console.log('[AppShell] script setup executed')
+onMounted(() => console.log('[AppShell] mounted'))
 </script>
 
 <style scoped>

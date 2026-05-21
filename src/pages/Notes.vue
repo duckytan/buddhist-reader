@@ -103,6 +103,7 @@ import { useNotesStore } from '../stores/notes'
 import { useSutraStore } from '../stores/sutra'
 
 defineOptions({ name: 'Notes' })
+console.log('[Notes] script setup executed')
 
 const router = useRouter()
 const notesStore = useNotesStore()

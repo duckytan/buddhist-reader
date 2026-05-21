@@ -24,7 +24,19 @@ app.config.errorHandler = (err, instance, info) => {
 }
 
 app.mount('#app')
+console.log('[App] mounted')
 
 import { useSettingsStore } from './stores/settings'
 const settingsStore = useSettingsStore()
 settingsStore.initFromStorage()
+console.log('[App] settings initialized')
+
+router.beforeEach((to, from, next) => {
+  console.log(`[Router] ${from.path || '(enter)'} → ${to.fullPath}`)
+  next()
+})
+
+router.afterEach((to, from) => {
+  console.log(`[Router] navigated → ${to.fullPath} (name: ${to.name || 'none'})`)
+  console.log('[Router] matched:', to.matched.map(r => r.path).join(' > '))
+})

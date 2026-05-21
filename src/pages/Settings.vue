@@ -104,6 +104,7 @@ import { useDictStore } from '../stores/dict'
 import { useNotesStore } from '../stores/notes'
 
 defineOptions({ name: 'Settings' })
+console.log('[Settings] script setup executed')
 
 const settingsStore = useSettingsStore()
 const dictStore = useDictStore()

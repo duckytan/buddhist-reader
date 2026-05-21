@@ -67,12 +67,16 @@ import { useSutraStore } from '../stores/sutra'
 import SutraCard from '../components/bookshelf/SutraCard.vue'
 
 defineOptions({ name: 'Bookshelf' })
+console.log('[Bookshelf] script setup executed')
 
 const route = useRoute()
 const router = useRouter()
 const sutraStore = useSutraStore()
 
-onMounted(() => sutraStore.fetchManifest())
+onMounted(() => {
+  console.log('[Bookshelf] mounted')
+  sutraStore.fetchManifest()
+})
 
 function goToReader(sutra) {
   router.push({

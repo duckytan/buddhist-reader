@@ -42,14 +42,14 @@
     </div>
 
     <div
-      v-else-if="!search.query.value || !search.query.value.trim()"
+      v-else-if="!search.query || !search.query.trim()"
       class="dict-search__empty"
     >
       输入关键词搜索佛教词汇释义
     </div>
 
     <div
-      v-else-if="search.results.value.length === 0"
+      v-else-if="search.results.length === 0"
       class="dict-search__no-result"
     >
       未找到匹配词条
@@ -60,7 +60,7 @@
       class="dict-search__results"
     >
       <div
-        v-for="item in search.results.value"
+        v-for="item in search.results"
         :key="item.term"
         class="dict-search__term-card"
       >
@@ -90,6 +90,7 @@ import { useDictStore } from '../stores/dict'
 import { useDictSearch } from '../composables/useDictSearch'
 
 defineOptions({ name: 'DictSearch' })
+console.log('[DictSearch] script setup executed')
 
 const dictStore = useDictStore()
 const search = useDictSearch()
@@ -117,10 +118,12 @@ function formatDefinition(raw) {
 }
 
 onMounted(() => {
+  console.log('[DictSearch] mounted')
   nextTick(() => {
     const isMobile = window.innerWidth < 768
     if (!isMobile && inputRef.value) {
       inputRef.value.focus()
+      console.log('[DictSearch] input focused')
     }
   })
 })
