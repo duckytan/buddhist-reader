@@ -104,30 +104,53 @@ function scrollToChapter(idx) {
 }
 
 function scrollToPara(chapterIdx, paraId, matchOffset) {
-  nextTick(() => {
+  requestAnimationFrame(() => {
     const el = document.getElementById(`para-${paraId}`)
-    if (!el || !contentRef.value) return
-    contentRef.value.scrollTop = getScrollTop(el) - 20
-
-    if (matchOffset == null) return
-
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-    let node
-    let charCount = 0
-    while ((node = walker.nextNode())) {
-      const nodeLen = node.textContent.length
-      if (charCount + nodeLen > matchOffset) {
-        const offsetInNode = matchOffset - charCount
-        const range = document.createRange()
-        range.setStart(node, offsetInNode)
-        range.setEnd(node, Math.min(offsetInNode + 1, nodeLen))
-        const rect = range.getBoundingClientRect()
-        const containerRect = contentRef.value.getBoundingClientRect()
-        contentRef.value.scrollTop = contentRef.value.scrollTop + (rect.top - containerRect.top) - 100
-        break
-      }
-      charCount += nodeLen
+    if (!el || !contentRef.value) {
+      console.log('[ReaderContent] scrollToPara FAILED: el=', !!el, 'content=', !!contentRef.value)
+      return
     }
+
+    // Step 1: Native scrollIntoView for paragraph — most reliable
+    el.scrollIntoView({ block: 'start' })
+
+    if (matchOffset == null) {
+      console.log('[ReaderContent] scrollToPara to para:', paraId, 'scrollTop:', contentRef.value.scrollTop)
+      return
+    }
+
+    // Step 2: Fine-tune to exact keyword position
+    requestAnimationFrame(() => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+      let node
+      let charCount = 0
+      let found = false
+
+      while ((node = walker.nextNode())) {
+        const nodeLen = node.textContent.length
+        if (charCount + nodeLen > matchOffset) {
+          const offsetInNode = matchOffset - charCount
+          const range = document.createRange()
+          range.setStart(node, offsetInNode)
+          range.setEnd(node, offsetInNode)
+          range.collapse(true)
+
+          const rangeRect = range.getBoundingClientRect()
+          const containerRect = contentRef.value.getBoundingClientRect()
+          const adjustment = rangeRect.top - containerRect.top - 100
+
+          contentRef.value.scrollTop = contentRef.value.scrollTop + adjustment
+          found = true
+          console.log('[ReaderContent] scrollToPara fine-tuned: matchOffset=', matchOffset, 'adjustment=', adjustment.toFixed(0), 'scrollTop:', contentRef.value.scrollTop.toFixed(0))
+          break
+        }
+        charCount += nodeLen
+      }
+
+      if (!found) {
+        console.log('[ReaderContent] scrollToPara matchOffset NOT FOUND: matchOffset=', matchOffset, 'totalChars=', charCount)
+      }
+    })
   })
 }
 
