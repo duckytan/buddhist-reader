@@ -8,20 +8,20 @@
 
     <div class="dict-search__input-wrap">
       <input
-        v-model="search.query"
+        v-model="query"
         ref="inputRef"
         type="text"
         class="dict-search__input"
         placeholder="输入关键词搜索佛教词汇释义"
         autocomplete="off"
       />
-      <span v-if="search.query" class="dict-search__clear" @click="search.query = ''">&times;</span>
+      <span v-if="query" class="dict-search__clear" @click="query = ''">&times;</span>
     </div>
 
     <div class="dict-search__dicts">
       <span class="dict-search__dicts-label">词典来源：</span>
       <label
-        v-for="dict in dictStore.allDictIds"
+        v-for="dict in enabledDictIds"
         :key="dict"
         class="dict-search__dict-toggle"
       >
@@ -35,21 +35,21 @@
     </div>
 
     <div
-      v-if="search.searching.value"
+      v-if="searching"
       class="dict-search__loading"
     >
       搜索中...
     </div>
 
     <div
-      v-else-if="!search.query || !search.query.trim()"
+      v-else-if="!query || !query.trim()"
       class="dict-search__empty"
     >
       输入关键词搜索佛教词汇释义
     </div>
 
     <div
-      v-else-if="search.results.length === 0"
+      v-else-if="results.length === 0"
       class="dict-search__no-result"
     >
       未找到匹配词条
@@ -60,7 +60,7 @@
       class="dict-search__results"
     >
       <div
-        v-for="item in search.results"
+        v-for="item in results"
         :key="item.term"
         class="dict-search__term-card"
       >
@@ -93,7 +93,7 @@ defineOptions({ name: 'DictSearch' })
 console.log('[DictSearch] script setup executed')
 
 const dictStore = useDictStore()
-const search = useDictSearch()
+const { query, results, searching, enabledDictIds } = useDictSearch()
 const inputRef = ref(null)
 
 const dictNameMap = {
