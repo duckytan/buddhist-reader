@@ -5,9 +5,9 @@
     @scroll="onScroll"
   >
     <div
-      v-for="(chapter, idx) in chapters"
-      :id="`chapter-${idx}`"
-      :key="idx"
+      v-for="(chapter, cIdx) in processedChapters"
+      :id="`chapter-${cIdx}`"
+      :key="cIdx"
       class="reader-content__chapter"
     >
       <h3
@@ -24,7 +24,7 @@
       >
         <p class="reader-content__text">
           <template
-            v-for="(seg, si) in getSegments(para.text)"
+            v-for="(seg, si) in para.segments"
             :key="si"
           >
             <span
@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onUnmounted, onMounted, watch } from 'vue'
+import { ref, computed, nextTick, onUnmounted, onMounted, watch } from 'vue'
 import { useReaderStore } from '../../stores/reader'
 import { useHighlighter } from '../../composables/useHighlighter'
 import { useDictStore } from '../../stores/dict'
@@ -65,17 +65,26 @@ const { highlight } = useHighlighter(dictStore.enabledTerms)
 
 let throttleTimer = null
 
-function getSegments(content) {
+function computeSegments(content) {
   if (!content) return []
   let result = highlight(content) || [{ type: 'text', content }]
 
-  // Insert search keyword highlights
   if (props.searchKeyword && props.searchKeyword.length >= 2) {
     result = insertSearchHighlights(result, props.searchKeyword)
   }
 
   return result
 }
+
+const processedChapters = computed(() => {
+  return props.chapters.map(chapter => ({
+    ...chapter,
+    paragraphs: chapter.paragraphs.map(para => ({
+      id: para.id,
+      segments: computeSegments(para.text)
+    }))
+  }))
+})
 
 function insertSearchHighlights(segments, keyword) {
   const out = []
@@ -150,28 +159,19 @@ function scrollToChapter(idx) {
 }
 
 function scrollToPara(chapterIdx, paraId, matchOffset) {
+  const container = contentRef.value
   const el = document.getElementById(`para-${paraId}`)
-  if (!el || !contentRef.value) {
-    console.log('[ReaderContent] scrollToPara FAILED: el=' + !!el + ' content=' + !!contentRef.value)
+  if (!el || !container) {
+    console.log('[ReaderContent] scrollToPara FAILED: el=' + !!el + ' container=' + !!container)
     return
   }
 
-  // Step 1: scrollIntoView — browser native, always accurate
-  el.scrollIntoView({ block: 'start' })
+  const containerRect = container.getBoundingClientRect()
+  const OFFSET = 80
 
-  console.log('[ReaderContent] scrollToPara step1: para=' + paraId + ' scrollTop=' + contentRef.value.scrollTop + ' matchOffset=' + matchOffset)
-
-  if (matchOffset == null || matchOffset < 0) return
-
-  // Step 2: wait for browser paint, then fine-tune to keyword position
-  setTimeout(() => {
-    const elNow = document.getElementById(`para-${paraId}`)
-    if (!elNow || !contentRef.value) return
-
-    const walker = document.createTreeWalker(elNow, NodeFilter.SHOW_TEXT)
-    let node
-    let charCount = 0
-    let found = false
+  if (matchOffset != null && matchOffset >= 0) {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+    let node, charCount = 0, found = false
 
     while ((node = walker.nextNode())) {
       const nodeLen = node.textContent.length
@@ -183,21 +183,25 @@ function scrollToPara(chapterIdx, paraId, matchOffset) {
         range.collapse(true)
 
         const rangeRect = range.getBoundingClientRect()
-        const containerRect = contentRef.value.getBoundingClientRect()
-        const adjustment = rangeRect.top - containerRect.top - 100
-
-        contentRef.value.scrollTop = contentRef.value.scrollTop + adjustment
+        const relativeTop = rangeRect.top - containerRect.top + container.scrollTop
+        container.scrollTop = relativeTop - OFFSET
         found = true
-        console.log('[ReaderContent] scrollToPara step2: matchOffset=' + matchOffset + ' charCount=' + charCount + ' offsetInNode=' + offsetInNode + ' adjustment=' + adjustment.toFixed(0) + ' scrollTop=' + contentRef.value.scrollTop.toFixed(0))
+        console.log('[ReaderContent] scrollToPara scroll to keyword: relativeTop=' + relativeTop.toFixed(0) + ' newScrollTop=' + container.scrollTop.toFixed(0))
         break
       }
       charCount += nodeLen
     }
 
     if (!found) {
-      console.log('[ReaderContent] scrollToPara step2 NOT FOUND: matchOffset=' + matchOffset + ' totalChars=' + charCount)
+      console.log('[ReaderContent] scrollToPara keyword not found, fallback to para top')
+      const elRect = el.getBoundingClientRect()
+      container.scrollTop = container.scrollTop + (elRect.top - containerRect.top) - OFFSET
     }
-  }, 150)
+  } else {
+    const elRect = el.getBoundingClientRect()
+    container.scrollTop = container.scrollTop + (elRect.top - containerRect.top) - OFFSET
+    console.log('[ReaderContent] scrollToPara scroll to para: scrollTop=' + container.scrollTop.toFixed(0))
+  }
 }
 
 defineExpose({ scrollTo, scrollToChapter, scrollToPara })

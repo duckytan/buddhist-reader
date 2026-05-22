@@ -60,7 +60,7 @@
         :chapters="sutraStore.currentSutra.chapters"
         @close="showSearch = false; searchKeyword = ''"
         @jump="onSearchJump"
-        @keyword-change="searchKeyword = $event"
+        @keyword-change="onKeywordChange"
       />
       <ReaderNotes
         ref="notesRef"
@@ -221,6 +221,8 @@ function onJumpPara(chapterIdx, paraId) {
 function onSearchJump(chapterIdx, paraId, paraOffset) {
   if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId, paraOffset)
 }
+
+function onKeywordChange(val) { searchKeyword.value = val }
 
 function addBookmark() {
   const ch = readerStore.currentChapter
