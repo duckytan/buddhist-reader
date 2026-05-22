@@ -166,8 +166,13 @@ function scrollToPara(chapterIdx, paraId, matchOffset) {
     return
   }
 
+  // 动态计算 header 高度和 container padding
+  const header = document.querySelector('.reader-header')
+  const headerHeight = header ? header.getBoundingClientRect().height : 0
+  const paddingTop = parseFloat(getComputedStyle(container).paddingTop) || 0
+  const OFFSET = headerHeight + paddingTop + 8 // 8px buffer
+
   const containerRect = container.getBoundingClientRect()
-  const OFFSET = 80
 
   if (matchOffset != null && matchOffset >= 0) {
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)

@@ -219,6 +219,7 @@ function onJumpPara(chapterIdx, paraId) {
   }
 }
 function onSearchJump(chapterIdx, paraId, paraOffset) {
+  showSearch.value = false
   if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId, paraOffset)
 }
 

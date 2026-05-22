@@ -100,7 +100,7 @@ function onSearch() {
 
 function onJump(r) {
   emit('jump', r.chapterIdx, r.paraId, r.paraOffset)
-  emit('close')
+  // 不 emit close，让父组件在 jump 后处理关闭逻辑
 }
 
 function escapeHtml(text) {
