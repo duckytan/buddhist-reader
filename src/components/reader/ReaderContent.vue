@@ -90,9 +90,10 @@ function computeSegments(content) {
   return result
 }
 
-// 监听 searchKeyword 和 chapters 变化
+// 监听 searchKeyword、chapters 和 enabledTerms 变化
 watch(() => props.searchKeyword, recomputeChapters)
 watch(() => props.chapters, recomputeChapters, { deep: true })
+watch(() => dictStore.enabledTerms, recomputeChapters)
 
 // 初始计算
 recomputeChapters()
@@ -169,32 +170,34 @@ function scrollToChapter(idx) {
   })
 }
 
-// ===== 跳转定位：简化 scrollToPara，使用 scrollIntoView + 固定延迟 =====
 function scrollToPara(chapterIdx, paraId, matchOffset) {
-  // 延迟执行，等待搜索面板关闭动画完成（300ms）
-  setTimeout(() => {
+  nextTick(() => {
     const el = document.getElementById(`para-${paraId}`)
     if (!el || !contentRef.value) {
       console.log('[ReaderContent] scrollToPara FAILED: el=' + !!el + ' container=' + !!contentRef.value)
       return
     }
 
-    // 使用 scrollIntoView 将段落滚动到视口顶部
-    el.scrollIntoView({ block: 'start', inline: 'nearest' })
-
-    // 微调：减去 header 高度（固定值，避免 getBoundingClientRect 在动画期间的误差）
     const header = document.querySelector('.reader-header')
     const headerHeight = header ? header.getBoundingClientRect().height : 0
-    contentRef.value.scrollTop -= headerHeight
 
-    console.log('[ReaderContent] scrollToPara: para=' + paraId + ' scrollTop=' + contentRef.value.scrollTop + ' headerHeight=' + headerHeight)
-  }, 350) // 350ms 确保搜索面板完全关闭
+    const elRect = el.getBoundingClientRect()
+    const containerRect = contentRef.value.getBoundingClientRect()
+
+    const scrollTo = contentRef.value.scrollTop + (elRect.top - containerRect.top) - headerHeight
+    contentRef.value.scrollTop = scrollTo
+
+    console.log('[ReaderContent] scrollToPara: para=' + paraId + ' scrollTop=' + scrollTo.toFixed(0) + ' headerHeight=' + headerHeight)
+  })
 }
 
 defineExpose({ scrollTo, scrollToChapter, scrollToPara })
 
 onMounted(() => {
   console.log('[ReaderContent] mounted, initialPosition:', props.initialPosition, 'chapters:', props.chapters.length)
+  if (props.initialPosition > 0 && contentRef.value) {
+    contentRef.value.scrollTop = props.initialPosition
+  }
 })
 
 watch(() => props.chapters.length, () => {
