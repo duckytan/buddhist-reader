@@ -5,9 +5,9 @@
     @scroll="onScroll"
   >
     <div
-      v-for="(chapter, cIdx) in processedChapters"
-      :id="`chapter-${cIdx}`"
-      :key="cIdx"
+      v-for="(chapter, idx) in chapters"
+      :id="`chapter-${idx}`"
+      :key="idx"
       class="reader-content__chapter"
     >
       <h3
@@ -24,7 +24,7 @@
       >
         <p class="reader-content__text">
           <template
-            v-for="(seg, si) in para.segments"
+            v-for="(seg, si) in getSegments(para.text)"
             :key="si"
           >
             <span
@@ -65,21 +65,7 @@ const { highlight } = useHighlighter(dictStore.enabledTerms)
 
 let throttleTimer = null
 
-// ===== 搜索高亮：使用 watch + ref 替代 computed =====
-const processedChapters = ref([])
-
-function recomputeChapters() {
-  console.log('[ReaderContent] recompute, searchKeyword:', props.searchKeyword, 'chapters:', props.chapters.length)
-  processedChapters.value = props.chapters.map(chapter => ({
-    ...chapter,
-    paragraphs: chapter.paragraphs.map(para => ({
-      id: para.id,
-      segments: computeSegments(para.text)
-    }))
-  }))
-}
-
-function computeSegments(content) {
+function getSegments(content) {
   if (!content) return []
   let result = highlight(content) || [{ type: 'text', content }]
 
@@ -89,14 +75,6 @@ function computeSegments(content) {
 
   return result
 }
-
-// 监听 searchKeyword、chapters 和 enabledTerms 变化
-watch(() => props.searchKeyword, recomputeChapters)
-watch(() => props.chapters, recomputeChapters, { deep: true })
-watch(() => dictStore.enabledTerms, recomputeChapters)
-
-// 初始计算
-recomputeChapters()
 
 function insertSearchHighlights(segments, keyword) {
   const out = []
@@ -154,6 +132,13 @@ function onScroll() {
   }, 100)
 }
 
+function getScrollTop(el) {
+  if (!el || !contentRef.value) return 0
+  const elRect = el.getBoundingClientRect()
+  const containerRect = contentRef.value.getBoundingClientRect()
+  return contentRef.value.scrollTop + (elRect.top - containerRect.top)
+}
+
 function scrollTo(position) {
   nextTick(() => { if (contentRef.value) contentRef.value.scrollTop = position })
 }
@@ -161,33 +146,35 @@ function scrollTo(position) {
 function scrollToChapter(idx) {
   nextTick(() => {
     const el = document.getElementById(`chapter-${idx}`)
-    if (el && contentRef.value) {
-      const elRect = el.getBoundingClientRect()
-      const containerRect = contentRef.value.getBoundingClientRect()
-      const top = contentRef.value.scrollTop + (elRect.top - containerRect.top) - 20
-      contentRef.value.scrollTop = top
-    }
+    if (el && contentRef.value) contentRef.value.scrollTop = getScrollTop(el) - 20
   })
 }
 
 function scrollToPara(chapterIdx, paraId, matchOffset) {
   nextTick(() => {
     const el = document.getElementById(`para-${paraId}`)
-    if (!el || !contentRef.value) {
-      console.log('[ReaderContent] scrollToPara FAILED: el=' + !!el + ' container=' + !!contentRef.value)
-      return
+    if (!el || !contentRef.value) return
+    contentRef.value.scrollTop = getScrollTop(el) - 20
+
+    if (matchOffset == null) return
+
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+    let node
+    let charCount = 0
+    while ((node = walker.nextNode())) {
+      const nodeLen = node.textContent.length
+      if (charCount + nodeLen > matchOffset) {
+        const offsetInNode = matchOffset - charCount
+        const range = document.createRange()
+        range.setStart(node, offsetInNode)
+        range.setEnd(node, Math.min(offsetInNode + 1, nodeLen))
+        const rect = range.getBoundingClientRect()
+        const containerRect = contentRef.value.getBoundingClientRect()
+        contentRef.value.scrollTop = contentRef.value.scrollTop + (rect.top - containerRect.top) - 100
+        break
+      }
+      charCount += nodeLen
     }
-
-    const header = document.querySelector('.reader-header')
-    const headerHeight = header ? header.getBoundingClientRect().height : 0
-
-    const elRect = el.getBoundingClientRect()
-    const containerRect = contentRef.value.getBoundingClientRect()
-
-    const scrollTo = contentRef.value.scrollTop + (elRect.top - containerRect.top) - headerHeight
-    contentRef.value.scrollTop = scrollTo
-
-    console.log('[ReaderContent] scrollToPara: para=' + paraId + ' scrollTop=' + scrollTo.toFixed(0) + ' headerHeight=' + headerHeight)
   })
 }
 
@@ -195,9 +182,6 @@ defineExpose({ scrollTo, scrollToChapter, scrollToPara })
 
 onMounted(() => {
   console.log('[ReaderContent] mounted, initialPosition:', props.initialPosition, 'chapters:', props.chapters.length)
-  if (props.initialPosition > 0 && contentRef.value) {
-    contentRef.value.scrollTop = props.initialPosition
-  }
 })
 
 watch(() => props.chapters.length, () => {
