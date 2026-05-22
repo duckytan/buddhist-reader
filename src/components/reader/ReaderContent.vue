@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onUnmounted, onMounted, watch } from 'vue'
+import { ref, nextTick, onUnmounted, onMounted, watch } from 'vue'
 import { useReaderStore } from '../../stores/reader'
 import { useHighlighter } from '../../composables/useHighlighter'
 import { useDictStore } from '../../stores/dict'
@@ -65,6 +65,20 @@ const { highlight } = useHighlighter(dictStore.enabledTerms)
 
 let throttleTimer = null
 
+// ===== 搜索高亮：使用 watch + ref 替代 computed =====
+const processedChapters = ref([])
+
+function recomputeChapters() {
+  console.log('[ReaderContent] recompute, searchKeyword:', props.searchKeyword, 'chapters:', props.chapters.length)
+  processedChapters.value = props.chapters.map(chapter => ({
+    ...chapter,
+    paragraphs: chapter.paragraphs.map(para => ({
+      id: para.id,
+      segments: computeSegments(para.text)
+    }))
+  }))
+}
+
 function computeSegments(content) {
   if (!content) return []
   let result = highlight(content) || [{ type: 'text', content }]
@@ -76,15 +90,12 @@ function computeSegments(content) {
   return result
 }
 
-const processedChapters = computed(() => {
-  return props.chapters.map(chapter => ({
-    ...chapter,
-    paragraphs: chapter.paragraphs.map(para => ({
-      id: para.id,
-      segments: computeSegments(para.text)
-    }))
-  }))
-})
+// 监听 searchKeyword 和 chapters 变化
+watch(() => props.searchKeyword, recomputeChapters)
+watch(() => props.chapters, recomputeChapters, { deep: true })
+
+// 初始计算
+recomputeChapters()
 
 function insertSearchHighlights(segments, keyword) {
   const out = []
@@ -158,55 +169,26 @@ function scrollToChapter(idx) {
   })
 }
 
+// ===== 跳转定位：简化 scrollToPara，使用 scrollIntoView + 固定延迟 =====
 function scrollToPara(chapterIdx, paraId, matchOffset) {
-  const container = contentRef.value
-  const el = document.getElementById(`para-${paraId}`)
-  if (!el || !container) {
-    console.log('[ReaderContent] scrollToPara FAILED: el=' + !!el + ' container=' + !!container)
-    return
-  }
-
-  // 动态计算 header 高度和 container padding
-  const header = document.querySelector('.reader-header')
-  const headerHeight = header ? header.getBoundingClientRect().height : 0
-  const paddingTop = parseFloat(getComputedStyle(container).paddingTop) || 0
-  const OFFSET = headerHeight + paddingTop + 8 // 8px buffer
-
-  const containerRect = container.getBoundingClientRect()
-
-  if (matchOffset != null && matchOffset >= 0) {
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-    let node, charCount = 0, found = false
-
-    while ((node = walker.nextNode())) {
-      const nodeLen = node.textContent.length
-      if (charCount + nodeLen > matchOffset) {
-        const offsetInNode = matchOffset - charCount
-        const range = document.createRange()
-        range.setStart(node, offsetInNode)
-        range.setEnd(node, offsetInNode)
-        range.collapse(true)
-
-        const rangeRect = range.getBoundingClientRect()
-        const relativeTop = rangeRect.top - containerRect.top + container.scrollTop
-        container.scrollTop = relativeTop - OFFSET
-        found = true
-        console.log('[ReaderContent] scrollToPara scroll to keyword: relativeTop=' + relativeTop.toFixed(0) + ' newScrollTop=' + container.scrollTop.toFixed(0))
-        break
-      }
-      charCount += nodeLen
+  // 延迟执行，等待搜索面板关闭动画完成（300ms）
+  setTimeout(() => {
+    const el = document.getElementById(`para-${paraId}`)
+    if (!el || !contentRef.value) {
+      console.log('[ReaderContent] scrollToPara FAILED: el=' + !!el + ' container=' + !!contentRef.value)
+      return
     }
 
-    if (!found) {
-      console.log('[ReaderContent] scrollToPara keyword not found, fallback to para top')
-      const elRect = el.getBoundingClientRect()
-      container.scrollTop = container.scrollTop + (elRect.top - containerRect.top) - OFFSET
-    }
-  } else {
-    const elRect = el.getBoundingClientRect()
-    container.scrollTop = container.scrollTop + (elRect.top - containerRect.top) - OFFSET
-    console.log('[ReaderContent] scrollToPara scroll to para: scrollTop=' + container.scrollTop.toFixed(0))
-  }
+    // 使用 scrollIntoView 将段落滚动到视口顶部
+    el.scrollIntoView({ block: 'start', inline: 'nearest' })
+
+    // 微调：减去 header 高度（固定值，避免 getBoundingClientRect 在动画期间的误差）
+    const header = document.querySelector('.reader-header')
+    const headerHeight = header ? header.getBoundingClientRect().height : 0
+    contentRef.value.scrollTop -= headerHeight
+
+    console.log('[ReaderContent] scrollToPara: para=' + paraId + ' scrollTop=' + contentRef.value.scrollTop + ' headerHeight=' + headerHeight)
+  }, 350) // 350ms 确保搜索面板完全关闭
 }
 
 defineExpose({ scrollTo, scrollToChapter, scrollToPara })
