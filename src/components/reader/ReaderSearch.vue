@@ -65,12 +65,15 @@ const results = ref([])
 const searched = ref(false)
 
 function onSearch() {
+  console.log('[ReaderSearch] onSearch - keyword:', keyword.value, 'length:', keyword.value?.length)
   if (!keyword.value || keyword.value.length < 2) {
     results.value = []
     searched.value = false
     emit('keywordChange', '')
+    console.log('[ReaderSearch] onSearch - keyword too short, emit empty string')
     return
   }
+  console.log('[ReaderSearch] onSearch - emitting keywordChange:', keyword.value)
   emit('keywordChange', keyword.value)
   const kw = keyword.value
   const found = []
@@ -94,13 +97,14 @@ function onSearch() {
     }
     if (found.length >= 50) break
   }
+  console.log('[ReaderSearch] onSearch - found results:', found.length, 'first 3:', found.slice(0, 3))
   results.value = found
   searched.value = true
 }
 
 function onJump(r) {
+  console.log('[ReaderSearch] onJump - result:', r)
   emit('jump', r.chapterIdx, r.paraId, r.paraOffset)
-  // 不 emit close，让父组件在 jump 后处理关闭逻辑
 }
 
 function escapeHtml(text) {

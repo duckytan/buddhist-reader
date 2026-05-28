@@ -69,8 +69,12 @@ function getSegments(content) {
   if (!content) return []
   let result = highlight(content) || [{ type: 'text', content }]
   
+  console.log('[ReaderContent] getSegments - searchKeyword:', props.searchKeyword, 'content length:', content?.length)
+  
   if (props.searchKeyword && props.searchKeyword.length >= 2) {
+    console.log('[ReaderContent] calling insertSearchHighlights with keyword:', props.searchKeyword)
     result = insertSearchHighlights(result, props.searchKeyword)
+    console.log('[ReaderContent] insertSearchHighlights result:', result.length, 'segments', result.filter(s => s.type === 'search').length, 'search highlights')
   }
   
   return result
@@ -146,14 +150,34 @@ function scrollTo(position) {
 function scrollToChapter(idx) {
   nextTick(() => {
     const el = document.getElementById(`chapter-${idx}`)
-    if (el && contentRef.value) contentRef.value.scrollTop = getScrollTop(el) - 20
+    if (!el) {
+      console.log('[ReaderContent] scrollToChapter - element not found for idx:', idx)
+      return
+    }
+    if (!contentRef.value) return
+    const scrollTop = getScrollTop(el) - 20
+    console.log('[ReaderContent] scrollToChapter - idx:', idx, 'element top:', el.getBoundingClientRect().top, 'container top:', contentRef.value.getBoundingClientRect().top, 'target scrollTop:', scrollTop)
+    contentRef.value.scrollTop = scrollTop
+    console.log('[ReaderContent] scrollToChapter - actual scrollTop after:', contentRef.value.scrollTop)
   })
 }
 
 function scrollToPara(chapterIdx, paraId) {
   nextTick(() => {
     const el = document.getElementById(`para-${paraId}`)
-    if (el && contentRef.value) contentRef.value.scrollTop = getScrollTop(el) - 60
+    console.log('[ReaderContent] scrollToPara - chapterIdx:', chapterIdx, 'paraId:', paraId, 'element found:', !!el)
+    if (!el) {
+      console.log('[ReaderContent] scrollToPara - element not found for paraId:', paraId)
+      return
+    }
+    if (!contentRef.value) return
+    console.log('[ReaderContent] scrollToPara - element:', el.tagName, 'element id:', el.id, 'element text:', el.textContent?.slice(0, 50))
+    console.log('[ReaderContent] scrollToPara - element rect:', el.getBoundingClientRect())
+    console.log('[ReaderContent] scrollToPara - container rect:', contentRef.value.getBoundingClientRect())
+    const scrollTop = getScrollTop(el) - 20
+    console.log('[ReaderContent] scrollToPara - computed scrollTop:', scrollTop)
+    contentRef.value.scrollTop = scrollTop
+    console.log('[ReaderContent] scrollToPara - actual scrollTop after:', contentRef.value.scrollTop)
   })
 }
 

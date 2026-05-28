@@ -219,11 +219,16 @@ function onJumpPara(chapterIdx, paraId) {
   }
 }
 function onSearchJump(chapterIdx, paraId) {
+  console.log('[Reader] onSearchJump - chapterIdx:', chapterIdx, 'paraId:', paraId)
   showSearch.value = false
   if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId)
 }
 
-function onKeywordChange(val) { searchKeyword.value = val }
+function onKeywordChange(val) {
+  console.log('[Reader] onKeywordChange - received value:', val, 'type:', typeof val, 'length:', val?.length)
+  searchKeyword.value = val
+  console.log('[Reader] onKeywordChange - searchKeyword.value after:', searchKeyword.value)
+}
 
 function addBookmark() {
   const ch = readerStore.currentChapter
