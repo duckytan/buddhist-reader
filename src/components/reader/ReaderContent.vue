@@ -24,7 +24,7 @@
       >
         <p class="reader-content__text">
           <template
-            v-for="(seg, si) in getSegments(para.text)"
+            v-for="(seg, si) in getSegments(para.text, props.searchKeyword)"
             :key="si"
           >
             <span
@@ -65,16 +65,20 @@ const { highlight } = useHighlighter(dictStore.enabledTerms)
 
 let throttleTimer = null
 
-function getSegments(content) {
+function getSegments(content, kw) {
   if (!content) return []
   let result = highlight(content) || [{ type: 'text', content }]
   
-  console.log('[ReaderContent] getSegments - searchKeyword:', props.searchKeyword, 'content length:', content?.length)
+  console.log('[ReaderContent] getSegments - kw param:', kw, 'type:', typeof kw, 'length:', kw?.length, 'content preview:', content?.slice(0, 50))
   
-  if (props.searchKeyword && props.searchKeyword.length >= 2) {
-    console.log('[ReaderContent] calling insertSearchHighlights with keyword:', props.searchKeyword)
-    result = insertSearchHighlights(result, props.searchKeyword)
-    console.log('[ReaderContent] insertSearchHighlights result:', result.length, 'segments', result.filter(s => s.type === 'search').length, 'search highlights')
+  if (kw && kw.length >= 2) {
+    console.log('[ReaderContent] calling insertSearchHighlights with kw:', kw)
+    result = insertSearchHighlights(result, kw)
+    const searchCount = result.filter(s => s.type === 'search').length
+    console.log('[ReaderContent] insertSearchHighlights done - result segments:', result.length, 'search highlights:', searchCount)
+    if (searchCount > 0) {
+      console.log('[ReaderContent] search segments:', result.filter(s => s.type === 'search'))
+    }
   }
   
   return result
