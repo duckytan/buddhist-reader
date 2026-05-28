@@ -209,7 +209,7 @@ function scrollToPara(chapterIdx, paraId, paraOffset) {
         let highlightIndex = 0
         let targetHighlight = null
         
-        while ((node = walker.nextNode()) {
+        while ((node = walker.nextNode())) {
           if (node.parentElement?.classList?.contains('search-highlight')) {
             console.log('[ReaderContent] scrollToPara - highlight', highlightIndex, 'charCount:', charCount, 'paraOffset:', paraOffset)
             if (charCount >= paraOffset) {
