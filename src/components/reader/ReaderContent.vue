@@ -5,13 +5,13 @@
     @scroll="onScroll"
   >
     <div
-      v-for="(chapter, idx) in chapters"
-      :id="`chapter-${idx}`"
-      :key="idx"
+      v-for="chapter in segmentedChapters"
+      :id="`chapter-${chapter.idx}`"
+      :key="chapter.idx"
       class="reader-content__chapter"
     >
       <h3
-        v-if="chapters.length > 1"
+        v-if="segmentedChapters.length > 1"
         class="reader-content__chapter-title"
       >
         {{ chapter.title }}
@@ -24,8 +24,8 @@
       >
         <p class="reader-content__text">
           <template
-            v-for="(seg, si) in getSegments(para.text)"
-            :key="si"
+            v-for="(seg, si) in para.segments"
+            :key="`${para.id}-${si}`"
           >
             <span
               v-if="seg.type === 'term'"
@@ -48,70 +48,17 @@
 <script setup>
 import { ref, nextTick, onUnmounted, onMounted, watch } from 'vue'
 import { useReaderStore } from '../../stores/reader'
-import { useHighlighter } from '../../composables/useHighlighter'
-import { useDictStore } from '../../stores/dict'
 
 const props = defineProps({
-  chapters: { type: Array, default: () => [] },
-  initialPosition: { type: Number, default: 0 },
-  searchKeyword: { type: String, default: '' }
+  segmentedChapters: { type: Array, default: () => [] },
+  initialPosition: { type: Number, default: 0 }
 })
 
 const emit = defineEmits(['scroll', 'progress', 'termClick'])
 const contentRef = ref(null)
 const readerStore = useReaderStore()
-const dictStore = useDictStore()
-const { highlight } = useHighlighter(dictStore.enabledTerms)
 
 let throttleTimer = null
-
-function getSegments(content) {
-  if (!content) return []
-  let result = highlight(content) || [{ type: 'text', content }]
-
-  if (props.searchKeyword && props.searchKeyword.length >= 2) {
-    result = insertSearchHighlights(result, props.searchKeyword)
-  }
-
-  return result
-}
-
-function insertSearchHighlights(segments, keyword) {
-  const out = []
-  const kwLower = keyword.toLowerCase()
-
-  for (const seg of segments) {
-    if (seg.type === 'term') {
-      out.push(seg)
-      continue
-    }
-
-    const text = seg.content
-    const lower = text.toLowerCase()
-    let lastIdx = 0
-    let pos = lower.indexOf(kwLower, lastIdx)
-
-    if (pos === -1) {
-      out.push(seg)
-      continue
-    }
-
-    while (pos !== -1) {
-      if (pos > lastIdx) {
-        out.push({ type: 'text', content: text.slice(lastIdx, pos) })
-      }
-      out.push({ type: 'search', content: text.slice(pos, pos + keyword.length) })
-      lastIdx = pos + keyword.length
-      pos = lower.indexOf(kwLower, lastIdx)
-    }
-
-    if (lastIdx < text.length) {
-      out.push({ type: 'text', content: text.slice(lastIdx) })
-    }
-  }
-
-  return out
-}
 
 function onTermClick(term) {
   emit('termClick', term)
@@ -150,41 +97,20 @@ function scrollToChapter(idx) {
   })
 }
 
-function scrollToPara(chapterIdx, paraId, matchOffset) {
+function scrollToPara(chapterIdx, paraId) {
   nextTick(() => {
     const el = document.getElementById(`para-${paraId}`)
-    if (!el || !contentRef.value) return
-    contentRef.value.scrollTop = getScrollTop(el) - 20
-
-    if (matchOffset == null) return
-
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-    let node
-    let charCount = 0
-    while ((node = walker.nextNode())) {
-      const nodeLen = node.textContent.length
-      if (charCount + nodeLen > matchOffset) {
-        const offsetInNode = matchOffset - charCount
-        const range = document.createRange()
-        range.setStart(node, offsetInNode)
-        range.setEnd(node, Math.min(offsetInNode + 1, nodeLen))
-        const rect = range.getBoundingClientRect()
-        const containerRect = contentRef.value.getBoundingClientRect()
-        contentRef.value.scrollTop = contentRef.value.scrollTop + (rect.top - containerRect.top) - 100
-        break
-      }
-      charCount += nodeLen
-    }
+    if (el && contentRef.value) contentRef.value.scrollTop = getScrollTop(el) - 60
   })
 }
 
 defineExpose({ scrollTo, scrollToChapter, scrollToPara })
 
 onMounted(() => {
-  console.log('[ReaderContent] mounted, initialPosition:', props.initialPosition, 'chapters:', props.chapters.length)
+  console.log('[ReaderContent] mounted, initialPosition:', props.initialPosition)
 })
 
-watch(() => props.chapters.length, () => {
+watch(() => props.segmentedChapters.length, () => {
   if (props.initialPosition > 0 && contentRef.value) {
     nextTick(() => {
       console.log('[ReaderContent] chapters loaded, restoring scroll to', props.initialPosition)

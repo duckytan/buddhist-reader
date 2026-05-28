@@ -1,11 +1,15 @@
 <template>
   <div class="settings-page">
     <header class="settings-page__header">
-      <h1 class="settings-page__title">设置</h1>
+      <h1 class="settings-page__title">
+        设置
+      </h1>
     </header>
 
     <section class="settings-page__section">
-      <h2 class="settings-page__section-title">主题外观</h2>
+      <h2 class="settings-page__section-title">
+        主题外观
+      </h2>
       <div class="settings-page__theme-row">
         <button
           v-for="t in settingsStore.themes"
@@ -19,7 +23,9 @@
     </section>
 
     <section class="settings-page__section">
-      <h2 class="settings-page__section-title">阅读设置</h2>
+      <h2 class="settings-page__section-title">
+        阅读设置
+      </h2>
       <div class="settings-page__sub-section">
         <label class="settings-page__sub-label">字号</label>
         <div class="settings-page__row">
@@ -49,19 +55,29 @@
     </section>
 
     <section class="settings-page__section">
-      <h2 class="settings-page__section-title">数据管理</h2>
+      <h2 class="settings-page__section-title">
+        数据管理
+      </h2>
       <div class="settings-page__data-row">
-        <button class="settings-page__data-btn" @click="exportNotes">
+        <button
+          class="settings-page__data-btn"
+          @click="exportNotes"
+        >
           导出笔记（JSON）
         </button>
-        <button class="settings-page__data-btn settings-page__data-btn--warn" @click="clearCache">
+        <button
+          class="settings-page__data-btn settings-page__data-btn--warn"
+          @click="clearCache"
+        >
           清除缓存
         </button>
       </div>
     </section>
 
     <section class="settings-page__section">
-      <h2 class="settings-page__section-title">关于</h2>
+      <h2 class="settings-page__section-title">
+        关于
+      </h2>
       <div class="settings-page__about">
         <p>佛经阅读器 v3.1.0</p>
         <p>禅意设计 · 点击即查 · 离线可用</p>

@@ -70,7 +70,10 @@
         </section>
 
         <div class="reader-settings__more">
-          <router-link to="/settings" class="reader-settings__more-link">
+          <router-link
+            to="/settings"
+            class="reader-settings__more-link"
+          >
             更多设置 &rarr;
           </router-link>
         </div>

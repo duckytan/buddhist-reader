@@ -8,14 +8,18 @@
 
     <div class="dict-search__input-wrap">
       <input
-        v-model="query"
         ref="inputRef"
+        v-model="query"
         type="text"
         class="dict-search__input"
         placeholder="输入关键词搜索佛教词汇释义"
         autocomplete="off"
-      />
-      <span v-if="query" class="dict-search__clear" @click="query = ''">&times;</span>
+      >
+      <span
+        v-if="query"
+        class="dict-search__clear"
+        @click="query = ''"
+      >&times;</span>
     </div>
 
     <div class="dict-search__dicts">

@@ -37,11 +37,9 @@
         @toggle-dict-selector="showDictSelector = true"
       />
       <ReaderContent
-        :key="dictStore.refreshKey"
         ref="contentRef"
-        :chapters="sutraStore.currentSutra.chapters"
+        :segmented-chapters="segmentedChapters"
         :initial-position="progress.savedPosition.value"
-        :search-keyword="searchKeyword"
         @progress="onProgress"
         @term-click="onTermClick"
       />
@@ -110,6 +108,7 @@ import { useDictStore } from '../stores/dict'
 import { useSutraLoader } from '../composables/useSutraLoader'
 import { useReadingProgress } from '../composables/useReadingProgress'
 import { useDictLoader } from '../composables/useDictLoader'
+import { useSegmentedContent } from '../composables/useSegmentedContent'
 import { storage } from '../utils/storage'
 import ReaderHeader from '../components/reader/ReaderHeader.vue'
 import ReaderContent from '../components/reader/ReaderContent.vue'
@@ -140,6 +139,9 @@ const dictManifest = ref([])
 
 const filename = computed(() => decodeURIComponent(route.params.id))
 const progress = useReadingProgress(filename)
+
+const chaptersRef = computed(() => sutraStore.currentSutra?.chapters || [])
+const { segmentedChapters } = useSegmentedContent(chaptersRef, dictStore.enabledTerms, searchKeyword)
 
 const showDictPopup = ref(false)
 const lookupTerm = ref('')
@@ -214,13 +216,11 @@ function onProgress(percent) {
 
 function onJumpChapter(idx) { if (contentRef.value) contentRef.value.scrollToChapter(idx) }
 function onJumpPara(chapterIdx, paraId) {
-  if (contentRef.value) {
-    contentRef.value.scrollToPara(chapterIdx, paraId)
-  }
+  if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId)
 }
-function onSearchJump(chapterIdx, paraId, paraOffset) {
+function onSearchJump(chapterIdx, paraId) {
   showSearch.value = false
-  if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId, paraOffset)
+  if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId)
 }
 
 function onKeywordChange(val) { searchKeyword.value = val }
