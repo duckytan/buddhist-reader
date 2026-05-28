@@ -206,7 +206,7 @@ function scrollToPara(chapterIdx, paraId) {
     console.log('[ReaderContent] scrollToPara - target element:', targetEl.tagName, targetEl.className, targetEl.textContent?.slice(0, 30))
     console.log('[ReaderContent] scrollToPara - element rect:', targetEl.getBoundingClientRect())
     console.log('[ReaderContent] scrollToPara - container rect:', contentRef.value.getBoundingClientRect())
-    const scrollTop = getScrollTop(targetEl) - 120
+    const scrollTop = getScrollTop(targetEl) - 40
     console.log('[ReaderContent] scrollToPara - computed scrollTop:', scrollTop)
     contentRef.value.scrollTop = scrollTop
     console.log('[ReaderContent] scrollToPara - actual scrollTop after:', contentRef.value.scrollTop)
