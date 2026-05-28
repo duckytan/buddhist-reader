@@ -85,12 +85,32 @@ function getSegments(content, kw) {
 }
 
 function insertSearchHighlights(segments, keyword) {
+  if (!keyword || keyword.length < 2) return segments
+  
   const out = []
   const kwLower = keyword.toLowerCase()
   
   for (const seg of segments) {
     if (seg.type === 'term') {
-      out.push(seg)
+      const text = seg.content
+      const lower = text.toLowerCase()
+      if (lower.includes(kwLower)) {
+        let lastIdx = 0
+        let pos = lower.indexOf(kwLower, lastIdx)
+        while (pos !== -1) {
+          if (pos > lastIdx) {
+            out.push({ type: 'term', content: text.slice(lastIdx, pos) })
+          }
+          out.push({ type: 'search', content: text.slice(pos, pos + keyword.length) })
+          lastIdx = pos + keyword.length
+          pos = lower.indexOf(kwLower, lastIdx)
+        }
+        if (lastIdx < text.length) {
+          out.push({ type: 'term', content: text.slice(lastIdx) })
+        }
+      } else {
+        out.push(seg)
+      }
       continue
     }
     
@@ -168,17 +188,25 @@ function scrollToChapter(idx) {
 
 function scrollToPara(chapterIdx, paraId) {
   nextTick(() => {
-    const el = document.getElementById(`para-${paraId}`)
-    console.log('[ReaderContent] scrollToPara - chapterIdx:', chapterIdx, 'paraId:', paraId, 'element found:', !!el)
-    if (!el) {
+    const paraEl = document.getElementById(`para-${paraId}`)
+    console.log('[ReaderContent] scrollToPara - chapterIdx:', chapterIdx, 'paraId:', paraId, 'element found:', !!paraEl)
+    if (!paraEl) {
       console.log('[ReaderContent] scrollToPara - element not found for paraId:', paraId)
       return
     }
     if (!contentRef.value) return
-    console.log('[ReaderContent] scrollToPara - element:', el.tagName, 'element id:', el.id, 'element text:', el.textContent?.slice(0, 50))
-    console.log('[ReaderContent] scrollToPara - element rect:', el.getBoundingClientRect())
+    
+    let targetEl = paraEl
+    const searchHighlight = paraEl.querySelector('.search-highlight')
+    if (searchHighlight) {
+      console.log('[ReaderContent] scrollToPara - found search-highlight in paragraph, using it as target')
+      targetEl = searchHighlight
+    }
+    
+    console.log('[ReaderContent] scrollToPara - target element:', targetEl.tagName, targetEl.className, targetEl.textContent?.slice(0, 30))
+    console.log('[ReaderContent] scrollToPara - element rect:', targetEl.getBoundingClientRect())
     console.log('[ReaderContent] scrollToPara - container rect:', contentRef.value.getBoundingClientRect())
-    const scrollTop = getScrollTop(el) - 20
+    const scrollTop = getScrollTop(targetEl) - 80
     console.log('[ReaderContent] scrollToPara - computed scrollTop:', scrollTop)
     contentRef.value.scrollTop = scrollTop
     console.log('[ReaderContent] scrollToPara - actual scrollTop after:', contentRef.value.scrollTop)
