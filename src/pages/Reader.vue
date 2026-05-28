@@ -218,10 +218,10 @@ function onJumpPara(chapterIdx, paraId) {
     contentRef.value.scrollToPara(chapterIdx, paraId)
   }
 }
-function onSearchJump(chapterIdx, paraId) {
-  console.log('[Reader] onSearchJump - chapterIdx:', chapterIdx, 'paraId:', paraId)
+function onSearchJump(chapterIdx, paraId, paraOffset) {
+  console.log('[Reader] onSearchJump - chapterIdx:', chapterIdx, 'paraId:', paraId, 'paraOffset:', paraOffset)
   showSearch.value = false
-  if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId)
+  if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId, paraOffset)
 }
 
 function onKeywordChange(val) {

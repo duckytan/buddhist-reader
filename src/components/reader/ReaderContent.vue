@@ -186,10 +186,10 @@ function scrollToChapter(idx) {
   })
 }
 
-function scrollToPara(chapterIdx, paraId) {
+function scrollToPara(chapterIdx, paraId, paraOffset) {
   nextTick(() => {
     const paraEl = document.getElementById(`para-${paraId}`)
-    console.log('[ReaderContent] scrollToPara - chapterIdx:', chapterIdx, 'paraId:', paraId, 'element found:', !!paraEl)
+    console.log('[ReaderContent] scrollToPara - chapterIdx:', chapterIdx, 'paraId:', paraId, 'paraOffset:', paraOffset, 'element found:', !!paraEl)
     if (!paraEl) {
       console.log('[ReaderContent] scrollToPara - element not found for paraId:', paraId)
       return
@@ -197,10 +197,45 @@ function scrollToPara(chapterIdx, paraId) {
     if (!contentRef.value) return
     
     let targetEl = paraEl
-    const searchHighlight = paraEl.querySelector('.search-highlight')
-    if (searchHighlight) {
-      console.log('[ReaderContent] scrollToPara - found search-highlight in paragraph, using it as target')
-      targetEl = searchHighlight
+    
+    if (paraOffset != null) {
+      const allHighlights = paraEl.querySelectorAll('.search-highlight')
+      console.log('[ReaderContent] scrollToPara - found', allHighlights.length, 'search-highlight elements in paragraph')
+      
+      if (allHighlights.length > 0) {
+        const walker = document.createTreeWalker(paraEl, NodeFilter.SHOW_TEXT)
+        let node
+        let charCount = 0
+        let highlightIndex = 0
+        let targetHighlight = null
+        
+        while ((node = walker.nextNode()) {
+          if (node.parentElement?.classList?.contains('search-highlight')) {
+            console.log('[ReaderContent] scrollToPara - highlight', highlightIndex, 'charCount:', charCount, 'paraOffset:', paraOffset)
+            if (charCount >= paraOffset) {
+              targetHighlight = allHighlights[highlightIndex]
+              console.log('[ReaderContent] scrollToPara - matched highlight index:', highlightIndex)
+              break
+            }
+            highlightIndex++
+          }
+          charCount += node.textContent.length
+        }
+        
+        if (targetHighlight) {
+          targetEl = targetHighlight
+          console.log('[ReaderContent] scrollToPara - using matched search-highlight')
+        } else if (allHighlights.length > 0) {
+          targetEl = allHighlights[0]
+          console.log('[ReaderContent] scrollToPara - fallback to first search-highlight')
+        }
+      }
+    } else {
+      const searchHighlight = paraEl.querySelector('.search-highlight')
+      if (searchHighlight) {
+        console.log('[ReaderContent] scrollToPara - found search-highlight, using it')
+        targetEl = searchHighlight
+      }
     }
     
     console.log('[ReaderContent] scrollToPara - target element:', targetEl.tagName, targetEl.className, targetEl.textContent?.slice(0, 30))
