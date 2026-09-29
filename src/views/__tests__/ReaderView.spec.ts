@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   getEnabledDictIds: vi.fn(),
   getEnabledTerms: vi.fn(),
   prefetchForChapter: vi.fn(),
+  lookup: vi.fn(),
   push: vi.fn()
 }))
 
@@ -28,7 +29,8 @@ vi.mock('@/services/dictService', () => ({
     getDicts: mocks.getDicts,
     getEnabledDictIds: mocks.getEnabledDictIds,
     getEnabledTerms: mocks.getEnabledTerms,
-    prefetchForChapter: mocks.prefetchForChapter
+    prefetchForChapter: mocks.prefetchForChapter,
+    lookup: mocks.lookup
   },
   createDictService: vi.fn()
 }))
@@ -39,6 +41,9 @@ vi.mock('vue-router', () => ({
 }))
 
 import ReaderView from '@/views/ReaderView.vue'
+// 源码级断言：N-1 归位（视图不得直连 @/services）
+import readerViewSource from '@/views/ReaderView.vue?raw'
+import type { LookupOptions } from '@/services/dictService'
 
 const SUTRA: Sutra = {
   title: '心经',
@@ -133,6 +138,30 @@ describe('ReaderView（§8.1 / §8.3 集成）', () => {
     await nextTick()
 
     expect(Element.prototype.scrollIntoView).toHaveBeenCalled()
+
+    wrapper.unmount()
+  })
+
+  it('N-1：视图不直连 @/services（词典领域调用归位 composable）', () => {
+    expect(readerViewSource).not.toContain('@/services/')
+  })
+
+  it('点词查义：点击高亮词 → 打开查词弹窗并展示词条（T08）', async () => {
+    mocks.getEnabledTerms.mockReturnValue(['般若'])
+    mocks.lookup.mockImplementation(async (term: string, options?: LookupOptions) => {
+      const hits = [{ dictId: 'd1', dictName: '甲典', term, definition: '甲·般若' }]
+      for (const item of hits) options?.onResult?.(item)
+      return hits
+    })
+
+    const wrapper = await mountReady()
+
+    const termSpan = wrapper.find('.seg--term')
+    expect(termSpan.exists()).toBe(true)
+    await termSpan.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('甲·般若')
 
     wrapper.unmount()
   })

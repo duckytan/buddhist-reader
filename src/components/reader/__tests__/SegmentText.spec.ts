@@ -32,4 +32,26 @@ describe('SegmentText（§6.1 ②）', () => {
     expect(span.attributes('data-hit')).toBe('')
     expect(span.classes()).toContain('seg--search')
   })
+
+  it('点击 term 段 emit termClick；text/search 段不触发（T08 点词查义）', async () => {
+    const wrapper = mount(SegmentText, {
+      props: {
+        segments: [
+          { type: 'text', content: '观自在', off: 0 },
+          { type: 'term', content: '般若', off: 3 },
+          { type: 'search', content: '空', off: 5 }
+        ]
+      }
+    })
+    const spans = wrapper.findAll('.seg')
+
+    await spans[0]?.trigger('click')
+    expect(wrapper.emitted('termClick')).toBeUndefined()
+
+    await spans[2]?.trigger('click')
+    expect(wrapper.emitted('termClick')).toBeUndefined()
+
+    await spans[1]?.trigger('click')
+    expect(wrapper.emitted('termClick')).toEqual([['般若']])
+  })
 })

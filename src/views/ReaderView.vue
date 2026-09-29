@@ -38,6 +38,7 @@
         :search-keyword="searchKeyword"
         @progress="onProgress"
         @chapter-terms="onChapterTerms"
+        @term-click="onTermClick"
       />
       <ReaderProgress
         :percent="percent"
@@ -77,6 +78,12 @@
       :open="panel === 'dicts'"
       @close="closePanel"
     />
+
+    <DictPopup
+      :open="popupOpen"
+      :term="popupTerm"
+      @close="closePopup"
+    />
   </div>
 </template>
 
@@ -103,6 +110,7 @@ import { useRoute, useRouter } from 'vue-router'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import LoadingState from '@/components/common/LoadingState.vue'
+import DictPopup from '@/components/dict/DictPopup.vue'
 import ReaderContent from '@/components/reader/ReaderContent.vue'
 import ReaderDictSelector from '@/components/reader/ReaderDictSelector.vue'
 import ReaderHeader from '@/components/reader/ReaderHeader.vue'
@@ -111,6 +119,7 @@ import ReaderProgress from '@/components/reader/ReaderProgress.vue'
 import ReaderSearch from '@/components/reader/ReaderSearch.vue'
 import ReaderSettings from '@/components/reader/ReaderSettings.vue'
 import ReaderToc from '@/components/reader/ReaderToc.vue'
+import { useDictLookup } from '@/composables/useDictLookup'
 import { useReaderSettings } from '@/composables/useReaderSettings'
 import { useReadingProgress } from '@/composables/useReadingProgress'
 import type { ProgressUpdate } from '@/composables/useReadingProgress'
@@ -118,14 +127,12 @@ import { useSearch } from '@/composables/useSearch'
 import type { SearchHit } from '@/composables/useSearch'
 import { useSelection } from '@/composables/useSelection'
 import { useSutraLoader } from '@/composables/useSutraLoader'
-import { dictService } from '@/services/dictService'
 import { useDictStore } from '@/stores/dict'
 import { useNotesStore } from '@/stores/notes'
 import type { Note, NoteAnchor } from '@/types/note'
 import type { ReadingProgress } from '@/types/reader'
 import { makeGlobalId, parseGlobalId, scrollToAnchor } from '@/utils/anchor'
 import type { ScrollAnchor } from '@/utils/anchor'
-import { logger } from '@/utils/logger'
 
 /** 面板名（UI 状态；§6.8 禁止放入 store） */
 type PanelName = 'toc' | 'search' | 'notes' | 'settings' | 'dicts'
@@ -142,14 +149,19 @@ const { selection: selected, capture: captureSelection, clear: clearSelection } 
 const { theme, cssVars } = useReaderSettings()
 const dictStore = useDictStore()
 const notesStore = useNotesStore()
+// N-1：词典领域调用（loadIndex/getEnabledTerms/prefetchForChapter）归位于 composable，
+// 视图不再直连词典服务层（services），由 useDictLookup 承担。
+const { terms, loadDictionary, refreshTerms, prefetchForChapter } = useDictLookup()
 
-/** 启用术语词表（词典索引就绪后填充；空则不启用高亮） */
-const terms = ref<string[]>([])
 /** 待恢复进度 */
 const restored = ref<ReadingProgress | null>(null)
 const percent = ref(0)
 const chapterIdx = ref(0)
 const panel = ref<PanelName | null>(null)
+/** 查词弹窗开关（与面板互不干扰） */
+const popupOpen = ref(false)
+/** 待查词头 */
+const popupTerm = ref('')
 
 const chapterTitles = computed<string[]>(() => sutra.value?.chapters.map((chapter) => chapter.title) ?? [])
 const sutraNotes = computed<Note[]>(() => (sutraId.value ? notesStore.bySutra(sutraId.value) : []))
@@ -175,20 +187,6 @@ async function open(): Promise<void> {
   chapterIdx.value = saved?.chapterIdx ?? 0
 
   await loadDictionary()
-}
-
-/** 懒加载词典索引并取启用词表（失败不阻塞阅读，§4.4 弱项降级） */
-async function loadDictionary(): Promise<void> {
-  try {
-    await dictStore.loadIndex()
-    refreshTerms()
-  } catch (err) {
-    logger.warn('词典索引加载失败，术语高亮暂不可用', err)
-  }
-}
-
-function refreshTerms(): void {
-  terms.value = dictService.getEnabledTerms()
 }
 
 // §5 M8：词典开关即时生效——启用列表变化即重算词表（Trie 随之重建）
@@ -229,7 +227,17 @@ function onProgress(update: ProgressUpdate): void {
 /** §4.4 章节级预取（静默；prefetchForChapter 内部 allSettled 不抛） */
 function onChapterTerms(chapterTerms: string[]): void {
   if (chapterTerms.length === 0) return
-  void dictService.prefetchForChapter(chapterTerms)
+  void prefetchForChapter(chapterTerms)
+}
+
+/** 点词查义：打开弹窗（DictPopup 自持 useDictLookup，随 term 变化查词） */
+function onTermClick(term: string): void {
+  popupTerm.value = term
+  popupOpen.value = true
+}
+
+function closePopup(): void {
+  popupOpen.value = false
 }
 
 /** 目录跳转：关面板（fixed 不重排）→ nextTick → 语义锚点定位章节起始 */

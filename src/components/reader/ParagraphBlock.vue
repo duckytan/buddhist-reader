@@ -7,6 +7,7 @@
     <SegmentText
       v-if="segments"
       :segments="segments"
+      @term-click="emit('termClick', $event)"
     />
     <template v-else>{{ paragraph.text }}</template>
   </p>
@@ -21,6 +22,8 @@
  * - ② 高亮分段经 `SegmentText` 携带 `data-off`/`data-hit`（无命中则纯文本）；
  * - ③ `scroll-margin-top: var(--reader-header-height)`——滚动定位由 CSS 锚点承担，
  *   **不使用 `getBoundingClientRect` + 魔法偏移**。
+ *
+ * 交互：转发 `SegmentText` 的 `termClick` 给上层（ReaderView 据此打开查词弹窗）。
  */
 
 import { computed } from 'vue'
@@ -39,6 +42,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   segments: null
 })
+
+const emit = defineEmits<{ termClick: [term: string] }>()
 
 /** 段落 DOM id（与 `scrollToAnchor` 的 `toElementId` 一致） */
 const elementId = computed<string>(() => toElementId(props.paragraph.globalId))

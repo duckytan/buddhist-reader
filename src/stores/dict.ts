@@ -6,18 +6,34 @@
  * 数据均驻留 **service/仓库层**（`dictService` + `lruCache`），store 只持有
  * 「词典元信息列表 + 启用 id + 小体量查词结果引用」。
  *
- * 说明：`loading`/`error` 等异步 UI 态由 composable（`useDictLookup`，T08）持有。
+ * 说明：`loading`/`error` 等异步 UI 态由 composable（`useDictLookup`）持有。
+ *
+ * **结果缓存淘汰（T08 D-2）**：原先手写的「仅条数封顶」已换为通用 `LruCache`
+ * （条数 + **字节**双上限）——`DictHit.definition` 是释义正文，单条可达 16KB，
+ * 仅按条数封顶会让 50 条大释义把结果缓存撑到 MB 级，与「小体量引用」自述不符。
  */
 
 import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 
+import { LruCache } from '@/data/cache/lruCache'
 import { dictService } from '@/services/dictService'
 import type { LookupOptions } from '@/services/dictService'
 import type { DictHit, DictMeta } from '@/types/dict'
 
-/** 查词结果引用缓存上限（小对象，仅 UI 最近结果） */
+/** 查词结果引用缓存：条数上限（与旧实现一致） */
 const RESULT_CACHE_LIMIT = 50
+/** 查词结果引用缓存：字节上限（512KB，与 `termCache` 口径协调） */
+const RESULT_CACHE_BYTES = 512 * 1024
+
+/** 查词结果粗略字节估算（释义正文为主） */
+function roughHitsBytes(hits: DictHit[]): number {
+  let sum = 0
+  for (const hit of hits) {
+    sum += hit.term.length + hit.dictName.length + hit.definition.length
+  }
+  return sum
+}
 
 export const useDictStore = defineStore('dict', () => {
   /** 词典元信息（轻量） */
@@ -28,6 +44,19 @@ export const useDictStore = defineStore('dict', () => {
   const enabledIds = ref<string[]>([])
   /** 查词结果引用缓存（term → hits；仅小对象，非分片数据） */
   const results = shallowRef<Record<string, DictHit[]>>({})
+
+  /**
+   * 结果引用缓存的**内部**淘汰器（条数 + 字节双上限）。
+   *
+   * ⚠️ 不让组件直接读本实例：Pinia 响应式**不追踪 `class` 内部 `Map` 的变更**，
+   * 直接读会「静默不刷新」。故对外仍以 `results`（`Record` 形状）暴露，
+   * 每次变更后按 LRU 存活键**重建对象**赋给 `shallowRef` 以触发更新。
+   */
+  const cache = new LruCache<string, DictHit[]>({
+    maxEntries: RESULT_CACHE_LIMIT,
+    maxBytes: RESULT_CACHE_BYTES,
+    sizeOf: roughHitsBytes
+  })
 
   /** 启用的词典元信息 */
   const enabledDicts = computed<DictMeta[]>(() =>
@@ -56,6 +85,7 @@ export const useDictStore = defineStore('dict', () => {
 
   /** 清空引用缓存 */
   function clearResults(): void {
+    cache.clear()
     results.value = {}
   }
 
@@ -70,11 +100,13 @@ export const useDictStore = defineStore('dict', () => {
     return enabledIds.value.includes(dictId)
   }
 
+  /** 写入结果缓存，并按 LRU 存活键重建对外 `Record`。 */
   function remember(term: string, hits: DictHit[]): void {
-    const next: Record<string, DictHit[]> = { ...results.value, [term]: hits }
-    const keys = Object.keys(next)
-    if (keys.length > RESULT_CACHE_LIMIT) {
-      for (const key of keys.slice(0, keys.length - RESULT_CACHE_LIMIT)) delete next[key]
+    cache.set(term, hits)
+    const prev = results.value
+    const next: Record<string, DictHit[]> = {}
+    for (const key of cache.keys()) {
+      next[key] = key === term ? hits : (prev[key] ?? [])
     }
     results.value = next
   }

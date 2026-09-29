@@ -80,4 +80,24 @@ describe('stores/dict', () => {
     store.clearResults()
     expect(store.getCached('般若')).toBeNull()
   })
+
+  it('结果缓存按字节上限淘汰（条数未超但字节超 → 逐出最久未用，D-2）', async () => {
+    // 每条 ~20KB：30 条 ≈ 600KB > 512KB 字节上限，但 30 < 50 条数上限。
+    // 旧的手写实现「仅条数封顶」会保留全部 30 条 → 本测试必红；这就是它的价值。
+    const big = 'a'.repeat(20000)
+    mocks.lookup.mockImplementation(async (term: string) => [
+      { dictId: 'dict-1', dictName: '甲典', term, definition: big }
+    ])
+    const store = useDictStore()
+
+    const COUNT = 30
+    for (let i = 0; i < COUNT; i += 1) {
+      await store.lookup(`t${i}`)
+    }
+
+    expect(store.getCached('t0')).toBeNull() // 最久未用者被字节上限逐出
+    expect(store.getCached(`t${COUNT - 1}`)).not.toBeNull() // 最近使用者仍在
+    expect(Object.keys(store.results).length).toBeLessThan(COUNT)
+    expect(Object.keys(store.results).length).toBeGreaterThan(0)
+  })
 })

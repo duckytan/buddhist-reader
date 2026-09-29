@@ -21,6 +21,7 @@
         :key="paragraph.globalId"
         :paragraph="paragraph"
         :segments="segmentMap.get(paragraph.globalId) ?? null"
+        @term-click="emit('termClick', $event)"
       />
     </section>
   </div>
@@ -78,6 +79,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   progress: [update: ProgressUpdate]
   chapterTerms: [terms: string[]]
+  termClick: [term: string]
 }>()
 
 /**
