@@ -3,9 +3,10 @@ import { mount } from '@vue/test-utils'
 
 import ReaderHeader from '@/components/reader/ReaderHeader.vue'
 // 源码级断言用 Vite `?raw`（浏览器 tsconfig 无 node 类型；vite/client 已声明 `*?raw`）。
-// 注：vitest 默认 `css:false` 会把 `.css?raw` 也置空，故此处只锁两组件间「同源」。
+// 注：vitest 默认 `css:false` 会把 `.css?raw` 也置空，故此处只锁三组件间「同源」。
 import headerSource from '@/components/reader/ReaderHeader.vue?raw'
 import paragraphSource from '@/components/reader/ParagraphBlock.vue?raw'
+import contentSource from '@/components/reader/ReaderContent.vue?raw'
 
 describe('ReaderHeader', () => {
   it('渲染标题并发出各工具事件', async () => {
@@ -32,11 +33,16 @@ describe('ReaderHeader', () => {
     expect(wrapper.emitted('settings')).toHaveLength(1)
   })
 
-  it('高度与 scroll-margin-top 同源于 --reader-header-height（杜绝魔法偏移）', () => {
+  it('顶栏高度 / 段落 scroll-margin-top / 正文 padding-top 三方同源于 --reader-header-height', () => {
     // jsdom 无法解析 var() 且不注入 SFC <style>，故改为源码级「同源」回归护栏：
-    // 顶栏高度与段落 scroll-margin-top 必须引用同一 token（token 定义见 tokens.css）。
+    // 三处必须引用同一 token（token 定义见 tokens.css）。任一处改硬编码即红。
     expect(headerSource).toContain('height: var(--reader-header-height)')
-    expect(paragraphSource).toContain('var(--reader-header-height)')
+    expect(paragraphSource).toContain(
+      'scroll-margin-top: calc(var(--reader-header-height) + var(--spacing-xs))'
+    )
+    expect(contentSource).toContain(
+      'padding: calc(var(--reader-header-height) + var(--spacing-xs))'
+    )
 
     // 顶栏高度不得硬编码像素魔法值（只允许引用 token）
     expect(headerSource).not.toMatch(/height:\s*\d+px/)

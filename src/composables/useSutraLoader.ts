@@ -56,7 +56,7 @@ export function useSutraLoader(): UseSutraLoader {
     error.value = null
 
     try {
-      const loaded = await sutraService.loadSutra(sutraId)
+      const loaded = await sutraService.loadSutra(sutraId, signal)
       if (signal.aborted) return // 已卸载/已切换 → 丢弃结果，不写状态
       store.current = loaded
       status.value = 'ready'

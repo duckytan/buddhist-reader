@@ -74,7 +74,7 @@ describe('useSutraLoader', () => {
     mocks.loadSutra.mockResolvedValue(SUTRA)
     await loader.retry()
     expect(loader.status.value).toBe('ready')
-    expect(mocks.loadSutra).toHaveBeenLastCalledWith('x.json')
+    expect(mocks.loadSutra).toHaveBeenLastCalledWith('x.json', expect.any(AbortSignal))
   })
 
   it('取消后不写入状态（防卸载后 setState）', async () => {
@@ -89,5 +89,31 @@ describe('useSutraLoader', () => {
 
     expect(loader.status.value).toBe('loading')
     expect(store.current).toBeNull()
+  })
+
+  it('load 把 controller.signal 真透传给 service；cancel() 后该 signal.aborted === true', async () => {
+    // 反向验证「真取消」：捕获 service 收到的 signal，断言 ① 同一对象被 abort、
+    // ② 调用时该 signal 尚未 abort。旧「假 abort」（不透传）会收到 undefined → 失败。
+    let captured: AbortSignal | undefined
+    let resolveLoad: (value: Sutra) => void = () => {}
+    mocks.loadSutra.mockImplementation((_id: string, signal?: AbortSignal) => {
+      captured = signal
+      return new Promise<Sutra>((resolve) => (resolveLoad = resolve))
+    })
+    const { loader } = create()
+
+    const pending = loader.load('x.json')
+
+    expect(captured).toBeInstanceOf(AbortSignal)
+    expect(captured?.aborted).toBe(false)
+
+    loader.cancel()
+
+    // 同一个 signal 对象被 abort（而非另造一个）——即透传成立
+    expect(captured?.aborted).toBe(true)
+    expect(mocks.loadSutra).toHaveBeenCalledWith('x.json', captured)
+
+    resolveLoad(SUTRA)
+    await pending
   })
 })

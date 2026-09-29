@@ -80,7 +80,10 @@ const emit = defineEmits<{
   chapterTerms: [terms: string[]]
 }>()
 
-/** 活动章节判定阈值（≈ 顶栏高度量级） */
+/**
+ * 活动章节判定阈值（px）：章节顶部进入容器可视区上沿下方 96px 内，即视为当前章节。
+ * **与 `--reader-header-height` 无派生关系**——这是独立 UX 阈值，调整顶栏高度不应改此值。
+ */
 const ACTIVE_CHAPTER_OFFSET = 96
 
 const scrollEl = ref<HTMLElement | null>(null)

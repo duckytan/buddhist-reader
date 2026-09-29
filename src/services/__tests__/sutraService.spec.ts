@@ -37,13 +37,15 @@ const SOURCE: SutraSource = {
 }
 
 interface FakeRepo {
-  fetchManifest: Mock<() => Promise<SutraMeta[]>>
-  fetchSutra: Mock<(filename: string) => Promise<SutraSource>>
+  fetchManifest: Mock<(signal?: AbortSignal) => Promise<SutraMeta[]>>
+  fetchSutra: Mock<(filename: string, signal?: AbortSignal) => Promise<SutraSource>>
 }
 
 function makeRepo(): FakeRepo {
-  const fetchManifest = vi.fn<() => Promise<SutraMeta[]>>(async () => [META])
-  const fetchSutra = vi.fn<(filename: string) => Promise<SutraSource>>(async () => SOURCE)
+  const fetchManifest = vi.fn<(signal?: AbortSignal) => Promise<SutraMeta[]>>(async () => [META])
+  const fetchSutra = vi.fn<(filename: string, signal?: AbortSignal) => Promise<SutraSource>>(
+    async () => SOURCE
+  )
   return { fetchManifest, fetchSutra }
 }
 
@@ -76,7 +78,27 @@ describe('sutraService', () => {
     expect(sutra.totalChars).toBe(20)
     expect(sutra.chapters[0]?.paragraphs[0]?.globalId).toBe(`${FILENAME}:0:0`)
     expect(sutra.chapters[0]?.paragraphs[1]?.globalId).toBe(`${FILENAME}:0:1`)
-    expect(repo.fetchSutra).toHaveBeenCalledWith(FILENAME)
+    expect(repo.fetchSutra).toHaveBeenCalledWith(FILENAME, undefined)
+  })
+
+  it('loadSutra 透传 signal 至 fetchManifest / fetchSutra（真取消）', async () => {
+    const service = createSutraService({ repository: repo })
+    const controller = new AbortController()
+
+    await service.loadSutra(FILENAME, controller.signal)
+
+    expect(repo.fetchManifest).toHaveBeenCalledWith(controller.signal)
+    expect(repo.fetchSutra).toHaveBeenCalledWith(FILENAME, controller.signal)
+  })
+
+  it('manifest 拉取失败不污染缓存（后续可重试）', async () => {
+    const service = createSutraService({ repository: repo })
+    repo.fetchManifest.mockRejectedValueOnce(new Error('网络错误'))
+
+    await expect(service.loadManifest()).rejects.toThrow('网络错误')
+    // 失败后 dedup promise 已重置 → 再次调用应重新发起（而非返回被缓存的 rejected promise）
+    await expect(service.loadManifest()).resolves.toHaveLength(1)
+    expect(repo.fetchManifest).toHaveBeenCalledTimes(2)
   })
 
   it('loadSutra 未知经书 → 抛错', async () => {

@@ -14,10 +14,10 @@ import type { RequestFn } from '@/utils/async'
 import { resolveBaseUrl } from './baseUrl'
 
 export interface SutraRepository {
-  /** 拉取书架清单 */
-  fetchManifest(): Promise<SutraMeta[]>
-  /** 拉取单部经书原文（`filename` 含 `.json` 后缀） */
-  fetchSutra(filename: string): Promise<SutraSource>
+  /** 拉取书架清单（`signal` 透传至底层 fetch，支持真取消） */
+  fetchManifest(signal?: AbortSignal): Promise<SutraMeta[]>
+  /** 拉取单部经书原文（`filename` 含 `.json` 后缀；`signal` 透传支持真取消） */
+  fetchSutra(filename: string, signal?: AbortSignal): Promise<SutraSource>
 }
 
 export interface SutraRepositoryOptions {
@@ -33,11 +33,11 @@ export function createSutraRepository(options: SutraRepositoryOptions = {}): Sut
   const request: RequestFn = options.request ?? fetchJson
 
   return {
-    fetchManifest(): Promise<SutraMeta[]> {
-      return request<SutraMeta[]>(`${baseUrl}sutras/manifest.json`)
+    fetchManifest(signal?: AbortSignal): Promise<SutraMeta[]> {
+      return request<SutraMeta[]>(`${baseUrl}sutras/manifest.json`, { signal })
     },
-    fetchSutra(filename: string): Promise<SutraSource> {
-      return request<SutraSource>(`${baseUrl}sutras/${filename}`)
+    fetchSutra(filename: string, signal?: AbortSignal): Promise<SutraSource> {
+      return request<SutraSource>(`${baseUrl}sutras/${filename}`, { signal })
     }
   }
 }

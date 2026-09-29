@@ -17,12 +17,12 @@ import type { Chapter, Sutra, SutraMeta, SutraSource } from '@/types/sutra'
 import { makeGlobalId } from '@/utils/anchor'
 
 export interface SutraService {
-  /** 拉取书架清单（带内存缓存；`force` 强制刷新） */
-  loadManifest(force?: boolean): Promise<SutraMeta[]>
+  /** 拉取书架清单（带内存缓存；`force` 强制刷新；`signal` 透传支持真取消） */
+  loadManifest(force?: boolean, signal?: AbortSignal): Promise<SutraMeta[]>
   /** 取某经元信息（需先 `loadManifest`；未加载或未命中返回 null） */
   getMeta(sutraId: string): SutraMeta | null
-  /** 加载完整经书：清单元信息 + 原文合并，并派生 `globalId` */
-  loadSutra(sutraId: string): Promise<Sutra>
+  /** 加载完整经书：清单元信息 + 原文合并，并派生 `globalId`（`signal` 透传至网络层） */
+  loadSutra(sutraId: string, signal?: AbortSignal): Promise<Sutra>
   /** 清空内存缓存（测试/切库用） */
   clear(): void
 }
@@ -50,15 +50,24 @@ export function createSutraService(options: SutraServiceOptions = {}): SutraServ
   let manifestCache: SutraMeta[] | null = null
   let manifestPromise: Promise<SutraMeta[]> | null = null
 
-  async function loadManifest(force = false): Promise<SutraMeta[]> {
+  async function loadManifest(force = false, signal?: AbortSignal): Promise<SutraMeta[]> {
     if (manifestCache && !force) return manifestCache
     if (manifestPromise && !force) return manifestPromise
-    manifestPromise = repository.fetchManifest().then((manifest) => {
-      manifestCache = manifest
-      manifestPromise = null
-      return manifest
-    })
-    return manifestPromise
+    // 注意：失败（含 AbortError）时须重置 dedup promise，否则被取消/失败的 promise
+    // 会污染后续调用（缓存住一个 rejected promise）。成功才落 manifestCache。
+    const promise = repository.fetchManifest(signal).then(
+      (manifest) => {
+        manifestCache = manifest
+        manifestPromise = null
+        return manifest
+      },
+      (err: unknown) => {
+        manifestPromise = null
+        throw err
+      }
+    )
+    manifestPromise = promise
+    return promise
   }
 
   function getMeta(sutraId: string): SutraMeta | null {
@@ -66,11 +75,11 @@ export function createSutraService(options: SutraServiceOptions = {}): SutraServ
     return manifestCache.find((meta) => meta.filename === sutraId) ?? null
   }
 
-  async function loadSutra(sutraId: string): Promise<Sutra> {
-    const manifest = await loadManifest()
+  async function loadSutra(sutraId: string, signal?: AbortSignal): Promise<Sutra> {
+    const manifest = await loadManifest(false, signal)
     const meta = manifest.find((item) => item.filename === sutraId)
     if (!meta) throw new Error(`未找到经书：${sutraId}`)
-    const source = await repository.fetchSutra(sutraId)
+    const source = await repository.fetchSutra(sutraId, signal)
     // 以 manifest 元信息为准（统计/标题与书架一致）；正文取源文件并派生 globalId
     return { ...meta, chapters: toChapters(sutraId, source) }
   }

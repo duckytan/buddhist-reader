@@ -11,7 +11,7 @@ describe('sutraRepository', () => {
     const repo = createSutraRepository({ baseUrl: '/base/', request: spy as unknown as RequestFn })
 
     await expect(repo.fetchManifest()).resolves.toBe(manifest)
-    expect(spy).toHaveBeenCalledWith('/base/sutras/manifest.json')
+    expect(spy).toHaveBeenCalledWith('/base/sutras/manifest.json', { signal: undefined })
   })
 
   it('fetchSutra 请求 sutras/{filename}', async () => {
@@ -29,6 +29,18 @@ describe('sutraRepository', () => {
     const repo = createSutraRepository({ baseUrl: '/base/', request: spy as unknown as RequestFn })
 
     await expect(repo.fetchSutra('heart.json')).resolves.toBe(sutra)
-    expect(spy).toHaveBeenCalledWith('/base/sutras/heart.json')
+    expect(spy).toHaveBeenCalledWith('/base/sutras/heart.json', { signal: undefined })
+  })
+
+  it('fetchSutra / fetchManifest 透传 AbortSignal（真取消，非事后判定）', async () => {
+    const controller = new AbortController()
+    const spy = vi.fn(async () => ({}))
+    const repo = createSutraRepository({ baseUrl: '/base/', request: spy as unknown as RequestFn })
+
+    await repo.fetchSutra('heart.json', controller.signal)
+    expect(spy).toHaveBeenLastCalledWith('/base/sutras/heart.json', { signal: controller.signal })
+
+    await repo.fetchManifest(controller.signal)
+    expect(spy).toHaveBeenLastCalledWith('/base/sutras/manifest.json', { signal: controller.signal })
   })
 })
