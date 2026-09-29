@@ -140,9 +140,10 @@ function main() {
 
   const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'))
 
-  // 先清空旧分片，避免词典增删后残留陈旧文件
-  fs.rmSync(CHUNKS_DIR, { recursive: true, force: true })
+  // 确保输出目录存在；陈旧分片在写完后按「本次产出集合」增量清理（见文件末尾），
+  // 不整目录删除——重跑时绝大多数文件同名覆盖，零删除更安全也更省 I/O。
   fs.mkdirSync(CHUNKS_DIR, { recursive: true })
+  const written = new Set()
 
   const indexDicts = []
   const terms = {}
@@ -168,8 +169,10 @@ function main() {
 
     let dictBytes = 0
     chunks.forEach((chunkData, idx) => {
+      const fileName = `${dict.id}-${idx}.json`
       const json = JSON.stringify(chunkData)
-      fs.writeFileSync(path.join(CHUNKS_DIR, `${dict.id}-${idx}.json`), json, 'utf8')
+      fs.writeFileSync(path.join(CHUNKS_DIR, fileName), json, 'utf8')
+      written.add(fileName)
 
       const bytes = chunkBytes[idx]
       dictBytes += bytes
@@ -191,11 +194,13 @@ function main() {
       entryCount: entries.length,
       bytes: dictBytes
     }
+    const manifestName = `${dict.id}-manifest.json`
     fs.writeFileSync(
-      path.join(CHUNKS_DIR, `${dict.id}-manifest.json`),
+      path.join(CHUNKS_DIR, manifestName),
       JSON.stringify(manifestOut),
       'utf8'
     )
+    written.add(manifestName)
 
     indexDicts.push({
       id: dict.id,
@@ -211,6 +216,16 @@ function main() {
         `${(dictBytes / 1048576).toFixed(2)}MB`
     )
   })
+
+  // 清理陈旧分片：仅当词典增删导致本次产出集合变化时才命中（正常重跑为 0 个）
+  let staleRemoved = 0
+  for (const name of fs.readdirSync(CHUNKS_DIR)) {
+    if (name.endsWith('.json') && !written.has(name)) {
+      fs.unlinkSync(path.join(CHUNKS_DIR, name))
+      staleRemoved++
+    }
+  }
+  if (staleRemoved > 0) console.log(`清理陈旧分片: ${staleRemoved} 个`)
 
   const index = {
     version: INDEX_VERSION,
