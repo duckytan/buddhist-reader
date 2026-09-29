@@ -1,8 +1,8 @@
 {
   "_readme": "护栏棘轮基线。只能【人工显式下调】，禁止任何脚本自动更新。数值为对应目录【已跟踪文件数】的上限。基线文件缺失或被删 → 护栏判失败（见 scripts/guard-forbidden.mjs）。下调需走提交并说明「清理了什么、为何下调」；上调需用户显式批准。",
-  "_note": "初始值按 2026-09-29 实测登记（dict-chunks=75、dict-defs=3），并非目标值 0；随清理 PR 逐步下调至 0。",
+  "_note": "2026-09-29 清理（commit 6333065：git rm -r --cached public/dict-chunks public/dict-defs）完成后，实际已跟踪数已降为 0/0，故基线由 75/3 一并下调至 0/0。此前 75/3 是清理【前】的实测值——基线设松会使棘轮对「数量回升」失去拦截力（等于没有这道防线）。目标值即 0，任何 >0 的回升都会被拦截。",
   "trackedCount": {
-    "public/dict-chunks/": 75,
-    "public/dict-defs/": 3
+    "public/dict-chunks/": 0,
+    "public/dict-defs/": 0
   }
 }
