@@ -252,4 +252,48 @@ describe('ReaderView（§8.1 / §8.3 集成）', () => {
 
     wrapper.unmount()
   })
+
+  it('§5 M9：单章节经目录列段落，点击 → 经**语义锚点路径**定位到该段（不新造滚动逻辑）', async () => {
+    const multiPara: Sutra = {
+      ...SUTRA,
+      totalParagraphs: 2,
+      chapters: [
+        {
+          title: '正文',
+          paragraphs: [
+            { id: 'p1', text: '观自在般若', globalId: 'x.json:0:0' },
+            { id: 'p2', text: '菩提萨埵', globalId: 'x.json:0:1' }
+          ]
+        }
+      ]
+    }
+    mocks.loadSutra.mockResolvedValue(multiPara)
+
+    const wrapper = await mountReady()
+
+    // 打开目录（单章节 → 段落列表）
+    const tocButton = wrapper.findAll('button').find((node) => node.attributes('aria-label') === '目录')
+    await tocButton?.trigger('click')
+    await nextTick()
+
+    const items = wrapper.findAll('.toc__button--paragraph')
+    expect(items).toHaveLength(2)
+    expect(items[0]?.text()).toContain('观自在般若')
+
+    // 点击第 2 段 → scrollToAnchor 定位到 para-x.json:0:1（复用 anchor 路径）
+    const scrollMock = Element.prototype.scrollIntoView as unknown as {
+      mockClear: () => void
+      mock: { instances: unknown[] }
+    }
+    scrollMock.mockClear()
+    await items[1]?.trigger('click')
+    await nextTick()
+    await nextTick()
+
+    const target = scrollMock.mock.instances.at(-1) as HTMLElement | undefined
+    // 红条件：若段落跳转走像素路径（scrollTop）而非 anchor 路径，则无 scrollIntoView 调用 → 红
+    expect(target?.id).toBe('para-x.json:0:1')
+
+    wrapper.unmount()
+  })
 })

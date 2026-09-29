@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  EXCERPT_MAX_LEN,
   NUMERAL_CHARS,
   cleanDefinition,
+  excerpt,
   extractDefinition,
   formatDefinition,
   isNumeralPhrase
@@ -103,5 +105,33 @@ describe('isNumeralPhrase / NUMERAL_CHARS', () => {
 
   it('NUMERAL_CHARS 逐字保留旧版字面量', () => {
     expect(NUMERAL_CHARS).toBe('零一二三四五六七八九十百千万亿兆〇○０-９')
+  })
+})
+
+describe('excerpt（目录段落摘录 · §5 M9）', () => {
+  it('短文本原样返回（trim 后）', () => {
+    expect(excerpt('  观自在般若  ')).toBe('观自在般若')
+  })
+
+  it('超长文本在**窗口内最靠后的句读**处截断（不截断在半句上）', () => {
+    // 24 字窗口内，最后一个句读是第 15 个字符处的「，」
+    expect(excerpt('观自在菩萨，行深般若波罗蜜多时，照见五蕴皆空度一切苦厄')).toBe(
+      '观自在菩萨，行深般若波罗蜜多时，'
+    )
+  })
+
+  it('窗口内无句读 → 硬截断 maxLen 字并补 …（明示省略）', () => {
+    const label = excerpt('般'.repeat(50))
+    expect(label).toHaveLength(EXCERPT_MAX_LEN + 1)
+    expect(label.endsWith('…')).toBe(true)
+  })
+
+  it('恰好等于 maxLen 不截断、不补 …', () => {
+    const text = '般'.repeat(EXCERPT_MAX_LEN)
+    expect(excerpt(text)).toBe(text)
+  })
+
+  it('maxLen ≤ 0 → 空串', () => {
+    expect(excerpt('般若', 0)).toBe('')
   })
 })

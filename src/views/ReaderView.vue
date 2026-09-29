@@ -53,8 +53,10 @@
       :open="panel === 'toc'"
       :chapters="chapterTitles"
       :current-chapter-idx="chapterIdx"
+      :paragraph-labels="paragraphLabels"
       @close="closePanel"
       @jump="onJumpChapter"
+      @jump-paragraph="onJumpParagraph"
     />
     <ReaderSearch
       :open="panel === 'search'"
@@ -155,6 +157,7 @@ import { makeGlobalId, parseGlobalId, scrollToAnchor } from '@/utils/anchor'
 import type { ScrollAnchor } from '@/utils/anchor'
 import { decodeJumpQuery, JUMP_QUERY_KEYS } from '@/utils/readerJump'
 import type { ReaderJumpTarget } from '@/utils/readerJump'
+import { excerpt } from '@/utils/text'
 
 /** 面板名（UI 状态；§6.8 禁止放入 store） */
 type PanelName = 'toc' | 'search' | 'bookmarks' | 'notes' | 'settings' | 'dicts'
@@ -192,6 +195,12 @@ const popupOpen = ref(false)
 const popupTerm = ref('')
 
 const chapterTitles = computed<string[]>(() => sutra.value?.chapters.map((chapter) => chapter.title) ?? [])
+/** 单章节经的段落摘录标签（§5 M9：段落无标题，用开头摘录） */
+const paragraphLabels = computed<string[]>(() => {
+  const chapter = sutra.value?.chapters[0]
+  if (!chapter) return []
+  return chapter.paragraphs.map((paragraph) => excerpt(paragraph.text))
+})
 const sutraNotes = computed<Note[]>(() => (sutraId.value ? notesStore.bySutra(sutraId.value) : []))
 const currentBookmarks = computed<Bookmark[]>(() => readerStore.currentBookmarks)
 
@@ -317,6 +326,23 @@ function closePopup(): void {
 function onJumpChapter(index: number): void {
   closePanel()
   void scrollToTarget({ globalId: makeGlobalId(sutraId.value, index, 0), offset: null })
+}
+
+/**
+ * 单章节经：目录段落跳转（§5 M9）。
+ *
+ * **复用既有语义锚点路径**——产出 `ReaderJumpTarget.anchor`，交由 `applyJump`
+ * 的 `anchor` 分支统一换算 `globalId` 并 `scrollToAnchor`；**不新造滚动逻辑**
+ * （与笔记跳转同一条路径，避免「每个入口各写一套定位」的旧版病灶）。
+ */
+function onJumpParagraph(paraIdx: number): void {
+  closePanel()
+  const paraId = sutra.value?.chapters[0]?.paragraphs[paraIdx]?.id ?? ''
+  if (!paraId) return
+  void applyJump({
+    sutraId: sutraId.value,
+    anchor: { chapterIdx: 0, paraId, offset: 0 }
+  })
 }
 
 /** 搜索结果跳转：定位到命中段内 `[data-off][data-search]`（§8.3 精确跳转） */
