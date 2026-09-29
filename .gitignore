@@ -44,3 +44,4 @@ coverage/
 src/data/dictIndex.js
 public/dict-chunks/
 public/dict-defs/
+public/dict-index.json
