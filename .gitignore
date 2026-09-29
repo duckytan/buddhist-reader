@@ -40,6 +40,9 @@ coverage/
 *.tmp
 *.temp
 
+# AI 工具本地状态（会话记忆/缓存，非源码；禁止入库）
+.workbuddy-ai/
+
 # 词典生成物（禁止入库，构建期产物；见 scripts/guard-forbidden.mjs）
 src/data/dictIndex.js
 public/dict-chunks/
