@@ -3,6 +3,8 @@ import { createPinia, setActivePinia } from 'pinia'
 
 import { STORAGE_KEYS } from '@/data/storage'
 import { useReaderStore } from '@/stores/reader'
+// 源码级断言：D-1 归位（reader store 不得直连 @/data/storage）
+import readerStoreSource from '@/stores/reader.ts?raw'
 
 describe('stores/reader', () => {
   beforeEach(() => {
@@ -60,5 +62,12 @@ describe('stores/reader', () => {
     store.loadBookmarks()
     expect(store.bookmarks).toHaveLength(1)
     expect(store.bookmarks[0]?.id).toBe('x')
+  })
+
+  it('D-1：reader store 不直连 @/data/storage（书签持久化归位 bookmarkService）', () => {
+    // 反向验证：归位前 store 内含 `import { STORAGE_KEYS, readJson, writeJson } from '@/data/storage'`，此断言必红。
+    expect(readerStoreSource).not.toContain('@/data/storage')
+    // 且确实改为委托 service（正向锚点，防止「删了 import 但也没接 service」的假绿）
+    expect(readerStoreSource).toContain('@/services/bookmarkService')
   })
 })

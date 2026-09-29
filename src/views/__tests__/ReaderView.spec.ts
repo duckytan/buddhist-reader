@@ -3,9 +3,11 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
 
-import { progressKey } from '@/data/storage'
+import { STORAGE_KEYS, progressKey } from '@/data/storage'
+import { useReaderStore } from '@/stores/reader'
 import { useSettingsStore } from '@/stores/settings'
 import type { Sutra } from '@/types/sutra'
+import { encodeJumpQuery } from '@/utils/readerJump'
 
 const mocks = vi.hoisted(() => ({
   loadSutra: vi.fn(),
@@ -15,7 +17,9 @@ const mocks = vi.hoisted(() => ({
   getEnabledTerms: vi.fn(),
   prefetchForChapter: vi.fn(),
   lookup: vi.fn(),
-  push: vi.fn()
+  push: vi.fn(),
+  replace: vi.fn(),
+  route: { params: { id: 'x.json' }, query: {} as Record<string, unknown> }
 }))
 
 vi.mock('@/services/sutraService', () => ({
@@ -36,8 +40,8 @@ vi.mock('@/services/dictService', () => ({
 }))
 
 vi.mock('vue-router', () => ({
-  useRoute: () => ({ params: { id: 'x.json' } }),
-  useRouter: () => ({ push: mocks.push })
+  useRoute: () => mocks.route,
+  useRouter: () => ({ push: mocks.push, replace: mocks.replace })
 }))
 
 import ReaderView from '@/views/ReaderView.vue'
@@ -70,6 +74,8 @@ describe('ReaderView（§8.1 / §8.3 集成）', () => {
     localStorage.clear()
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    mocks.route.params = { id: 'x.json' }
+    mocks.route.query = {}
     Element.prototype.scrollIntoView = vi.fn()
     mocks.loadSutra.mockResolvedValue(SUTRA)
     mocks.loadIndex.mockResolvedValue(undefined)
@@ -162,6 +168,68 @@ describe('ReaderView（§8.1 / §8.3 集成）', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('甲·般若')
+
+    wrapper.unmount()
+  })
+
+  it('书签闭环（§6.5）：添加 → 列表 → 回看走像素路径（scrollToProgress）', async () => {
+    const wrapper = await mountReady()
+
+    // 打开书签面板
+    const bookmarksButton = wrapper.findAll('button').find((node) => node.attributes('aria-label') === '书签')
+    await bookmarksButton?.trigger('click')
+    expect(wrapper.find('.bookmarks').exists()).toBe(true)
+
+    // 添加：记当前章节 + 像素位置
+    await wrapper.find('.bookmarks__add').trigger('click')
+    const store = useReaderStore()
+    expect(store.currentBookmarks).toHaveLength(1)
+    expect(wrapper.findAll('.bookmarks__entry')).toHaveLength(1)
+    // 已落盘（可读回）
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.bookmarks) ?? '[]')).toHaveLength(1)
+
+    wrapper.unmount()
+  })
+
+  it('书签回看：点击书签 → 经像素路径还原滚动位置（非段内锚点路径）', async () => {
+    // 预置一个「有像素位置」的书签（add 时刻为 0 无法区分两条路径，故直接种入）
+    localStorage.setItem(
+      STORAGE_KEYS.bookmarks,
+      JSON.stringify([
+        { id: 'bm-1', sutraId: 'x.json', chapterIdx: 0, position: 120, label: '正文', createdAt: 1 }
+      ])
+    )
+
+    const wrapper = await mountReady()
+
+    const bookmarksButton = wrapper.findAll('button').find((node) => node.attributes('aria-label') === '书签')
+    await bookmarksButton?.trigger('click')
+    await wrapper.find('.bookmarks__entry').trigger('click')
+    await flushPromises()
+    await nextTick()
+
+    // 像素路径证据：容器 scrollTop 被设为书签 position。
+    // 若误用段内锚点路径（scrollToAnchor({offset})），此处 scrollTop 恒为 0 → 必红。
+    expect(wrapper.find('.reader-content').element.scrollTop).toBe(120)
+
+    wrapper.unmount()
+  })
+
+  it('跨视图跳转（笔记页 query）→ 语义锚点路径定位并消费 query', async () => {
+    mocks.route.query = encodeJumpQuery({
+      sutraId: 'x.json',
+      anchor: { chapterIdx: 0, paraId: 'p1', offset: 3 }
+    })
+
+    const wrapper = await mountReady()
+
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled()
+    // 跳转后清除 query，避免返回/刷新重复跳转
+    expect(mocks.replace).toHaveBeenCalledWith({
+      name: 'reader',
+      params: { id: 'x.json' },
+      query: {}
+    })
 
     wrapper.unmount()
   })

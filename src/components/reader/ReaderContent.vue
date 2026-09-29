@@ -219,6 +219,11 @@ function scrollToProgress(chapterIdx: number, position: number): void {
   activeChapter.value = chapterIdx
 }
 
+// 书签回看（§6.5）：书签是 `{chapterIdx, position}` **像素定位**，须走本函数
+// （章节语义锚点 + `setScrollTop` 像素还原）——**不得**与搜索的段内偏移路径
+// （`scrollToAnchor({offset})`）混用，否则会系统性偏移。暴露给 ReaderView 调用。
+defineExpose({ scrollToProgress })
+
 watch(matchedTerms, (terms) => emit('chapterTerms', terms))
 
 watch(

@@ -36,6 +36,14 @@
       <button
         type="button"
         class="reader-header__action"
+        aria-label="书签"
+        @click="emit('bookmarks')"
+      >
+        书签
+      </button>
+      <button
+        type="button"
+        class="reader-header__action"
         aria-label="笔记"
         @click="emit('notes')"
       >
@@ -81,6 +89,7 @@ const emit = defineEmits<{
   back: []
   toc: []
   search: []
+  bookmarks: []
   notes: []
   dicts: []
   settings: []
