@@ -60,8 +60,15 @@ export interface SutraSourceChapter {
 
 /**
  * 磁盘 sutra JSON 的原始结构。
- * `sutraRepository` 返回此类型；`sutraService` 负责派生 `globalId` 转成 `Sutra`。
+ *
+ * 实测（30 部全部一致）：源文件含 `title/author/category/chapters` **及**
+ * `chapterCount/totalParagraphs/totalChars/description` 统计字段；**唯一缺** `filename`
+ * （文件名即 `filename`，见 `sutras/manifest.json`）。故 `SutraSource` = `SutraMeta`
+ * 去掉 `filename` 再补 `chapters`。
+ *
+ * `sutraService.loadSutra()` 以 **manifest 元信息为准**（统计/标题统一与书架一致），
+ * 仅从源文件取正文 `chapters` 并派生 `globalId`。
  */
-export interface SutraSource extends SutraMeta {
+export type SutraSource = Omit<SutraMeta, 'filename'> & {
   chapters: SutraSourceChapter[]
 }

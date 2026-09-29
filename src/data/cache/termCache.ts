@@ -18,6 +18,8 @@ import { STORAGE_KEYS, readJson, writeJson } from '@/data/storage'
 export interface CachedEntry {
   definition: string
   pinyin: string
+  /** 词典名（T05 增补：离线命中时无需索引即可展示来源词典名） */
+  name: string
   ts: number
 }
 
@@ -76,15 +78,40 @@ export class TermCache {
     entry.ts = Date.now()
     this.touch(key)
     this.scheduleFlush()
-    return { ...entry }
+    return this.normalize(entry)
+  }
+
+  /**
+   * 按「词」跨词典检索已缓存条目（T05：离线查词入口）。
+   *
+   * 用途：`dictService.lookup` **先**调用本方法——命中即返回、**不加载索引、
+   * 不发任何网络请求**（离线场景下已查过的词仍可查，§4.9）。扫描量为 LRU 顺序
+   * 数组（≤500 条），成本可忽略。
+   */
+  getByTerm(term: string): Array<{ dictId: string; entry: CachedEntry }> {
+    const suffix = `::${term}`
+    const result: Array<{ dictId: string; entry: CachedEntry }> = []
+    // 快照遍历：`touch()` 会就地改写 order 数组，避免边遍历边改
+    for (const key of [...this.data.order]) {
+      if (!key.endsWith(suffix)) continue
+      const dictId = key.slice(0, key.length - suffix.length)
+      const entry = this.data.entries[key]
+      if (!entry || !dictId) continue
+      entry.ts = Date.now()
+      this.touch(key)
+      result.push({ dictId, entry: this.normalize(entry) })
+    }
+    if (result.length > 0) this.scheduleFlush()
+    return result
   }
 
   /** 写缓存；单条超过 `maxEntryBytes` 则跳过（不入缓存）。 */
-  set(dictId: string, term: string, value: { definition: string; pinyin?: string }): void {
+  set(dictId: string, term: string, value: { definition: string; pinyin?: string; name?: string }): void {
     const key = makeTermCacheKey(dictId, term)
     const entry: CachedEntry = {
       definition: value.definition,
       pinyin: value.pinyin ?? '',
+      name: value.name ?? '',
       ts: Date.now()
     }
     if (this.entryBytes(key, entry) > this.limits.maxEntryBytes) return
@@ -141,7 +168,17 @@ export class TermCache {
   }
 
   private entryBytes(key: string, entry: CachedEntry): number {
-    return byteLen(key) + byteLen(entry.definition) + byteLen(entry.pinyin)
+    return byteLen(key) + byteLen(entry.definition) + byteLen(entry.pinyin) + byteLen(entry.name)
+  }
+
+  /** 兼容旧版落盘数据（缺 `name` 字段）——补齐默认值。 */
+  private normalize(entry: CachedEntry): CachedEntry {
+    return {
+      definition: entry.definition,
+      pinyin: entry.pinyin ?? '',
+      name: entry.name ?? '',
+      ts: entry.ts
+    }
   }
 
   private totalBytes(): number {

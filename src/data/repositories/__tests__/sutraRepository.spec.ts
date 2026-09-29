@@ -17,7 +17,6 @@ describe('sutraRepository', () => {
   it('fetchSutra 请求 sutras/{filename}', async () => {
     const sutra: SutraSource = {
       title: '心经',
-      filename: 'heart.json',
       author: '玄奘',
       category: 'prajna',
       chapterCount: 1,
