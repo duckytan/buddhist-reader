@@ -89,7 +89,11 @@
  */
 
 import BaseSheet from '@/components/common/BaseSheet.vue'
-import { FONT_SIZE_SCALE, LINE_HEIGHT_SCALE, useReaderSettings } from '@/composables/useReaderSettings'
+import {
+  FONT_SIZE_STEPS,
+  LINE_HEIGHT_STEPS,
+  useReaderSettings
+} from '@/composables/useReaderSettings'
 import type { ThemeName } from '@/types/reader'
 
 interface Props {
@@ -116,8 +120,8 @@ const {
   setTheme
 } = useReaderSettings()
 
-const fontSteps = FONT_SIZE_SCALE.length
-const lineSteps = LINE_HEIGHT_SCALE.length
+const fontSteps = FONT_SIZE_STEPS
+const lineSteps = LINE_HEIGHT_STEPS
 
 const themes: ReadonlyArray<{ value: ThemeName; label: string }> = [
   { value: 'paper', label: '宣纸' },

@@ -43,14 +43,20 @@ export interface UseSearch {
   clear(): void
 }
 
-/** 截取 ≤`SEARCH_CONTEXT_CHARS` 字、且包含关键词的上下文窗口。 */
+/**
+ * 截取包含关键词的上下文窗口。
+ *
+ * 「含关键词」是**硬**不变量（用户靠它理解这条为何命中）；「≤`SEARCH_CONTEXT_CHARS` 字」
+ * 是**软**目标——冲突时软目标让位，窗口至少容纳完整关键词（F-3）。
+ */
 function makeContext(text: string, index: number, keywordLength: number): string {
-  if (text.length <= SEARCH_CONTEXT_CHARS) return text
-  const pad = Math.max(0, SEARCH_CONTEXT_CHARS - keywordLength)
+  const window = Math.max(SEARCH_CONTEXT_CHARS, keywordLength)
+  if (text.length <= window) return text
+  const pad = Math.max(0, window - keywordLength)
   const before = Math.floor(pad / 2)
-  const maxStart = text.length - SEARCH_CONTEXT_CHARS
+  const maxStart = text.length - window
   const start = Math.max(0, Math.min(index - before, maxStart))
-  return text.slice(start, start + SEARCH_CONTEXT_CHARS)
+  return text.slice(start, start + window)
 }
 
 /**

@@ -9,7 +9,8 @@
         'seg--search': segment.type === 'search'
       }"
       :data-off="segment.off"
-      :data-hit="segment.type === 'text' ? null : ''"
+      :data-hit="segment.type === 'term' ? '' : null"
+      :data-search="segment.type === 'search' ? '' : null"
       @click="onSegmentClick(segment)"
     >{{ segment.content }}</span>
   </span>
@@ -19,10 +20,14 @@
 /**
  * 分段文本（方案 §6.1 ② / §8.3）。
  *
- * **渲染期携带数据坐标**：把 `Segment.off`（数据模型中的字符偏移）写入 `data-off`，
- * 命中段（`term`/`search`）另标 `data-hit`。定位时由 `scrollToAnchor` 直接
- * `querySelector('[data-off][data-hit]')` 取元素——**无需反查 DOM、无 TreeWalker**
- * （§6.1 开篇：旧版 61 行脆弱定位代码的根因）。
+ * **渲染期携带数据坐标**：把 `Segment.off`（数据模型中的字符偏移）写入 `data-off`；
+ * `term` 段另标 `data-hit`、`search` 段另标 **`data-search`**（两者**语义独立**，不共用
+ * 同一属性）。定位时由 `scrollToAnchor` 直接 `querySelector('[data-off][data-search]')`
+ * 取元素——**无需反查 DOM、无 TreeWalker**（§6.1 开篇：旧版 61 行脆弱定位代码的根因）。
+ *
+ * 口径纪律：`data-hit`/`data-search` 共用同一属性**当前在正常流程下不可达**
+ * （`applySearch` 对命中区间强制写 `'search'`，覆盖同位置的 `term`，故命中偏移处不会
+ * 有 `term` 段起头）。这是**潜在**歧义、非已发生的 bug——拆分为独立属性以消除该歧义。
  *
  * 交互：点击 `term` 段 → `emit('termClick', term)`，由上层打开查词弹窗（T08 接入）。
  */

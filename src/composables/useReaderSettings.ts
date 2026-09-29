@@ -9,18 +9,25 @@
  * （0..4，默认 2 = 1.65）、主题默认 `paper`——与 `settingsService` 常量一致。
  * 默认档位复现 `tokens.css` 的 `--text-body-lg`(18px) / `--leading-body`(1.65)，故
  * 「不设置即无视觉变化」。
+ *
+ * N-5：档位刻度与档位数**上提至 `settingsService`**（单一真源，档数由其刻度长度派生）；
+ * 本文件仅 `import` 并 **re-export**，以保持「组件 → composable」依赖方向（§2.1）。
  */
 
 import { computed } from 'vue'
 import type { ComputedRef, CSSProperties } from 'vue'
 
+import {
+  FONT_SIZE_SCALE,
+  FONT_SIZE_STEPS,
+  LINE_HEIGHT_SCALE,
+  LINE_HEIGHT_STEPS
+} from '@/services/settingsService'
 import { useSettingsStore } from '@/stores/settings'
 import type { ReaderSettings, ThemeName } from '@/types/reader'
 
-/** 字号档位（px；长度 = FONT_SIZE_STEPS = 7） */
-export const FONT_SIZE_SCALE: readonly number[] = [15, 16, 17, 18, 20, 22, 24]
-/** 行距档位（无单位；长度 = LINE_HEIGHT_STEPS = 5） */
-export const LINE_HEIGHT_SCALE: readonly number[] = [1.45, 1.55, 1.65, 1.8, 2.0]
+// 单一真源在 `settingsService`；此处 re-export 供组件/测试消费（不直连 services，守 §2.1）
+export { FONT_SIZE_SCALE, FONT_SIZE_STEPS, LINE_HEIGHT_SCALE, LINE_HEIGHT_STEPS }
 
 export interface UseReaderSettings {
   /** 当前设置（响应式） */
@@ -66,7 +73,7 @@ export function useReaderSettings(): UseReaderSettings {
   const canIncreaseFontSize = computed<boolean>(() => store.canIncreaseFontSize)
   const canDecreaseFontSize = computed<boolean>(() => store.canDecreaseFontSize)
   const canIncreaseLineHeight = computed<boolean>(
-    () => store.lineHeightIndex < LINE_HEIGHT_SCALE.length - 1
+    () => store.lineHeightIndex < LINE_HEIGHT_STEPS - 1
   )
   const canDecreaseLineHeight = computed<boolean>(() => store.lineHeightIndex > 0)
 

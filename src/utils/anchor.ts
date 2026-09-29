@@ -58,34 +58,45 @@ export function toElementId(globalId: string): string {
 export interface ScrollAnchor {
   /** 目标段落 `globalId`（`${sutraId}:${chapterIdx}:${paraIdx}`） */
   globalId: string
-  /** 段内字符偏移（命中元素 `[data-off][data-hit]`）；null/省略则定位到段落本身 */
+  /** 段内字符偏移（命中元素 `[data-off][data-search]`）；null/省略则定位到段落本身 */
   offset?: number | null
 }
+
+/**
+ * 滚动结果（区分「精确命中」与「降级到段落」，调用方可据此降级）。
+ * - `'exact'`：精确命中段内 `[data-off][data-search]` 命中元素；
+ * - `'paragraph'`：找到段落，但该 offset 的命中元素不存在 → 回退到段落元素；
+ * - `'none'`：`getElementById` 失败（目标段落不存在）。
+ */
+export type ScrollResult = 'exact' | 'paragraph' | 'none'
 
 /**
  * 滚动到锚点（§6.1 ③ 的「CSS 锚点」实现）。
  *
  * 步骤：
  * 1. `getElementById(toElementId(globalId))` 取目标段落（全局唯一，无歧义）；
- * 2. 若给定 `offset`，优先取段内 `[data-off="${offset}"][data-hit]` 命中元素；
+ * 2. 若给定 `offset`，优先取段内 `[data-off="${offset}"][data-search]` **搜索命中**元素
+ *    （`data-search` 仅 `search` 段携带，与 `term` 段的 `data-hit` 消歧）；
  * 3. `scrollIntoView({ block: 'start' })`——header 偏移由目标元素上的
  *    `scroll-margin-top: var(--reader-header-height)` 承担，**不使用任何魔法偏移**，
  *    也**不 `getBoundingClientRect`**。
  *
- * @returns 是否找到目标元素（未找到返回 false，调用方可据此降级）
+ * @returns `'exact'`（精确命中）/ `'paragraph'`（回退段落）/ `'none'`（段落不存在）
  */
-export function scrollToAnchor(anchor: ScrollAnchor): boolean {
+export function scrollToAnchor(anchor: ScrollAnchor): ScrollResult {
   const element = document.getElementById(toElementId(anchor.globalId))
-  if (!element) return false
+  if (!element) return 'none'
 
-  let target: Element = element
   const offset = anchor.offset ?? null
   if (offset !== null) {
-    const hit = element.querySelector(`[data-off="${offset}"][data-hit]`)
-    if (hit) target = hit
+    const hit = element.querySelector(`[data-off="${offset}"][data-search]`)
+    if (hit) {
+      hit.scrollIntoView({ block: 'start' })
+      return 'exact'
+    }
   }
-  target.scrollIntoView({ block: 'start' })
-  return true
+  element.scrollIntoView({ block: 'start' })
+  return 'paragraph'
 }
 
 /**

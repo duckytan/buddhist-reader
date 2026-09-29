@@ -22,21 +22,21 @@ describe('anchor（DOM 封装 · §6.1 ③ / §11）', () => {
     expect(parseGlobalId(globalId)).toEqual({ sutraId: '心经.json', chapterIdx: 1, paraIdx: 2 })
   })
 
-  it('scrollToAnchor：定位到段落（无 offset）', () => {
+  it('scrollToAnchor：定位到段落（无 offset）→ paragraph', () => {
     const para = document.createElement('p')
     para.id = toElementId('x.json:0:0')
     document.body.appendChild(para)
 
-    expect(scrollToAnchor({ globalId: 'x.json:0:0' })).toBe(true)
+    expect(scrollToAnchor({ globalId: 'x.json:0:0' })).toBe('paragraph')
     expect(para.scrollIntoView).toHaveBeenCalledWith({ block: 'start' })
   })
 
-  it('scrollToAnchor：优先定位段内 [data-off][data-hit] 命中元素', () => {
+  it('scrollToAnchor：优先定位段内 [data-off][data-search] 命中元素 → exact', () => {
     const para = document.createElement('p')
     para.id = toElementId('x.json:0:0')
     const span = document.createElement('span')
     span.setAttribute('data-off', '3')
-    span.setAttribute('data-hit', '')
+    span.setAttribute('data-search', '')
     para.appendChild(span)
     document.body.appendChild(para)
 
@@ -46,13 +46,33 @@ describe('anchor（DOM 封装 · §6.1 ③ / §11）', () => {
     para.scrollIntoView = paraSpy
     span.scrollIntoView = spanSpy
 
-    expect(scrollToAnchor({ globalId: 'x.json:0:0', offset: 3 })).toBe(true)
+    expect(scrollToAnchor({ globalId: 'x.json:0:0', offset: 3 })).toBe('exact')
     expect(spanSpy).toHaveBeenCalledWith({ block: 'start' })
     expect(paraSpy).not.toHaveBeenCalled()
   })
 
-  it('scrollToAnchor：目标不存在返回 false', () => {
-    expect(scrollToAnchor({ globalId: 'missing:0:0' })).toBe(false)
+  it('scrollToAnchor：给定 offset 但段内无 [data-search] → 回退段落并返回 paragraph（非假装成功）', () => {
+    const para = document.createElement('p')
+    para.id = toElementId('x.json:0:0')
+    // 同位置只有 term 段（data-hit，无 data-search）——不得被当作搜索命中
+    const termSpan = document.createElement('span')
+    termSpan.setAttribute('data-off', '3')
+    termSpan.setAttribute('data-hit', '')
+    para.appendChild(termSpan)
+    document.body.appendChild(para)
+
+    const paraSpy = vi.fn()
+    const termSpy = vi.fn()
+    para.scrollIntoView = paraSpy
+    termSpan.scrollIntoView = termSpy
+
+    expect(scrollToAnchor({ globalId: 'x.json:0:0', offset: 3 })).toBe('paragraph')
+    expect(paraSpy).toHaveBeenCalledWith({ block: 'start' })
+    expect(termSpy).not.toHaveBeenCalled()
+  })
+
+  it('scrollToAnchor：目标不存在 → none', () => {
+    expect(scrollToAnchor({ globalId: 'missing:0:0' })).toBe('none')
   })
 
   it('setScrollTop：写入滚动位置并夹紧到非负', () => {

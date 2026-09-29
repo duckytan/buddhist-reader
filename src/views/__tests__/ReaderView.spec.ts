@@ -126,11 +126,11 @@ describe('ReaderView（§8.1 / §8.3 集成）', () => {
     await input.setValue('般若')
     await nextTick()
 
-    // 命中渲染为 search 段（携带 data-off / data-hit）
+    // 命中渲染为 search 段（携带 data-off / data-search）
     const searchSeg = wrapper.find('.seg--search')
     expect(searchSeg.exists()).toBe(true)
     expect(searchSeg.attributes('data-off')).toBe('3')
-    expect(searchSeg.attributes('data-hit')).toBe('')
+    expect(searchSeg.attributes('data-search')).toBe('')
 
     ;(Element.prototype.scrollIntoView as ReturnType<typeof vi.fn>).mockClear()
     await wrapper.find('.search__result').trigger('click')

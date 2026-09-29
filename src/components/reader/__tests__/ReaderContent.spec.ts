@@ -71,7 +71,7 @@ describe('ReaderContent', () => {
     expect(wrapper.findAll('.para')).toHaveLength(4)
   })
 
-  it('搜索命中叠加为 search 段（data-off/data-hit，供 §8.3 精确跳转）', () => {
+  it('搜索命中叠加为 search 段（data-off/data-search，供 §8.3 精确跳转）', () => {
     const wrapper = mount(ReaderContent, {
       props: {
         sutra: makeSutra(),
@@ -83,7 +83,46 @@ describe('ReaderContent', () => {
     const segment = wrapper.find('.seg--search')
     expect(segment.exists()).toBe(true)
     expect(segment.attributes('data-off')).toBe('3')
-    expect(segment.attributes('data-hit')).toBe('')
+    expect(segment.attributes('data-search')).toBe('')
     expect(segment.text()).toBe('般若')
+  })
+
+  it('F-2：相邻命中各自成段（「般若般若」搜「般若」→ data-off 0 与 2 都在）', () => {
+    const sutra = makeSutra()
+    const paragraph = sutra.chapters[0]?.paragraphs[0]
+    if (paragraph) paragraph.text = '般若般若'
+
+    const wrapper = mount(ReaderContent, {
+      props: {
+        sutra,
+        searchHits: [
+          { globalId: 'x.json:0:0', paraOffset: 0, context: '般若般若' },
+          { globalId: 'x.json:0:0', paraOffset: 2, context: '般若般若' }
+        ],
+        searchKeyword: '般若'
+      }
+    })
+
+    // 旧的「仅按 type 合并」实现会塌成单段 search@0 → 此断言必红
+    expect(wrapper.findAll('.seg--search')).toHaveLength(2)
+    expect(wrapper.findAll('[data-off="0"][data-search]')).toHaveLength(1)
+    expect(wrapper.findAll('[data-off="2"][data-search]')).toHaveLength(1)
+  })
+
+  it('N-4：searchHits 非空但 searchKeyword 为空 → 不产生 search 段（同位置 term 段不被误当命中）', () => {
+    const wrapper = mount(ReaderContent, {
+      props: {
+        sutra: makeSutra(),
+        terms: ['般若'],
+        searchHits: [{ globalId: 'x.json:0:0', paraOffset: 3, context: 'x' }],
+        searchKeyword: ''
+      }
+    })
+
+    expect(wrapper.find('.seg--search').exists()).toBe(false)
+    expect(wrapper.findAll('[data-search]')).toHaveLength(0)
+    // 同位置的 term 段仍在（data-hit），但**不会**匹配 [data-search] → scrollToAnchor 只会降级到段落
+    expect(wrapper.find('[data-off="3"][data-hit]').exists()).toBe(true)
+    expect(wrapper.find('[data-off="3"][data-search]').exists()).toBe(false)
   })
 })

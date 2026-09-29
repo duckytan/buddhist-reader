@@ -246,7 +246,7 @@ function onJumpChapter(index: number): void {
   void scrollToTarget({ globalId: makeGlobalId(sutraId.value, index, 0), offset: null })
 }
 
-/** 搜索结果跳转：定位到命中段内 `[data-off][data-hit]`（§8.3 精确跳转） */
+/** 搜索结果跳转：定位到命中段内 `[data-off][data-search]`（§8.3 精确跳转） */
 function onJumpHit(hit: SearchHit): void {
   closePanel()
   void scrollToTarget({ globalId: hit.globalId, offset: hit.paraOffset })

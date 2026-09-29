@@ -68,6 +68,20 @@ describe('useSearch（§8.3）', () => {
     expect(hit?.context).toContain('般若')
   })
 
+  it('F-3：关键词 > 20 字时上下文仍含完整关键词（软目标让位硬不变量）', () => {
+    const keyword = '般'.repeat(25)
+    const sutra = ref<Sutra | null>(
+      makeSutra([{ id: 'p1', text: `一二三四五${keyword}六七八九十` }])
+    )
+    const { search } = useSearch(sutra)
+
+    const hit = search(keyword)[0]
+
+    expect(hit).toBeDefined()
+    expect(hit?.context).toContain(keyword) // 完整关键词（旧实现窗口 20 < 25 → 必失配）
+    expect(hit?.context.length).toBeGreaterThan(SEARCH_CONTEXT_CHARS)
+  })
+
   it('上限 50 条', () => {
     // 关键词须 ≥2 字（§8.3），故用「空空」重复：120 字 → 60 处非重叠命中 → 截断为 50。
     const sutra = ref<Sutra | null>(makeSutra([{ id: 'p1', text: '空空'.repeat(60) }]))

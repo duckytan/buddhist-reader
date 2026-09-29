@@ -11,10 +11,20 @@
 import { STORAGE_KEYS, readJson, writeJson } from '@/data/storage'
 import type { ReaderSettings, ThemeName } from '@/types/reader'
 
-/** 字号档位总数（索引 0..6，默认 3 居中） */
-export const FONT_SIZE_STEPS = 7
-/** 行距档位总数（索引 0..4，默认 2 居中） */
-export const LINE_HEIGHT_STEPS = 5
+/**
+ * 字号档位刻度（px）。**长度即档位数**——`FONT_SIZE_STEPS` 由其派生（单一真源，N-5）。
+ * 默认索引 3 对应 `--text-body-lg`(18px)。
+ */
+export const FONT_SIZE_SCALE: readonly number[] = [15, 16, 17, 18, 20, 22, 24]
+/**
+ * 行距档位刻度（无单位倍数）。**长度即档位数**——`LINE_HEIGHT_STEPS` 由其派生（N-5）。
+ * 默认索引 2 对应 `--leading-body`(1.65)。
+ */
+export const LINE_HEIGHT_SCALE: readonly number[] = [1.45, 1.55, 1.65, 1.8, 2.0]
+/** 字号档位总数（索引 0..6，默认 3 居中）——派生自 `FONT_SIZE_SCALE`，杜绝双真源漂移 */
+export const FONT_SIZE_STEPS = FONT_SIZE_SCALE.length
+/** 行距档位总数（索引 0..4，默认 2 居中）——派生自 `LINE_HEIGHT_SCALE`，杜绝双真源漂移 */
+export const LINE_HEIGHT_STEPS = LINE_HEIGHT_SCALE.length
 /** 合法主题（4 套，§6.7） */
 export const THEME_NAMES: readonly ThemeName[] = ['paper', 'night', 'eye-care', 'day']
 

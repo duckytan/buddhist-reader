@@ -19,17 +19,19 @@ describe('SegmentText（§6.1 ②）', () => {
     expect(spans[0]?.attributes('data-hit')).toBeUndefined()
     expect(spans[1]?.attributes('data-off')).toBe('3')
     expect(spans[1]?.attributes('data-hit')).toBe('')
+    expect(spans[1]?.attributes('data-search')).toBeUndefined()
     expect(spans[1]?.classes()).toContain('seg--term')
     expect(wrapper.text()).toBe('观自在般若。')
   })
 
-  it('search 段同样标记 data-hit', () => {
+  it('search 段标记 data-search（与 term 的 data-hit 消歧）', () => {
     const wrapper = mount(SegmentText, {
       props: { segments: [{ type: 'search', content: '空', off: 7 }] }
     })
     const span = wrapper.find('.seg')
     expect(span.attributes('data-off')).toBe('7')
-    expect(span.attributes('data-hit')).toBe('')
+    expect(span.attributes('data-search')).toBe('')
+    expect(span.attributes('data-hit')).toBeUndefined()
     expect(span.classes()).toContain('seg--search')
   })
 

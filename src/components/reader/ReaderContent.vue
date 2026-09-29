@@ -108,15 +108,22 @@ const searchOffsets = computed<Map<string, number[]>>(() => {
 })
 
 /**
- * 把搜索命中叠加到基础分段：命中范围标为 `search`（携带 `data-off`/`data-hit`），
- * 供 §8.3 点击结果后 `scrollToAnchor` 精确命中 `[data-off][data-hit]`。
+ * 把搜索命中叠加到基础分段：命中范围标为 `search`（携带 `data-off`/`data-search`），
+ * 供 §8.3 点击结果后 `scrollToAnchor` 精确命中 `[data-off][data-search]`。
+ *
+ * - **F-2**：每个命中**各自成段**（命中起/止为强制断点，禁止跨命中合并）——否则
+ *   相邻命中（如「般若般若」搜「般若」）会塌成单段、仅首个 `data-off` 存在，其余降级整段。
+ * - **N-4**：`keywordLength <= 0`（`searchHits` 非空但 `searchKeyword` 为空）时不产生任何
+ *   `search` 段，直接返回 base，杜绝「`[data-off][data-search]` 误匹配同位置 `term` 段」。
  */
 function applySearch(
   text: string,
   base: Segment[] | null,
   offsets: number[],
   keywordLength: number
-): Segment[] {
+): Segment[] | null {
+  if (keywordLength <= 0) return base
+
   const types: SegmentType[] = new Array<SegmentType>(text.length).fill('text')
   if (base) {
     for (const segment of base) {
@@ -125,8 +132,11 @@ function applySearch(
       }
     }
   }
+  const boundaries = new Set<number>()
   for (const offset of offsets) {
     const end = Math.min(offset + keywordLength, text.length)
+    boundaries.add(offset)
+    boundaries.add(end)
     for (let i = offset; i < end; i += 1) types[i] = 'search'
   }
   const merged: Segment[] = []
@@ -134,7 +144,7 @@ function applySearch(
   while (i < text.length) {
     const type = types[i] ?? 'text'
     let j = i + 1
-    while (j < text.length && types[j] === type) j += 1
+    while (j < text.length && types[j] === type && !boundaries.has(j)) j += 1
     merged.push({ type, content: text.slice(i, j), off: i })
     i = j
   }

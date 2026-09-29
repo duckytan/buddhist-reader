@@ -19,7 +19,8 @@
  *
  * - ① 段落 DOM id = `toElementId(globalId)`（全局唯一，`globalId` 由 `sutraService`
  *   运行时派生，跨章不重复）；
- * - ② 高亮分段经 `SegmentText` 携带 `data-off`/`data-hit`（无命中则纯文本）；
+ * - ② 高亮分段经 `SegmentText` 携带 `data-off`（`term` 段另标 `data-hit`、`search` 段另标
+ *   `data-search`；无命中则纯文本）；
  * - ③ `scroll-margin-top: var(--reader-header-height)`——滚动定位由 CSS 锚点承担，
  *   **不使用 `getBoundingClientRect` + 魔法偏移**。
  *
