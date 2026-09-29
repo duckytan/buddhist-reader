@@ -70,7 +70,7 @@ export default [
     }
   },
   {
-    // CommonJS 配置/脚本文件（如 .eslintrc.cjs）：声明 CJS 全局
+    // CommonJS 脚本文件（如 scripts/*.cjs）：声明 CJS 全局
     files: ['**/*.cjs'],
     languageOptions: {
       sourceType: 'commonjs',

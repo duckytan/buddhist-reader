@@ -62,7 +62,7 @@ const emit = defineEmits<{ close: [] }>()
 .base-sheet__mask {
   position: absolute;
   inset: 0;
-  background-color: rgb(0 0 0 / 35%);
+  background-color: var(--color-mask);
 }
 
 .base-sheet__panel {

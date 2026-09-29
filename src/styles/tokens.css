@@ -25,6 +25,9 @@
   --color-warning: #c49a6c;
   --color-error: #a85656;
 
+  /* 遮罩层（弹层/浮层背景，如 BaseSheet 的 mask） */
+  --color-mask: rgb(0 0 0 / 35%);
+
   --font-serif: 'Noto Serif SC', 'Source Han Serif SC', Georgia, serif;
   --font-sans: 'Noto Sans SC', 'Source Han Sans SC', system-ui, sans-serif;
   --font-mono: 'Noto Sans Mono', ui-monospace, monospace;
