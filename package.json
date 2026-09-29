@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "guard": "node scripts/guard-forbidden.mjs",
+    "budget": "node scripts/check-bundle-budget.mjs"
   },
   "dependencies": {
     "@vue/devtools-api": "^8.1.5",
