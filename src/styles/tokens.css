@@ -73,6 +73,9 @@
   --max-reading-width: 680px;
   --reading-padding: 40px;
 
+  /* 阅读器顶栏高度（T06 引入，供 scroll-margin-top 消除魔法偏移；T07 ReaderHeader 可据实调整） */
+  --reader-header-height: 56px;
+
   --breakpoint-phone: 480px;
   --breakpoint-tablet: 768px;
   --breakpoint-desktop: 1024px;

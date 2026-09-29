@@ -129,5 +129,15 @@ export default [
     rules: {
       'no-console': 'off'
     }
+  },
+  {
+    // 测试文件（jsdom 环境）需直接操作 `document` 以搭建 DOM fixture（如
+    // `attachTo: document.body`、`document.createElement`）。§11 的
+    // `no-restricted-globals` 面向**生产**代码，测试不随产物发布，故此处放行；
+    // `no-restricted-syntax`（createTreeWalker / getBoundingClientRect）仍生效。
+    files: ['**/__tests__/**/*.{ts,tsx}', '**/*.{spec,test}.{ts,tsx}'],
+    rules: {
+      'no-restricted-globals': 'off'
+    }
   }
 ]
