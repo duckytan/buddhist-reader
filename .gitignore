@@ -39,3 +39,8 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+
+# 词典生成物（禁止入库，构建期产物；见 scripts/guard-forbidden.mjs）
+src/data/dictIndex.js
+public/dict-chunks/
+public/dict-defs/

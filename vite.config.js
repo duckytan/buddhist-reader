@@ -15,16 +15,8 @@ try {
   commitHash = execSync('git rev-parse --short HEAD').toString().trim()
 } catch (e) { /* ignore */ }
 
-function buildDictIndexPlugin() {
-  return {
-    name: 'build-dict-index',
-    buildStart() {
-      console.log('[build-dict-index] Generating dict index...')
-      execSync('node scripts/build-dict-index.cjs', { stdio: 'inherit' })
-    }
-  }
-}
-
+// 注意：v4.0 起词典数据改由 public/ 下的静态分片按需提供，
+// 构建期不再生成内联的 20.8MB 索引产物（禁止复活，见 scripts/guard-forbidden.mjs）。
 export default defineConfig(({ mode }) => {
   const base = mode === 'ghpages' ? '/buddhist-reader/' : '/'
   return {
@@ -33,7 +25,7 @@ export default defineConfig(({ mode }) => {
       __APP_VERSION__: JSON.stringify(version),
       __COMMIT_HASH__: JSON.stringify(commitHash)
     },
-    plugins: [vue(), buildDictIndexPlugin()],
+    plugins: [vue()],
     server: {
       host: true,
       allowedHosts: ['.monkeycode-ai.online']
