@@ -1,0 +1,320 @@
+<template>
+  <div
+    ref="pageRef"
+    class="reader-page"
+  >
+    <div
+      v-if="loader.loading.value"
+      class="reader-page__loading"
+    >
+      <p class="reader-page__loading-text">
+        加载中...
+      </p>
+    </div>
+
+    <div
+      v-else-if="loader.error.value"
+      class="reader-page__error"
+    >
+      <p>加载失败: {{ loader.error.value }}</p>
+      <button
+        class="reader-page__retry"
+        @click="loader.retry(filename)"
+      >
+        重试
+      </button>
+    </div>
+
+    <template v-else-if="sutraStore.currentSutra">
+      <ReaderHeader
+        :title="sutraStore.currentSutra.title"
+        @go-back="goBack"
+        @toggle-settings="readerStore.showSettings = true"
+        @toggle-search="showSearch = true"
+        @toggle-t-o-c="readerStore.showTOC = true"
+        @add-bookmark="addBookmark"
+        @add-note="startNote"
+        @toggle-dict-selector="showDictSelector = true"
+      />
+      <ReaderContent
+        :key="dictStore.refreshKey"
+        ref="contentRef"
+        :chapters="sutraStore.currentSutra.chapters"
+        :initial-position="progress.savedPosition.value"
+        :search-keyword="searchKeyword"
+        @progress="onProgress"
+        @term-click="onTermClick"
+      />
+      <ReaderProgress :percent="progressPercent" />
+      <ReaderTOC
+        :chapters="sutraStore.currentSutra.chapters"
+        @jump="onJumpChapter"
+        @jump-para="onJumpPara"
+      />
+      <ReaderSettings
+        :visible="readerStore.showSettings"
+        @close="readerStore.showSettings = false"
+      />
+      <ReaderSearch
+        :visible="showSearch"
+        :chapters="sutraStore.currentSutra.chapters"
+        @close="showSearch = false; searchKeyword = ''"
+        @jump="onSearchJump"
+        @keyword-change="onKeywordChange"
+      />
+      <ReaderNotes
+        ref="notesRef"
+        :visible="showNotes"
+        :sutra-id="filename"
+        @close="showNotes = false"
+      />
+      <DictPopup
+        :visible="showDictPopup"
+        :term="lookupTerm"
+        :results="lookupResults"
+        :loading="lookupLoading"
+        @close="showDictPopup = false"
+      />
+      <ReaderDictSelector
+        :visible="showDictSelector"
+        :manifest="dictManifest"
+        @close="showDictSelector = false"
+      />
+      <div
+        v-if="showSelectionBtn"
+        class="reader-page__selection-btns"
+      >
+        <button
+          class="reader-page__action-btn"
+          @click="lookupSelection"
+        >
+          查释义
+        </button>
+        <button
+          class="reader-page__action-btn"
+          @click="noteSelection"
+        >
+          笔记
+        </button>
+      </div>
+    </template>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useSutraStore } from '../stores/sutra'
+import { useReaderStore } from '../stores/reader'
+import { useDictStore } from '../stores/dict'
+import { useSutraLoader } from '../composables/useSutraLoader'
+import { useReadingProgress } from '../composables/useReadingProgress'
+import { useDictLoader } from '../composables/useDictLoader'
+import { storage } from '../utils/storage'
+import ReaderHeader from '../components/reader/ReaderHeader.vue'
+import ReaderContent from '../components/reader/ReaderContent.vue'
+import ReaderProgress from '../components/reader/ReaderProgress.vue'
+import ReaderTOC from '../components/reader/ReaderTOC.vue'
+import ReaderSettings from '../components/reader/ReaderSettings.vue'
+import ReaderSearch from '../components/reader/ReaderSearch.vue'
+import ReaderNotes from '../components/reader/ReaderNotes.vue'
+import ReaderDictSelector from '../components/reader/ReaderDictSelector.vue'
+import DictPopup from '../components/dict/DictPopup.vue'
+
+const route = useRoute()
+const router = useRouter()
+const sutraStore = useSutraStore()
+const readerStore = useReaderStore()
+const dictStore = useDictStore()
+const loader = useSutraLoader()
+const dictLoader = useDictLoader()
+const contentRef = ref(null)
+const notesRef = ref(null)
+const pageRef = ref(null)
+const progressPercent = ref(0)
+const showSearch = ref(false)
+const showNotes = ref(false)
+const showDictSelector = ref(false)
+const searchKeyword = ref('')
+const dictManifest = ref([])
+
+const filename = computed(() => decodeURIComponent(route.params.id))
+const progress = useReadingProgress(filename)
+
+const showDictPopup = ref(false)
+const lookupTerm = ref('')
+const lookupResults = ref([])
+const lookupLoading = ref(false)
+const showSelectionBtn = ref(false)
+let touchTimer = null
+let readingTimer = null
+
+async function onTermClick(term) {
+  lookupTerm.value = term
+  lookupLoading.value = true
+  showDictPopup.value = true
+  const dictIds = dictStore.getDictIdsForTerm(term)
+  try {
+    lookupResults.value = dictLoader.lookupTerm(term, dictIds)
+  } catch {
+    lookupResults.value = []
+  } finally {
+    lookupLoading.value = false
+  }
+}
+
+function onTouchStart() {
+  touchTimer = setTimeout(() => {
+    const selection = window.getSelection()
+    if (selection && selection.toString().trim().length > 0) showSelectionBtn.value = true
+  }, 500)
+}
+
+function onTouchEnd() {
+  clearTimeout(touchTimer)
+  setTimeout(() => {
+    const selection = window.getSelection()
+    showSelectionBtn.value = selection && selection.toString().trim().length > 0
+  }, 300)
+}
+
+function lookupSelection() {
+  const text = window.getSelection().toString().trim()
+  if (text) onTermClick(text)
+  showSelectionBtn.value = false
+  window.getSelection().removeAllRanges()
+}
+
+function noteSelection() {
+  const text = window.getSelection().toString().trim()
+  if (text && notesRef.value) {
+    showNotes.value = true
+    notesRef.value.startAddNote(text)
+  }
+  showSelectionBtn.value = false
+  window.getSelection().removeAllRanges()
+}
+
+function startNote() {
+  const selection = window.getSelection()
+  const text = selection ? selection.toString().trim() : ''
+  if (text && notesRef.value) {
+    showNotes.value = true
+    notesRef.value.startAddNote(text)
+  } else {
+    showNotes.value = true
+  }
+}
+
+function onProgress(percent) {
+  progressPercent.value = percent
+  progress.save(readerStore.scrollPosition, percent)
+  console.log('[Reader] progress saved, position:', readerStore.scrollPosition, 'percent:', percent)
+}
+
+function onJumpChapter(idx) { if (contentRef.value) contentRef.value.scrollToChapter(idx) }
+function onJumpPara(chapterIdx, paraId) {
+  if (contentRef.value) {
+    contentRef.value.scrollToPara(chapterIdx, paraId)
+  }
+}
+function onSearchJump(chapterIdx, paraId, paraOffset) {
+  console.log('[Reader] onSearchJump - chapterIdx:', chapterIdx, 'paraId:', paraId, 'paraOffset:', paraOffset)
+  showSearch.value = false
+  if (contentRef.value) contentRef.value.scrollToPara(chapterIdx, paraId, paraOffset)
+}
+
+function onKeywordChange(val) {
+  console.log('[Reader] onKeywordChange - received value:', val, 'type:', typeof val, 'length:', val?.length)
+  searchKeyword.value = val
+  console.log('[Reader] onKeywordChange - searchKeyword.value after:', searchKeyword.value)
+}
+
+function addBookmark() {
+  const ch = readerStore.currentChapter
+  const pos = readerStore.scrollPosition
+  const label = `${ch > 0 ? `第${ch + 1}章` : '开头'} - ${progressPercent.value}%`
+  readerStore.addBookmark(filename.value, ch, pos, label)
+}
+
+function goBack() {
+  const from = route.query.from
+  if (from && from.startsWith('/#/')) {
+    router.push(from)
+  } else {
+    router.push('/')
+  }
+}
+
+function startReadingTimer() {
+  readingTimer = setInterval(() => {
+    readerStore.readingTime += 1
+  }, 1000)
+}
+
+function saveReadingTime() {
+  clearInterval(readingTimer)
+  const total = storage.getNumber(`reading-time-${filename.value}`, 0) + readerStore.readingTime
+  storage.setNumber(`reading-time-${filename.value}`, total)
+}
+
+onMounted(() => {
+  console.log('[Reader] mounted, filename:', filename.value)
+  readerStore.reset(filename.value)
+  progress.restore()
+  console.log('[Reader] progress restored, savedPosition:', progress.savedPosition.value)
+  loader.load(filename.value)
+  startReadingTimer()
+  nextTick(() => {
+    if (pageRef.value) {
+      pageRef.value.addEventListener('touchstart', onTouchStart, { passive: true })
+      pageRef.value.addEventListener('touchend', onTouchEnd, { passive: true })
+    }
+  })
+  fetch(`${import.meta.env.BASE_URL}dicts/manifest.json`)
+    .then(r => r.json())
+    .then(data => { dictManifest.value = data })
+    .catch(e => { console.error('Failed to load dict manifest:', e) })
+})
+
+onUnmounted(() => {
+  saveReadingTime()
+  progress.save(readerStore.scrollPosition, progressPercent.value)
+  dictStore.clearCache()
+  dictLoader.clearCache()
+  if (pageRef.value) {
+    pageRef.value.removeEventListener('touchstart', onTouchStart)
+    pageRef.value.removeEventListener('touchend', onTouchEnd)
+  }
+})
+</script>
+
+<style scoped>
+.reader-page {
+  display: flex; flex-direction: column;
+  height: 100vh; height: 100dvh;
+  background: var(--color-canvas);
+}
+.reader-page__loading, .reader-page__error {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex: 1; color: var(--color-ink-muted);
+}
+.reader-page__error { color: var(--color-error); }
+.reader-page__retry {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-lg);
+  background: var(--color-accent);
+  color: var(--color-canvas); border-radius: var(--radius-pill);
+}
+.reader-page__selection-btns {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: var(--spacing-sm); z-index: 25;
+}
+.reader-page__action-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-accent);
+  color: var(--color-canvas); border-radius: var(--radius-pill);
+  font-size: var(--text-body-sm);
+}
+</style>

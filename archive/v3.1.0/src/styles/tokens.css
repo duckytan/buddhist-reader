@@ -1,0 +1,115 @@
+:root {
+  --color-accent: #8b7355;
+  --color-accent-deep: #6b5540;
+  --color-accent-light: #a89279;
+
+  --color-canvas: #ffffff;
+  --color-surface: #f8f7f4;
+  --color-surface-soft: #fafaf8;
+
+  --color-ink: #2c2c2c;
+  --color-ink-muted: #6b6b6b;
+  --color-ink-subtle: #999999;
+
+  --color-hairline: #e8e6e1;
+  --color-hairline-strong: #d0cdc6;
+
+  --color-success: #4a7c59;
+  --color-warning: #c49a6c;
+  --color-error: #a85656;
+
+  --font-serif: 'Noto Serif SC', 'Source Han Serif SC', Georgia, serif;
+  --font-sans: 'Noto Sans SC', 'Source Han Sans SC', system-ui, sans-serif;
+  --font-mono: 'Noto Sans Mono', ui-monospace, monospace;
+
+  --text-display: 40px;
+  --text-h1: 32px;
+  --text-h2: 24px;
+  --text-h3: 20px;
+  --text-body-lg: 18px;
+  --text-body: 17px;
+  --text-body-sm: 14px;
+  --text-caption: 12px;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.25;
+  --leading-normal: 1.30;
+  --leading-relaxed: 1.35;
+  --leading-body: 1.65;
+  --leading-sm: 1.50;
+  --leading-caption: 1.40;
+
+  --tracking-tight: -1px;
+  --tracking-slight-tight: -0.5px;
+  --tracking-normal: 0;
+
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  --spacing-section: 64px;
+
+  --radius-container: 8px;
+  --radius-pill: 9999px;
+
+  --max-content-width: 1280px;
+  --max-reading-width: 680px;
+  --reading-padding: 40px;
+
+  --breakpoint-phone: 480px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+
+  --touch-target: 44px;
+  --button-height: 40px;
+  --input-height: 44px;
+
+  --btn-primary-bg: var(--color-accent);
+  --btn-primary-text: var(--color-canvas);
+  --btn-primary-hover: var(--color-accent-light);
+  --btn-primary-active: var(--color-accent-deep);
+  --btn-secondary-bg: transparent;
+  --btn-secondary-text: var(--color-accent);
+  --btn-secondary-border: var(--color-accent);
+  --btn-ghost-bg: transparent;
+  --btn-ghost-text: var(--color-ink-muted);
+
+  --card-bg: var(--color-canvas);
+  --card-radius: var(--radius-container);
+  --card-padding: var(--spacing-lg);
+  --card-border: 1px solid var(--color-hairline);
+  --card-sutra-padding: var(--spacing-xl);
+  --card-hover-bg: var(--color-surface);
+  --card-hover-border: 1px solid var(--color-hairline-strong);
+
+  --input-bg: var(--color-canvas);
+  --input-text: var(--color-ink);
+  --input-border: 1px solid var(--color-hairline);
+  --input-focus-border: 2px solid var(--color-accent);
+  --input-radius: var(--radius-pill);
+
+  --tag-bg: var(--color-surface);
+  --tag-text: var(--color-ink-muted);
+  --tag-radius: var(--radius-pill);
+  --tag-padding: 4px 12px;
+
+  --tag-prajna-bg: #fff3e0;
+  --tag-prajna-text: #e65100;
+  --tag-yogacara-bg: #e3f2fd;
+  --tag-yogacara-text: #1565c0;
+  --tag-chan-bg: #e8f5e9;
+  --tag-chan-text: #2e7d32;
+  --tag-mantra-bg: #f3e5f5;
+  --tag-mantra-text: #7b1fa2;
+  --tag-general-bg: #f5f5f5;
+  --tag-general-text: #616161;
+  --tag-biography-bg: #fce4ec;
+  --tag-biography-text: #c62828;
+}
