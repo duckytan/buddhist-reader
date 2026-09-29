@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   STORAGE_KEYS,
@@ -47,5 +47,31 @@ describe('storage', () => {
 
   it('jsdom 下 localStorage 可用', () => {
     expect(isStorageAvailable()).toBe(true)
+  })
+
+  it('writeJson：写失败（配额耗尽）→ 返回 false（不谎报成功）', () => {
+    // 让 setItem 抛错，模拟配额耗尽 / 序列化失败
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError')
+    })
+    try {
+      // 红条件（存活变异体 V7a）：若 writeJson 的 catch 改成 `return true`（谎报成功）
+      // → 此处变 true → 红。这是 T10 审计发现「该分支无覆盖」的守护用例。
+      expect(writeJson('br-quota', { a: 1 })).toBe(false)
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
+  it('isStorageAvailable：探测写入抛错 → 返回 false（不可用分支）', () => {
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('SecurityError')
+    })
+    try {
+      // 红条件：若 isStorageAvailable 的 catch 改成 `return true` → 此处变 true → 红
+      expect(isStorageAvailable()).toBe(false)
+    } finally {
+      spy.mockRestore()
+    }
   })
 })

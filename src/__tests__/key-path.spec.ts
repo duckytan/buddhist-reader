@@ -98,11 +98,16 @@ function makeRouter(): Router {
  * 关键路径 E2E（方案 §9 T10 / §14 M4）。
  *
  * **注意**：方案已砍掉 Playwright 套件（建议5 减法），故此处是 **Vitest + jsdom
- * 组件测试**，不是浏览器 E2E。它以**真实 router + 真实 views/stores/services** 串起
- * 主链路，仅 mock 掉网络边界（`sutraService` / `dictService`）与选区读取
- * （jsdom 无法构造真实划选）：
+ * 组件测试**，不是浏览器 E2E。它以**真实 router + 真实 views/stores/ReaderContent/
+ * DictPopup** 串起主链路，但 **mock 掉整个领域服务**（`sutraService` / `dictService`，
+ * **非仅网络 fetch**）与选区读取（jsdom 无法构造真实划选）：
  *
  *   找经（M1）→ 加载（M3）→ 连续滚动（M4）→ 点词查义（M6）→ 批注（M13）→ 回看
+ *
+ * ⚠️ **因此 M3/M6 的领域逻辑不在此文件执行**——本文件验的是「**接线 + 视图消费 stub
+ * 并渲染**」；领域逻辑由各自专属 spec 覆盖（`useSutraLoader.spec` / `sutraService.spec`
+ * / `dictService.spec` / `useDictLookup.spec`）。**不要**把本文件当成「领域逻辑已被 E2E
+ * 验过」的证据。
  */
 describe('关键路径 E2E（jsdom 组件测试）', () => {
   beforeEach(() => {

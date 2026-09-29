@@ -85,16 +85,20 @@ describe('ReaderView（§8.1 / §8.3 集成）', () => {
     mocks.prefetchForChapter.mockResolvedValue(undefined)
   })
 
-  it('加载后渲染经文，并按已存进度用语义锚点定位', async () => {
+  it('加载后渲染经文，并按已存进度恢复定位（语义锚点 + 像素还原）', async () => {
     localStorage.setItem(
       progressKey('x.json'),
-      JSON.stringify({ sutraId: 'x.json', chapterIdx: 0, position: 0, percent: 30, updatedAt: 1 })
+      JSON.stringify({ sutraId: 'x.json', chapterIdx: 0, position: 250, percent: 30, updatedAt: 1 })
     )
 
     const wrapper = await mountReady()
 
     expect(wrapper.find('.para').attributes('id')).toBe('para-x.json:0:0')
+    // 语义锚点路径：章节起点定位
     expect(Element.prototype.scrollIntoView).toHaveBeenCalled()
+    // 像素还原路径：容器 scrollTop 被还原为已存 position
+    // 红条件：去掉 ReaderContent.scrollToProgress 里的 setScrollTop → 此处为 0 → 红
+    expect(wrapper.find('.reader-content').element.scrollTop).toBe(250)
 
     wrapper.unmount()
   })
