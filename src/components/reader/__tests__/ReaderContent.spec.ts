@@ -70,4 +70,20 @@ describe('ReaderContent', () => {
     expect(wrapper.find('.seg-text').exists()).toBe(false)
     expect(wrapper.findAll('.para')).toHaveLength(4)
   })
+
+  it('搜索命中叠加为 search 段（data-off/data-hit，供 §8.3 精确跳转）', () => {
+    const wrapper = mount(ReaderContent, {
+      props: {
+        sutra: makeSutra(),
+        searchHits: [{ globalId: 'x.json:0:0', paraOffset: 3, context: '观自在般若' }],
+        searchKeyword: '般若'
+      }
+    })
+
+    const segment = wrapper.find('.seg--search')
+    expect(segment.exists()).toBe(true)
+    expect(segment.attributes('data-off')).toBe('3')
+    expect(segment.attributes('data-hit')).toBe('')
+    expect(segment.text()).toBe('般若')
+  })
 })

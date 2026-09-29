@@ -8,7 +8,7 @@
  * - 介质：`localStorage`（零新增依赖；**不引入 IndexedDB**，守 scope §1.3）；
  * - 容量：条数 ≤500 / 总字节 ≤512KB / 单条 ≤16KB（超限词条不入缓存）；
  * - 淘汰：LRU（按最近访问时间；写满时逐出最久未用，直至满足双上限）；
- * - 结构：单 key `br-dictcache` = `{ entries: {[key]: {definition,pinyin,ts}}, order: string[] }`，
+ * - 结构：单 key `br-dictcache` = `{ entries: {[key]: {definition,pinyin,name,ts}}, order: string[] }`，
  *   写入**节流**（默认 300ms 尾触发，同进度保存口径），并提供 `flush()` 立即落盘。
  */
 

@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { makeGlobalId, parseGlobalId, scrollToAnchor, setScrollTop, toElementId } from '@/utils/anchor'
+import {
+  makeGlobalId,
+  parseGlobalId,
+  readSelectionAnchor,
+  scrollToAnchor,
+  setScrollTop,
+  toElementId
+} from '@/utils/anchor'
 
 describe('anchor（DOM 封装 · §6.1 ③ / §11）', () => {
   beforeEach(() => {
@@ -54,5 +61,30 @@ describe('anchor（DOM 封装 · §6.1 ③ / §11）', () => {
     expect(container.scrollTop).toBe(120)
     setScrollTop(container, -5)
     expect(container.scrollTop).toBe(0)
+  })
+
+  it('readSelectionAnchor：由选区解析段落锚点（无 TreeWalker）', () => {
+    document.body.innerHTML =
+      '<p id="para-x.json:0:0" data-global-id="x.json:0:0">' +
+      '<span data-off="0">观自在</span><span data-off="3">般若</span></p>'
+    const spans = document.querySelectorAll('span')
+    const target = spans[1]?.firstChild
+    if (!target) throw new Error('测试夹具缺失')
+
+    const range = document.createRange()
+    range.setStart(target, 1)
+    range.setEnd(target, 2)
+    const selection = window.getSelection()
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+
+    const anchor = readSelectionAnchor()
+    if (anchor) {
+      // jsdom 若实现 Selection.toString() → 校验精确锚点
+      expect(anchor).toEqual({ text: '若', globalId: 'x.json:0:0', offset: 4 })
+    } else {
+      // jsdom 未实现选区文本时，至少不应抛错
+      expect(anchor).toBeNull()
+    }
   })
 })

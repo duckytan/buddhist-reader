@@ -49,10 +49,16 @@ const elementId = computed<string>(() => toElementId(props.paragraph.globalId))
   margin: 0 0 var(--spacing-md);
   color: var(--color-ink);
   font-family: var(--font-serif);
-  font-size: var(--text-body-lg);
-  line-height: var(--leading-body);
+  /* 字号/行距来自阅读设置（useReaderSettings → 根元素 CSS 变量），回退到 token 默认 */
+  font-size: var(--reader-font-size, var(--text-body-lg));
+  line-height: var(--reader-line-height, var(--leading-body));
   text-align: justify;
-  /* §6.1 ③：以 CSS 锚点消除 header 魔法偏移（配合 scrollIntoView({block:'start'})） */
-  scroll-margin-top: var(--reader-header-height);
+  /* §6.1 ③：以 CSS 锚点消除 header 魔法偏移（配合 scrollIntoView({block:'start'})）
+     与 .reader-content 的 padding-top 同源，保证「锚定首段 = 初始位置」 */
+  scroll-margin-top: calc(var(--reader-header-height) + var(--spacing-xs));
+}
+
+.para :deep(.seg--term) {
+  cursor: pointer;
 }
 </style>

@@ -49,7 +49,8 @@ import type { ComponentPublicInstance } from 'vue'
 import ParagraphBlock from '@/components/reader/ParagraphBlock.vue'
 import { useHighlighter } from '@/composables/useHighlighter'
 import type { ProgressUpdate } from '@/composables/useReadingProgress'
-import type { Segment } from '@/types/highlight'
+import type { SearchHit } from '@/composables/useSearch'
+import type { Segment, SegmentType } from '@/types/highlight'
 import type { ReadingProgress } from '@/types/reader'
 import type { Sutra } from '@/types/sutra'
 import { makeGlobalId, scrollToAnchor, setScrollTop } from '@/utils/anchor'
@@ -61,11 +62,17 @@ interface Props {
   terms?: string[]
   /** 待恢复的进度（就绪后按语义锚点定位） */
   initialProgress?: ReadingProgress | null
+  /** 当前经内搜索命中（叠加为 `search` 分段，供精确定位） */
+  searchHits?: SearchHit[]
+  /** 当前搜索关键词（用于确定命中长度） */
+  searchKeyword?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   terms: () => [],
-  initialProgress: null
+  initialProgress: null,
+  searchHits: () => [],
+  searchKeyword: ''
 })
 
 const emit = defineEmits<{
@@ -84,12 +91,66 @@ const activeChapter = ref(0)
 const termsRef = computed<string[]>(() => props.terms)
 const { highlight } = useHighlighter(termsRef)
 
-/** 全部段落 → 高亮分段（无命中为 null） */
+/** 搜索命中：globalId → 命中偏移列表 */
+const searchOffsets = computed<Map<string, number[]>>(() => {
+  const map = new Map<string, number[]>()
+  for (const hit of props.searchHits) {
+    const list = map.get(hit.globalId)
+    if (list) list.push(hit.paraOffset)
+    else map.set(hit.globalId, [hit.paraOffset])
+  }
+  return map
+})
+
+/**
+ * 把搜索命中叠加到基础分段：命中范围标为 `search`（携带 `data-off`/`data-hit`），
+ * 供 §8.3 点击结果后 `scrollToAnchor` 精确命中 `[data-off][data-hit]`。
+ */
+function applySearch(
+  text: string,
+  base: Segment[] | null,
+  offsets: number[],
+  keywordLength: number
+): Segment[] {
+  const types: SegmentType[] = new Array<SegmentType>(text.length).fill('text')
+  if (base) {
+    for (const segment of base) {
+      for (let i = segment.off; i < segment.off + segment.content.length; i += 1) {
+        types[i] = segment.type
+      }
+    }
+  }
+  for (const offset of offsets) {
+    const end = Math.min(offset + keywordLength, text.length)
+    for (let i = offset; i < end; i += 1) types[i] = 'search'
+  }
+  const merged: Segment[] = []
+  let i = 0
+  while (i < text.length) {
+    const type = types[i] ?? 'text'
+    let j = i + 1
+    while (j < text.length && types[j] === type) j += 1
+    merged.push({ type, content: text.slice(i, j), off: i })
+    i = j
+  }
+  return merged
+}
+
+/** 全部段落 → 高亮分段（无命中且无搜索命中为 null） */
 const segmentMap = computed<Map<string, Segment[] | null>>(() => {
   const map = new Map<string, Segment[] | null>()
+  const offsets = searchOffsets.value
+  const keywordLength = props.searchKeyword.length
   for (const chapter of props.sutra.chapters) {
     for (const paragraph of chapter.paragraphs) {
-      map.set(paragraph.globalId, highlight(paragraph.text))
+      const base = highlight(paragraph.text)
+      const hits = offsets.get(paragraph.globalId)
+      map.set(
+        paragraph.globalId,
+        hits && hits.length > 0
+          ? applySearch(paragraph.text, base, hits, keywordLength)
+          : base
+      )
     }
   }
   return map
@@ -161,7 +222,8 @@ watch(
   position: relative; /* 使章节 offsetTop 相对本容器，便于活动章节计算 */
   height: 100%;
   overflow-y: auto;
-  padding: var(--spacing-lg) var(--reading-padding) var(--spacing-section);
+  /* 顶栏为覆盖层：预留其高度 + 呼吸位（与 .para 的 scroll-margin-top 同源） */
+  padding: calc(var(--reader-header-height) + var(--spacing-xs)) var(--reading-padding) var(--spacing-section);
   -webkit-overflow-scrolling: touch;
 }
 

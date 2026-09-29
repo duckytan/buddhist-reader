@@ -95,3 +95,48 @@ export function scrollToAnchor(anchor: ScrollAnchor): boolean {
 export function setScrollTop(element: HTMLElement, top: number): void {
   element.scrollTop = Math.max(0, top)
 }
+
+/** 选区锚点（T07 §8.3 / useSelection）：划选文字 → 笔记锚点 */
+export interface SelectionAnchor {
+  /** 划选原文 */
+  text: string
+  /** 所在段落 globalId */
+  globalId: string
+  /** 选区起点在段落内的字符偏移 */
+  offset: number
+}
+
+/**
+ * 读取当前 DOM 选区并解析为段落锚点（供阅读内批注）。
+ *
+ * **不使用 TreeWalker**：段落内每个分段元素都带 `data-off`（§6.1 ②），故
+ * 「段内偏移 = 分段 `data-off` + 选区在文本节点内的偏移」即可算出，无需累加遍历。
+ * 无有效选区（折叠/跨元素异常）返回 null。
+ */
+export function readSelectionAnchor(): SelectionAnchor | null {
+  const selection = globalThis.getSelection()
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return null
+  const text = selection.toString().trim()
+  if (!text) return null
+
+  const range = selection.getRangeAt(0)
+  const startNode = range.startContainer
+  const startElement = startNode.nodeType === 3 ? startNode.parentElement : (startNode as Element)
+  if (!startElement) return null
+
+  const paragraph = startElement.closest('[data-global-id]')
+  const globalId = paragraph?.getAttribute('data-global-id') ?? ''
+  if (!globalId) return null
+
+  const segment = startElement.closest('[data-off]')
+  const segmentOffset = segment ? Number(segment.getAttribute('data-off')) : 0
+  const innerOffset = startNode.nodeType === 3 ? range.startOffset : 0
+  const offset = (Number.isFinite(segmentOffset) ? segmentOffset : 0) + innerOffset
+
+  return { text, globalId, offset }
+}
+
+/** 清除当前选区。 */
+export function clearSelectionAnchor(): void {
+  globalThis.getSelection()?.removeAllRanges()
+}
