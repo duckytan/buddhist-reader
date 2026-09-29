@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { nextTick, watch } from 'vue'
 
 import type { Sutra, SutraMeta } from '@/types/sutra'
 
@@ -75,5 +76,32 @@ describe('stores/sutra', () => {
 
     store.closeSutra()
     expect(store.current).toBeNull()
+  })
+
+  it('§6.⑤ current 为 shallowRef：深嵌套变更不被追踪（大对象不深代理）', async () => {
+    // 独立 fixture，避免污染共享 SUTRA
+    const fresh: Sutra = {
+      ...SUTRA,
+      chapters: [{ title: '正文', paragraphs: [{ id: 'p1', text: 'x', globalId: '心经.json:0:0' }] }]
+    }
+    mocks.loadSutra.mockResolvedValue(fresh)
+    const store = useSutraStore()
+    await store.openSutra('心经.json')
+
+    let triggers = 0
+    watch(
+      () => store.current?.chapters[0]?.paragraphs[0]?.text,
+      () => {
+        triggers += 1
+      }
+    )
+
+    const para = store.current?.chapters[0]?.paragraphs[0]
+    if (para) para.text = 'CHANGED'
+    await nextTick()
+
+    // shallowRef → 嵌套字段读取不被追踪 → 深变更不触发。
+    // 红条件：把 current 改回深 ref（嵌套深代理）→ triggers = 1 → 红。
+    expect(triggers).toBe(0)
   })
 })

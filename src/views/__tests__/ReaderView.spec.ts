@@ -233,4 +233,23 @@ describe('ReaderView（§8.1 / §8.3 集成）', () => {
 
     wrapper.unmount()
   })
+
+  it('§1.5：有跳转目标时**跳转优先**，不恢复进度（二者不打架）', async () => {
+    // 同时种入「进度（500）」与「书签跳转（120）」——位置不同，用于区分谁生效
+    localStorage.setItem(
+      progressKey('x.json'),
+      JSON.stringify({ sutraId: 'x.json', chapterIdx: 0, position: 500, percent: 90, updatedAt: 1 })
+    )
+    mocks.route.query = encodeJumpQuery({ sutraId: 'x.json', chapterIdx: 0, position: 120 })
+
+    const wrapper = await mountReady()
+
+    // 跳转胜出：容器位置 = 跳转目标（120），非进度（500）
+    expect(wrapper.find('.reader-content').element.scrollTop).toBe(120)
+    // 且**只发生一次**定位（仅跳转）。红条件：若不跳过进度恢复，会先恢复(500)再跳转(120)
+    // → scrollToProgress 被调用两次 → 此处 = 2 → 红。
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledTimes(1)
+
+    wrapper.unmount()
+  })
 })

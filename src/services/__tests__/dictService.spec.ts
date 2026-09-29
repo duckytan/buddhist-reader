@@ -181,4 +181,17 @@ describe('dictService', () => {
     expect(repo.fetchIndex).toHaveBeenCalledTimes(1)
     expect(service.isIndexLoaded()).toBe(true)
   })
+
+  it('⑩ M17：loadIndex 只取索引，**不拉任何分片**（首屏不加载全量释义）', async () => {
+    const repo = makeRepo()
+    const service = makeService(repo)
+
+    await service.loadIndex()
+
+    expect(repo.fetchIndex).toHaveBeenCalledTimes(1)
+    // 红条件：若把释义分片随索引一起预取（回到旧版「全量内联」的思路），此处 > 0 → 红
+    expect(repo.fetchChunk).not.toHaveBeenCalled()
+    // 索引就绪即可供高亮词头（释义仍按需）
+    expect(service.getEnabledTerms().length).toBeGreaterThan(0)
+  })
 })
