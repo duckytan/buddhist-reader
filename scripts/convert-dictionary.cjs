@@ -1,7 +1,7 @@
 const fs = require('fs')
 
 const INPUT_FILE = '/workspace/archive/v1.0/public/dictionary.json'
-const OUTPUT_DIR = '/workspace/public/dicts'
+const OUTPUT_DIR = '/workspace/data/dicts'
 
 function main() {
   console.log('读取 dictionary.json...')

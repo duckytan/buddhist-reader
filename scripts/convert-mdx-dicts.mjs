@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 
 const MDX_DIR = '/workspace/archive/v1.0/mdict'
-const OUTPUT_DIR = '/workspace/public/dicts'
+const OUTPUT_DIR = '/workspace/data/dicts'
 
 async function parseMDX(filePath) {
   console.log(`解析中: ${filePath}`)

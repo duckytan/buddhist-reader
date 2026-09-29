@@ -50,8 +50,8 @@
 **现象**: 点击术语后显示"暂无释义"
 
 **排查**:
-1. 检查 `public/dicts/` 目录是否存在
-2. 检查 `public/dicts/manifest.json` 格式
+1. 检查 `data/dicts/` 目录是否存在
+2. 检查 `data/dicts/manifest.json` 格式
 3. 检查词典 JSON 文件是否完整（可能转换中断）
 4. 检查词条是否在词典中存在（大小写敏感）
 

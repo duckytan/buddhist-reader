@@ -138,8 +138,8 @@ src/
 ### 添加词典
 
 1. 准备 JSON 格式词典数据
-2. 放入 `public/dicts/`
-3. 更新 `public/dicts/manifest.json`
+2. 放入 `data/dicts/`
+3. 更新 `data/dicts/manifest.json`
 4. 提交并推送
 
 ## 行为准则

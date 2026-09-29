@@ -74,6 +74,77 @@ function walk(dir, onFile) {
   }
 }
 
+/**
+ * 剥离 JS/TS/CJS 源码中的注释（保留字符串字面量内容）。
+ *
+ * 目的：A 类「禁止模式」断言只应命中**可执行内容**。若对整段原文匹配，
+ * 「在注释里解释该禁令」（如 vite.config.ts 顶部红线说明、.eslintrc.cjs
+ * 的说明块）会被误判为违规——那恰恰是应当鼓励的文档。故先剥离注释再匹配。
+ */
+function stripComments(src) {
+  let out = ''
+  let i = 0
+  const n = src.length
+  let state = null // null | "'" | '"' | '`' | '//' | '/*'
+  while (i < n) {
+    const c = src[i]
+    const c2 = src[i + 1]
+    if (state === null) {
+      if (c === '/' && c2 === '/') {
+        state = '//'
+        i += 2
+        continue
+      }
+      if (c === '/' && c2 === '*') {
+        state = '/*'
+        i += 2
+        continue
+      }
+      if (c === "'" || c === '"' || c === '`') {
+        state = c
+        out += c
+        i++
+        continue
+      }
+      out += c
+      i++
+      continue
+    }
+    if (state === '//') {
+      if (c === '\n') {
+        state = null
+        out += c
+      }
+      i++
+      continue
+    }
+    if (state === '/*') {
+      if (c === '*' && c2 === '/') {
+        state = null
+        i += 2
+        continue
+      }
+      i++
+      continue
+    }
+    // 字符串字面量内部：原样保留，处理转义
+    if (c === '\\') {
+      out += c + (c2 || '')
+      i += 2
+      continue
+    }
+    if (c === state) {
+      state = null
+      out += c
+      i++
+      continue
+    }
+    out += c
+    i++
+  }
+  return out
+}
+
 // ───────────────────────── A 类 · 绝对断言 ─────────────────────────
 
 function assertNoFile(relPath) {
@@ -92,7 +163,8 @@ function assertNoMatch(pattern, regex) {
     return
   }
   for (const abs of files) {
-    const content = fs.readFileSync(abs, 'utf8')
+    // 只匹配可执行内容（剥离注释），避免「注释里解释禁令」被误判
+    const content = stripComments(fs.readFileSync(abs, 'utf8'))
     if (regex.test(content)) {
       failures.push(`[A] 禁止模式命中: ${rel(abs)} 匹配 ${regex}`)
     } else {
@@ -185,6 +257,25 @@ function assertTrackedCount(dirPrefix, baseline) {
   }
 }
 
+/**
+ * B 类 · 单文件「不得入库」断言（精确匹配，无需基线；被跟踪即失败）。
+ * 用于锁定「构建期生成、绝不入库」的确定产物（方案 §12.3）。
+ */
+function assertNotTracked(relPath) {
+  let paths
+  try {
+    paths = getTrackedPaths()
+  } catch (e) {
+    failures.push(`[B] ${e.message}`)
+    return
+  }
+  if (paths.includes(relPath)) {
+    failures.push(`[B] 禁止入库的文件已被跟踪: ${relPath}（生成物不得入库）`)
+  } else {
+    passes.push(`[B] 未入库 ✓ ${relPath}`)
+  }
+}
+
 function assertNoFileInDist(namePattern, maxBytes) {
   const distDir = path.join(ROOT, 'dist')
   if (!fs.existsSync(distDir)) {
@@ -246,6 +337,8 @@ if (baseline) {
   assertTrackedCount('public/dict-chunks/', tracked['public/dict-chunks/'])
   assertTrackedCount('public/dict-defs/', tracked['public/dict-defs/'])
 }
+// 新增索引产物「不得入库」（方案 §12.3；T02 引入 public/dict-index.json 后启用）
+assertNotTracked('public/dict-index.json')
 assertNoFileInDist('*.json', DIST_JSON_MAX_BYTES)
 
 // 汇总输出

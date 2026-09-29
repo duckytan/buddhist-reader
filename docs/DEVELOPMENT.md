@@ -98,7 +98,7 @@ git push
 项目已包含以下数据，无需重新生成：
 
 - **30 部经书**: `public/sutras/*.json`
-- **3 部词典**: `public/dicts/*.json`（35781 条）
+- **3 部词典**: `data/dicts/*.json`（35781 条）
 - **原始 TXT**: `temp-sutras/*.txt`
 
 如需重新转换，使用：
@@ -114,7 +114,7 @@ node scripts/convert-dictionary.cjs  # dictionary.json → 分词典 JSON
 A: 检查 `vite.config.js` 中是否有 `host: true` 和 `allowedHosts`。
 
 ### Q: 词典数据加载失败？
-A: 检查 `public/dicts/` 目录是否存在，且 `manifest.json` 格式正确。
+A: 检查 `data/dicts/` 目录是否存在，且 `manifest.json` 格式正确。
 
 ### Q: 如何添加新的经书？
 A: 将 TXT 文件放入 `temp-sutras/`，运行 `convert-sutras.cjs`，然后提交。

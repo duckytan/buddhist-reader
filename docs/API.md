@@ -80,7 +80,7 @@
 
 ### 单部词典 JSON
 
-文件位置：`public/dicts/{filename}.json`
+文件位置：`data/dicts/{filename}.json`
 
 ```json
 {
@@ -111,7 +111,7 @@
 
 ### 词典清单 Manifest
 
-文件位置：`public/dicts/manifest.json`
+文件位置：`data/dicts/manifest.json`
 
 ```json
 [
@@ -194,7 +194,7 @@ node scripts/convert-dictionary.cjs
 ```
 
 输入：`archive/v1.0/public/dictionary.json`
-输出：`public/dicts/*.json` + `public/dicts/manifest.json`
+输出：`data/dicts/*.json` + `data/dicts/manifest.json`
 
 ---
 

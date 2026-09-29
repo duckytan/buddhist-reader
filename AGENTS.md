@@ -18,7 +18,7 @@
 | Asset | Location | What it has |
 |-------|----------|-------------|
 | Sutra JSON | `public/sutras/*.json` + `manifest.json` | 30 sutras, 578K chars |
-| Dict JSON | `public/dicts/*.json` + `manifest.json` | 3 dictionaries, 35781 entries |
+| Dict JSON | `data/dicts/*.json` + `manifest.json` | 3 dictionaries, 35781 entries |
 | Zen CSS | `archive/v2.0/src/styles/tokens.css`, `base.css`, `vant-override.css` | Design tokens (colors, spacing, typography) |
 | TXT sources | `temp-sutras/*.txt` | Raw text of all 30 sutras (for re-processing) |
 | MDX sources | `archive/v1.0/mdict/*.mdx` | 3 original .mdx dictionary files |
@@ -48,18 +48,18 @@ Config at `.eslintrc.cjs` — Vue 3 + eslint:recommended. Run `npm run lint` bef
   "chapters": [{ "title": "全文", "paragraphs": [{ "id": "p1", "text": "..." }] }] }
 ```
 
-**Dict JSON** (`public/dicts/*.json`):
+**Dict JSON** (`data/dicts/*.json`):
 ```json
 { "name": "中国当代佛教网辞典", "version": "1.0",
   "entries": [{ "term": "般若", "definition": "...", "pinyin": "", "category": "term" }] }
 ```
 
-**Manifest files** (`public/sutras/manifest.json`, `public/dicts/manifest.json`): Arrays of metadata summaries matching the above structure.
+**Manifest files** (`public/sutras/manifest.json`, `data/dicts/manifest.json`): Arrays of metadata summaries matching the above structure.
 
 ## What NOT to do
 
 - Do not follow v1.0 patterns (it was abandoned for good reason)
 - Do not follow v2.0's Service/Store architecture (it had poor module boundaries — that's why v3.0 exists)
-- Do not re-parse .mdx files — the JSON data in `public/dicts/` already has all 35781 entries
+- Do not re-parse .mdx files — the JSON data in `data/dicts/` already has all 35781 entries
 - Do not add emoji to code or responses
 - Do not commit without pushing immediately

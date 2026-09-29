@@ -3,7 +3,7 @@ const path = require('path')
 const { Mdict } = require('mdict-ts')
 
 const MDX_DIR = './archive/v1.0/mdict'
-const OUTPUT_DIR = './public/dicts'
+const OUTPUT_DIR = './data/dicts'
 
 async function parseMDX(filePath) {
   console.log(`解析中: ${filePath}`)
