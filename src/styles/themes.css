@@ -1,0 +1,79 @@
+/**
+ * themes.css — 4 套主题（方案 §6.7 / P0-4 统一为 4 主题）。
+ *
+ * 复用自 archive/v3.1.0/src/styles/themes.css，补齐「日间（day）」。
+ * 主题名：宣纸 paper / 墨夜 night / 护眼 eye-care / 日间 day。
+ * 通过根元素 `data-theme="<name>"` 切换；颜色单一来源（仅覆盖 token，见 tokens.css）。
+ */
+
+/* 宣纸 */
+[data-theme='paper'] {
+  --color-canvas: #f8f7f4;
+  --color-surface: #f0efe6;
+  --color-surface-soft: #f5f4ee;
+
+  --color-ink: #2c2c2c;
+  --color-ink-muted: #6b6b6b;
+  --color-ink-subtle: #999999;
+
+  --color-hairline: #e0ddd4;
+  --color-hairline-strong: #c8c4b8;
+
+  --color-accent: #8b7355;
+  --color-accent-deep: #6b5540;
+  --color-accent-light: #a89279;
+}
+
+/* 墨夜 */
+[data-theme='night'] {
+  --color-canvas: #1a1a1a;
+  --color-surface: #242424;
+  --color-surface-soft: #2e2e2e;
+
+  --color-ink: #e0e0e0;
+  --color-ink-muted: #888888;
+  --color-ink-subtle: #666666;
+
+  --color-hairline: #333333;
+  --color-hairline-strong: #444444;
+
+  --color-accent: #a08060;
+  --color-accent-deep: #8b7355;
+  --color-accent-light: #c4a882;
+}
+
+/* 护眼 */
+[data-theme='eye-care'] {
+  --color-canvas: #f5f0e8;
+  --color-surface: #eae5d9;
+  --color-surface-soft: #ede8dc;
+
+  --color-ink: #5c4b3a;
+  --color-ink-muted: #7a6a58;
+  --color-ink-subtle: #9a8a78;
+
+  --color-hairline: #d4cfbf;
+  --color-hairline-strong: #bdb8a8;
+
+  --color-accent: #8b7355;
+  --color-accent-deep: #6b5540;
+  --color-accent-light: #a89279;
+}
+
+/* 日间（新增 · 补齐设计承诺） */
+[data-theme='day'] {
+  --color-canvas: #ffffff;
+  --color-surface: #f4f5f7;
+  --color-surface-soft: #fafbfc;
+
+  --color-ink: #1f2328;
+  --color-ink-muted: #57606a;
+  --color-ink-subtle: #8b949e;
+
+  --color-hairline: #e4e6ea;
+  --color-hairline-strong: #cfd3d9;
+
+  --color-accent: #8b7355;
+  --color-accent-deep: #6b5540;
+  --color-accent-light: #a89279;
+}
