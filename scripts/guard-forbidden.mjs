@@ -258,8 +258,10 @@ function assertTrackedCount(dirPrefix, baseline) {
 }
 
 /**
- * B 类 · 单文件「不得入库」断言（精确匹配，无需基线；被跟踪即失败）。
- * 用于锁定「构建期生成、绝不入库」的确定产物（方案 §12.3）。
+ * B 类 · 「不得入库」断言（无需基线；被跟踪即失败）。
+ * - 传文件路径（如 `public/dict-index.json`）→ 精确匹配；
+ * - 传目录前缀（以 `/` 结尾，如 `public/dicts/`）→ 该目录下不得有任何已跟踪文件。
+ * 用于锁定「构建期生成 / 已移出 public 的确定产物」（方案 §12.3）。
  */
 function assertNotTracked(relPath) {
   let paths
@@ -269,8 +271,16 @@ function assertNotTracked(relPath) {
     failures.push(`[B] ${e.message}`)
     return
   }
-  if (paths.includes(relPath)) {
-    failures.push(`[B] 禁止入库的文件已被跟踪: ${relPath}（生成物不得入库）`)
+  const isDir = relPath.endsWith('/')
+  const hits = isDir
+    ? paths.filter((p) => p.startsWith(relPath))
+    : paths.filter((p) => p === relPath)
+  if (hits.length > 0) {
+    const sample = hits.slice(0, 3).join(', ')
+    failures.push(
+      `[B] 禁止入库${isDir ? '的目录' : '的文件'}已被跟踪: ${relPath}` +
+        `（命中 ${hits.length} 个：${sample}${hits.length > 3 ? ' …' : ''}）`
+    )
   } else {
     passes.push(`[B] 未入库 ✓ ${relPath}`)
   }
@@ -327,7 +337,8 @@ assertNoFile('scripts/build-dict-index.cjs') // 20.8MB 病灶生成器
 assertNoFile('scripts/build-dict-defs.cjs') // 300 字截断版生成器
 assertNoMatch('vite.config.*', /build-dict-index/) // 自动复活钩子
 assertNoFile('src/data/dictIndex.js') // 病灶产物本体
-assertNoMatch('.eslintrc.cjs', /dictIndex\.js/) // 复活链路第四件
+assertNoFile('.eslintrc.cjs') // 旧 ESLint 配置（v10 起不再支持 .eslintrc.*）不该存在
+assertNoMatch('eslint.config.js', /dictIndex\.js/) // 复活链路第四件（新配置不得残留引用）
 // 补充（规格之外）：该测试内部 execSync 重新生成病灶产物，本身即一条复活向量
 assertNoFile('scripts/__tests__/build-dict-index.test.cjs')
 
@@ -339,6 +350,8 @@ if (baseline) {
 }
 // 新增索引产物「不得入库」（方案 §12.3；T02 引入 public/dict-index.json 后启用）
 assertNotTracked('public/dict-index.json')
+// 源数据已移出 public，不得回流（§4.5.2 P1）
+assertNotTracked('public/dicts/')
 assertNoFileInDist('*.json', DIST_JSON_MAX_BYTES)
 
 // 汇总输出

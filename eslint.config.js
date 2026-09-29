@@ -7,10 +7,10 @@ import vueParser from 'vue-eslint-parser'
 /**
  * ESLint 扁平配置（v4.0 · TypeScript 版）——**ESLint 实际加载的配置**。
  *
- * ⚠️ 为何同时存在 `.eslintrc.cjs`：ESLint v10 已彻底移除 `.eslintrc.*` 支持
- * （仅认 `eslint.config.*`），故工作配置必须是本文件；`.eslintrc.cjs` 保留为
- * 「已裁决废弃项」护栏断言的目标（见 `scripts/guard-forbidden.mjs` A 类：
- * 断言其 `ignorePatterns` 不得再引用 `src/data/dictIndex.js`，即拆弹第四件）。
+ * ⚠️ ESLint v10 已彻底移除 `.eslintrc.*` 支持（仅认 `eslint.config.*`），故旧
+ * `.eslintrc.cjs` 已删除，本文件是唯一生效配置。拆弹第四件由护栏断言
+ * `assertNoFile('.eslintrc.cjs')` + `assertNoMatch('eslint.config.js', /dictIndex\.js/)`
+ * 守住（见 `scripts/guard-forbidden.mjs` A 类）。
  *
  * 规则要点（方案 §11 / §12.1）：
  * - `no-console` error（禁止 console.log）；
@@ -121,6 +121,13 @@ export default [
     files: ['src/utils/anchor.ts'],
     rules: {
       'no-restricted-globals': 'off'
+    }
+  },
+  {
+    // 日志唯一出口（方案 §11：禁止 console，调试走 logger.debug）
+    files: ['src/utils/logger.ts'],
+    rules: {
+      'no-console': 'off'
     }
   }
 ]
